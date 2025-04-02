@@ -13,19 +13,19 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
-    app.MapScalarApiReference(options => options
-        .WithTitle("CADR API")
-        .WithTheme(ScalarTheme.Default)
-        .WithDarkMode(true)
-        .WithDefaultHttpClient(ScalarTarget.JavaScript, ScalarClient.Axios)
-        .WithSidebar(true)
-        .WithDownloadButton(true)
-        .WithDarkModeToggle(true)
-        .WithDotNetFlag(true)
-        .WithTestRequestButton(true)
-        .WithModels(false)
-        .WithDefaultOpenAllTags(false));
+	app.MapOpenApi();
+	app.MapScalarApiReference(options => options
+		.WithTitle("CADR API")
+		.WithTheme(ScalarTheme.Default)
+		.WithDarkMode(true)
+		.WithDefaultHttpClient(ScalarTarget.JavaScript, ScalarClient.Axios)
+		.WithSidebar(true)
+		.WithDownloadButton(true)
+		.WithDarkModeToggle(true)
+		.WithDotNetFlag(true)
+		.WithTestRequestButton(true)
+		.WithModels(false)
+		.WithDefaultOpenAllTags(false));
 }
 
 app.UseHttpsRedirection();

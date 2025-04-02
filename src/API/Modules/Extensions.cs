@@ -9,8 +9,8 @@ public static class Extensions
 		services.AddUsersModule(configuration);
 	}
 
-    public static void MapEndpoints(this IEndpointRouteBuilder app)
-    {
-        app.MapUsersEndpoints();
-    }
+	public static void MapEndpoints(this IEndpointRouteBuilder app)
+	{
+		app.MapUsersEndpoints();
+	}
 }

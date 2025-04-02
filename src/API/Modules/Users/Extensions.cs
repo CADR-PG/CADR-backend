@@ -10,7 +10,7 @@ public static class Extensions
 		services.AddScoped<LoginHandler>();
 	}
 
-    public static void MapUsersEndpoints(this IEndpointRouteBuilder endpoints)
-        => endpoints.MapGroup("users")
-            .Map<LoginEndpoint>();
+	public static void MapUsersEndpoints(this IEndpointRouteBuilder endpoints)
+		=> endpoints.MapGroup("users")
+			.Map<LoginEndpoint>();
 }
