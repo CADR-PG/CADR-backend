@@ -1,9 +1,11 @@
+using API.Modules;
+using Scalar.AspNetCore;
+
 var builder = WebApplication.CreateBuilder(args);
+var configuration = builder.Configuration;
 
-// Add services to the container.
-
-builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddModules(configuration);
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
@@ -12,12 +14,25 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference(options => options
+        .WithTitle("CADR API")
+        .WithTheme(ScalarTheme.Default)
+        .WithDarkMode(true)
+        .WithDefaultHttpClient(ScalarTarget.JavaScript, ScalarClient.Axios)
+        .WithSidebar(true)
+        .WithDownloadButton(true)
+        .WithDarkModeToggle(true)
+        .WithDotNetFlag(true)
+        .WithTestRequestButton(true)
+        .WithModels(false)
+        .WithDefaultOpenAllTags(false));
 }
 
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
+// app.UseAuthentication();
+// app.UseAuthorization();
 
-app.MapControllers();
+app.MapEndpoints();
 
-app.Run();
+await app.RunAsync();
