@@ -1,6 +1,6 @@
 namespace API.Database;
 
-public class CADRDbContext
+internal sealed class CADRDbContext
 {
 
 }

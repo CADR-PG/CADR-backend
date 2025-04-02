@@ -3,7 +3,7 @@ using API.Shared.Endpoints;
 
 namespace API.Modules.Users;
 
-public static class Extensions
+internal static class Extensions
 {
 	public static void AddUsersModule(this IServiceCollection services, IConfiguration configuration)
 	{

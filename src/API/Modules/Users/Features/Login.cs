@@ -3,20 +3,21 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Modules.Users.Features;
 
-public record Login([FromBody] Login.Credentials Body) : IHttpRequest
+internal record Login([FromBody] Login.Credentials Body) : IHttpRequest
 {
-	public record Credentials(string Email, string Password);
+	internal record Credentials(string Email, string Password);
 }
-public record UserReadModel(string Email);
+
+internal record UserReadModel(string Email);
 
 
-public sealed class LoginEndpoint : IEndpoint
+internal sealed class LoginEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints)
 		=> endpoints.MapPost<Login, LoginHandler>("login");
 }
 
-public sealed class LoginHandler(
+internal sealed class LoginHandler(
 	ILogger<LoginHandler> logger
 ) : IHttpRequestHandler<Login>
 {

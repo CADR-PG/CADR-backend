@@ -2,7 +2,7 @@ using API.Modules.Users;
 
 namespace API.Modules;
 
-public static class Extensions
+internal static class Extensions
 {
 	public static void AddModules(this IServiceCollection services, IConfiguration configuration)
 	{

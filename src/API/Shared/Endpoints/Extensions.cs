@@ -1,6 +1,6 @@
 namespace API.Shared.Endpoints;
 
-public static class Extensions
+internal static class Extensions
 {
 	public static RouteHandlerBuilder MapGet<TRequest, THandler>(this IEndpointRouteBuilder endpoints, string template)
 		where TRequest : IHttpRequest

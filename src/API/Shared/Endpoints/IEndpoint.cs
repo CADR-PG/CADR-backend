@@ -1,13 +1,13 @@
 namespace API.Shared.Endpoints;
 
-public interface IEndpoint
+internal interface IEndpoint
 {
 	static abstract void Register(IEndpointRouteBuilder endpoints);
 }
 
-public interface IHttpRequest;
+internal interface IHttpRequest;
 
-public interface IHttpRequestHandler<in TRequest> where TRequest : IHttpRequest
+internal interface IHttpRequestHandler<in TRequest> where TRequest : IHttpRequest
 {
 	Task<IResult> Handle(TRequest request, CancellationToken cancellationToken);
 }
