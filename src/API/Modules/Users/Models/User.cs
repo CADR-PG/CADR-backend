@@ -3,7 +3,7 @@
 
 namespace API.Modules.Users.Models
 {
-	public class User
+	internal class User
 	{
 		public required int Id { get; set; }
 		public required string FirstName { get; set; }

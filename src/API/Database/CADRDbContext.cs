@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Database;
 
-public class CADRDbContext : DbContext
+internal class CADRDbContext : DbContext
 {
 	public DbSet<User> Users { get; set; }
 
