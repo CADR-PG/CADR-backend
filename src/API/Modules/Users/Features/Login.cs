@@ -34,12 +34,12 @@ internal sealed class LoginHandler(
 
 		// Check if the user exists
 		var user = await dbContext.Users
-			.FirstOrDefaultAsync(x => x.Email == credentials.Email, cancellationToken);
+			.FirstOrDefaultAsync(x => x.Email.Trim() == credentials.Email.Trim(), cancellationToken);
 		if (user is null)
 			throw new UnauthorizedAccessException();
 
 		// Verify the password
-		var result = passwordHasher.VerifyHashedPassword(user, user.Password, credentials.Password);
+		var result = passwordHasher.VerifyHashedPassword(user, user.Password.Trim(), credentials.Password.Trim());
 		if (result == PasswordVerificationResult.Success)
 		{
 			return Results.Json(new UserReadModel(tokenProvider.Create(user)));

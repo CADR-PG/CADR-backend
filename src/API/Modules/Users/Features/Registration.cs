@@ -33,12 +33,12 @@ internal sealed class RegistrationHandler(
 		var passwordHasher = new PasswordHasher<User>();
 		var user = new User
 		{
-			FirstName = credentials.FirstName,
-			LastName = credentials.LastName,
-			Email = credentials.Email,
-			Phone = credentials.PhoneNumber,
+			FirstName = credentials.FirstName.Trim(),
+			LastName = credentials.LastName.Trim(),
+			Email = credentials.Email.Trim(),
+			Phone = credentials.PhoneNumber.Trim(),
 			BirthDate = credentials.BirthDate,
-			Password = credentials.Password,
+			Password = credentials.Password.Trim(),
 		};
 		user.Password = passwordHasher.HashPassword(user, credentials.Password);
 		dbContext.Users.Add(user);
