@@ -1,5 +1,9 @@
+using API.Database;
+using API.Modules.Users.Models;
 using API.Shared.Endpoints;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Modules.Users.Features;
 
@@ -18,15 +22,26 @@ internal sealed class LoginEndpoint : IEndpoint
 }
 
 internal sealed class LoginHandler(
-	ILogger<LoginHandler> logger
+	CADRDbContext dbContext
 ) : IHttpRequestHandler<Login>
 {
 	public async Task<IResult> Handle(Login request, CancellationToken cancellationToken)
 	{
 		var credentials = request.Body;
+		var passwordHasher = new PasswordHasher<User>();
+		
+		// Check if the user exists
+		var user = await dbContext.Users
+			.FirstOrDefaultAsync(x => x.Email == credentials.Email, cancellationToken);
+		if (user is null)
+			return Results.NotFound();
 
-		await Task.Delay(1000, cancellationToken);
-		logger.LogInformation("Login {EMAIL} - {PASSWORD}", credentials.Email, credentials.Password);
-		return Results.Ok(new UserReadModel("Logged in successfully"));
+		// Verify the password
+		var result = passwordHasher.VerifyHashedPassword(user, user.Password, credentials.Password);
+		if (result == PasswordVerificationResult.Success)
+		{
+			return Results.Ok(new UserReadModel("Login successfully"));
+		}
+		return Results.Unauthorized();
 	}
 }
