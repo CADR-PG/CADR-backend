@@ -1,8 +1,17 @@
+using API.Database;
 using API.Modules;
+using API.Modules.Users.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
+
+var connectonString = builder.Configuration.GetConnectionString("Database")
+		?? throw new InvalidOperationException("Connection string" + "'DefaultConnection' not found.");
+builder.Services.AddDbContext<CADRDbContext>(options =>
+	options.UseNpgsql(connectonString));
+builder.Services.AddSingleton<TokenProvider>();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddModules(configuration);
