@@ -8,7 +8,7 @@ internal record Login([FromBody] Login.Credentials Body) : IHttpRequest
 	internal record Credentials(string Email, string Password);
 }
 
-internal record UserReadModel(string Email);
+internal record UserReadModel(string response);
 
 
 internal sealed class LoginEndpoint : IEndpoint
@@ -27,6 +27,6 @@ internal sealed class LoginHandler(
 
 		await Task.Delay(1000, cancellationToken);
 		logger.LogInformation("Login {EMAIL} - {PASSWORD}", credentials.Email, credentials.Password);
-		return Results.Ok(new UserReadModel(credentials.Email));
+		return Results.Ok(new UserReadModel("Logged in successfully"));
 	}
 }
