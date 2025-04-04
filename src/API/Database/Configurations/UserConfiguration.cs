@@ -11,6 +11,7 @@ internal class UserConfiguration : IEntityTypeConfiguration<User>
 {
 	public void Configure(EntityTypeBuilder<User> builder)
 	{
+		builder.ToTable("Users");
 		builder.HasKey(u => u.Id);
 		builder.Property(u => u.FirstName)
 			.IsRequired()
@@ -27,7 +28,7 @@ internal class UserConfiguration : IEntityTypeConfiguration<User>
 		builder.Property(u => u.Phone)
 			.IsRequired()
 			.HasMaxLength(15);
-		builder.Property(u => u.Age)
+		builder.Property(u => u.BirthDate)
 			.IsRequired();
 	}
 }

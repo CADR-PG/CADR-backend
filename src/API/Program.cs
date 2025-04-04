@@ -6,7 +6,7 @@ using Scalar.AspNetCore;
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
-var connectonString = builder.Configuration.GetConnectionString("DefaultConnection")
+var connectonString = builder.Configuration.GetConnectionString("Database")
 		?? throw new InvalidOperationException("Connection string" + "'DefaultConnection' not found.");
 builder.Services.AddDbContext<CADRDbContext>(options =>
 	options.UseNpgsql(connectonString));
