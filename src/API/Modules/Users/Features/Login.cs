@@ -2,10 +2,10 @@ using API.Database;
 using API.Modules.Users.Infrastructure;
 using API.Modules.Users.Models;
 using API.Shared.Endpoints;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
 
 namespace API.Modules.Users.Features;
 
@@ -24,7 +24,7 @@ internal sealed class LoginEndpoint : IEndpoint
 }
 
 internal sealed class LoginHandler(
-	CADRDbContext dbContext, TokenProvider tokenProvider
+	CADRDbContext dbContext, TokenProvider tokenProvider, IHttpContextAccessor httpContextAccessor
 ) : IHttpRequestHandler<Login>
 {
 	public async Task<IResult> Handle(Login request, CancellationToken cancellationToken)
@@ -36,14 +36,30 @@ internal sealed class LoginHandler(
 		var user = await dbContext.Users
 			.FirstOrDefaultAsync(x => x.Email.Trim() == credentials.Email.Trim(), cancellationToken);
 		if (user is null)
-			throw new UnauthorizedAccessException();
+			return Results.NotFound();
 
 		// Verify the password
 		var result = passwordHasher.VerifyHashedPassword(user, user.Password.Trim(), credentials.Password.Trim());
 		if (result == PasswordVerificationResult.Success)
 		{
-			return Results.Json(new UserReadModel(tokenProvider.Create(user)));
+			var token = tokenProvider.Create(user);
+
+			var cookieOptions = new CookieOptions
+			{
+				HttpOnly = true,
+				Secure = true,
+				SameSite = SameSiteMode.Strict,
+				Expires = DateTime.UtcNow.AddHours(1)
+			};
+
+			// httpContextAccessor accesses the current HTTP context
+			// Set the cookie with the token
+			httpContextAccessor.HttpContext!.Response.Cookies.Append("jwt", token, cookieOptions);
+
+			var response = Results.Ok(new UserReadModel(token));
+			return response;
 		}
-		throw new UnauthorizedAccessException();
+
+		return Results.Unauthorized();
 	}
 }

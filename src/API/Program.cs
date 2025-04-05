@@ -1,8 +1,11 @@
 using API.Database;
 using API.Modules;
 using API.Modules.Users.Infrastructure;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -12,6 +15,22 @@ var connectonString = builder.Configuration.GetConnectionString("Database")
 builder.Services.AddDbContext<CADRDbContext>(options =>
 	options.UseNpgsql(connectonString));
 builder.Services.AddSingleton<TokenProvider>();
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddAuthentication(options =>
+{
+	options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+	options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+	options.TokenValidationParameters = new TokenValidationParameters
+	{
+		ValidateIssuerSigningKey = true,
+		IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Secret"]!)),
+		ValidateIssuer = true,
+		ValidateAudience = true,
+	};
+});
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddModules(configuration);
@@ -40,5 +59,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.MapEndpoints();
+
+app.UseAuthentication();
 
 await app.RunAsync();
