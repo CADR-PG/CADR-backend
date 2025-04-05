@@ -6,7 +6,7 @@ namespace API.Database;
 
 internal class CADRDbContext : DbContext
 {
-	public DbSet<User> Users { get; set; }
+	public required DbSet<User> Users { get; set; }
 
 	public CADRDbContext(DbContextOptions<CADRDbContext> options) : base(options)
 	{
