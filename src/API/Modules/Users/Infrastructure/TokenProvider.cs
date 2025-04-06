@@ -1,4 +1,4 @@
-﻿using API.Modules.Users.Models;
+using API.Modules.Users.Models;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using System.Globalization;

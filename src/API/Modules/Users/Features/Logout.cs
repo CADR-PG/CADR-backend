@@ -1,8 +1,8 @@
-﻿using API.Database;
+using API.Database;
 using API.Modules.Users.Models;
 using API.Shared.Endpoints;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 
 namespace API.Modules.Users.Features;
 
