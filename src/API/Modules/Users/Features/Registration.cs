@@ -27,21 +27,21 @@ internal sealed class RegistrationHandler(
 ) : IHttpRequestHandler<Registration>
 {
 	public async Task<IResult> Handle(Registration request, CancellationToken cancellationToken)
-	{
-		var credentials = request.Body;
+{
+	var credentials = request.Body;
 
-		var passwordHasher = new PasswordHasher<User>();
-		var user = new User
-		{
-			FirstName = credentials.FirstName.Trim(),
-			LastName = credentials.LastName.Trim(),
-			Email = credentials.Email.Trim(),
-			PhoneNumber = credentials.PhoneNumber.Trim(),
-			PasswordHash = credentials.Password.Trim(),
-		};
-		user.PasswordHash = passwordHasher.HashPassword(user, credentials.Password);
-		dbContext.Users.Add(user);
-		await dbContext.SaveChangesAsync(cancellationToken);
-		return Results.Ok(new RegistrationReadModel("Registered successfully"));
-	}
+	var passwordHasher = new PasswordHasher<User>();
+	var user = new User
+	{
+		FirstName = credentials.FirstName.Trim(),
+		LastName = credentials.LastName.Trim(),
+		Email = credentials.Email.Trim(),
+		PhoneNumber = credentials.PhoneNumber.Trim(),
+		PasswordHash = credentials.Password.Trim(),
+	};
+	user.PasswordHash = passwordHasher.HashPassword(user, credentials.Password);
+	dbContext.Users.Add(user);
+	await dbContext.SaveChangesAsync(cancellationToken);
+	return Results.Ok(new RegistrationReadModel("Registered successfully"));
+}
 }
