@@ -21,12 +21,8 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 9.0.x
-      - name: Restore dependencies
-        run: dotnet restore
-      - name: Format
-        run: dotnet format --verify-no-changes --verbosity diagnostic
       - name: Build
-        run: dotnet build --no-restore
+        run: dotnet build
       - name: "Update docs"
         run: |
           git config user.name "github-actions[bot]"
@@ -34,6 +30,6 @@ jobs:
           git fetch origin gh-pages:gh-pages
           git switch gh-pages
           mv -f "src/API/obj/API.json" "main-openapi.json"
-          git add .
+          git add "main-openapi.json"
           git commit -m "docs: update OpenAPI docs" || echo "No changes"
-          git push
+          git push origin gh-pages
