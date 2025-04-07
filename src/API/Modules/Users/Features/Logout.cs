@@ -24,9 +24,9 @@ internal sealed class LogoutHandler(
 ) : IHttpRequestHandler<Logout>
 {
 	public async Task<IResult> Handle(Logout request, CancellationToken cancellationToken)
-{
-	await Task.CompletedTask;
-	httpContextAccessor.HttpContext!.Response.Cookies.Delete("jwt");
-	return Results.Ok(new LogoutReadModel("Logged out successfully"));
-}
+	{
+		await Task.CompletedTask;
+		httpContextAccessor.HttpContext!.Response.Cookies.Delete("jwt");
+		return Results.Ok(new LogoutReadModel("Logged out successfully"));
+	}
 }

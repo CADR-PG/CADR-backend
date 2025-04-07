@@ -28,34 +28,34 @@ internal sealed class LoginHandler(
 ) : IHttpRequestHandler<Login>
 {
 	public async Task<IResult> Handle(Login request, CancellationToken cancellationToken)
-{
-	var credentials = request.Body;
-	var passwordHasher = new PasswordHasher<User>();
-
-	var user = await dbContext.Users
-		.FirstOrDefaultAsync(x => x.Email.Trim() == credentials.Email.Trim(), cancellationToken);
-	if (user is null)
-		return Results.NotFound();
-
-	var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash.Trim(), credentials.Password.Trim());
-	if (result == PasswordVerificationResult.Success)
 	{
-		var token = tokenProvider.Create(user);
+		var credentials = request.Body;
+		var passwordHasher = new PasswordHasher<User>();
 
-		var cookieOptions = new CookieOptions
+		var user = await dbContext.Users
+			.FirstOrDefaultAsync(x => x.Email.Trim() == credentials.Email.Trim(), cancellationToken);
+		if (user is null)
+			return Results.NotFound();
+
+		var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash.Trim(), credentials.Password.Trim());
+		if (result == PasswordVerificationResult.Success)
 		{
-			HttpOnly = true,
-			Secure = true,
-			SameSite = SameSiteMode.Strict,
-			Expires = DateTime.UtcNow.AddHours(1)
-		};
+			var token = tokenProvider.Create(user);
 
-		httpContextAccessor.HttpContext!.Response.Cookies.Append("jwt", token, cookieOptions);
+			var cookieOptions = new CookieOptions
+			{
+				HttpOnly = true,
+				Secure = true,
+				SameSite = SameSiteMode.Strict,
+				Expires = DateTime.UtcNow.AddHours(1)
+			};
 
-		var response = Results.Ok(new UserReadModel(token));
-		return response;
+			httpContextAccessor.HttpContext!.Response.Cookies.Append("jwt", token, cookieOptions);
+
+			var response = Results.Ok(new UserReadModel(token));
+			return response;
+		}
+
+		return Results.Unauthorized();
 	}
-
-	return Results.Unauthorized();
-}
 }

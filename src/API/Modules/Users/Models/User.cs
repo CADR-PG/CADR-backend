@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace API.Modules.Users.Models;
 
-	internal class User
+internal class User
 {
 	public Guid Id { get; set; }
 	public required string FirstName { get; set; }
