@@ -11,7 +11,7 @@ internal record Registration([FromBody] Registration.Credentials Body) : IHttpRe
 	internal record Credentials(
 		string FirstName, string LastName,
 		string Email, string Password,
-		string PhoneNumber, DateTime BirthDate);
+		string PhoneNumber);
 };
 
 internal record RegistrationReadModel(string response);
@@ -36,11 +36,10 @@ internal sealed class RegistrationHandler(
 			FirstName = credentials.FirstName.Trim(),
 			LastName = credentials.LastName.Trim(),
 			Email = credentials.Email.Trim(),
-			Phone = credentials.PhoneNumber.Trim(),
-			BirthDate = credentials.BirthDate,
-			Password = credentials.Password.Trim(),
+			PhoneNumber = credentials.PhoneNumber.Trim(),
+			PasswordHash = credentials.Password.Trim(),
 		};
-		user.Password = passwordHasher.HashPassword(user, credentials.Password);
+		user.PasswordHash = passwordHasher.HashPassword(user, credentials.Password);
 		dbContext.Users.Add(user);
 		await dbContext.SaveChangesAsync(cancellationToken);
 		return Results.Ok(new RegistrationReadModel("Registered successfully"));

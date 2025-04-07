@@ -32,14 +32,12 @@ internal sealed class LoginHandler(
 		var credentials = request.Body;
 		var passwordHasher = new PasswordHasher<User>();
 
-		// Check if the user exists
 		var user = await dbContext.Users
 			.FirstOrDefaultAsync(x => x.Email.Trim() == credentials.Email.Trim(), cancellationToken);
 		if (user is null)
 			return Results.NotFound();
 
-		// Verify the password
-		var result = passwordHasher.VerifyHashedPassword(user, user.Password.Trim(), credentials.Password.Trim());
+		var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash.Trim(), credentials.Password.Trim());
 		if (result == PasswordVerificationResult.Success)
 		{
 			var token = tokenProvider.Create(user);
@@ -52,8 +50,6 @@ internal sealed class LoginHandler(
 				Expires = DateTime.UtcNow.AddHours(1)
 			};
 
-			// httpContextAccessor accesses the current HTTP context
-			// Set the cookie with the token
 			httpContextAccessor.HttpContext!.Response.Cookies.Append("jwt", token, cookieOptions);
 
 			var response = Results.Ok(new UserReadModel(token));

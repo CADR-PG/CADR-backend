@@ -26,7 +26,6 @@ internal sealed class LogoutHandler(
 	public async Task<IResult> Handle(Logout request, CancellationToken cancellationToken)
 	{
 		await Task.CompletedTask;
-		// Invalidate the JWT token by deleting the cookie
 		httpContextAccessor.HttpContext!.Response.Cookies.Delete("jwt");
 		return Results.Ok(new LogoutReadModel("Logged out successfully"));
 	}

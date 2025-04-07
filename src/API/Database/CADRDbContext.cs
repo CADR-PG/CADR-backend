@@ -6,7 +6,7 @@ namespace API.Database;
 
 internal class CADRDbContext : DbContext
 {
-	public required DbSet<User> Users { get; set; }
+	public required DbSet<User> Users { get; init; }
 
 	public CADRDbContext(DbContextOptions<CADRDbContext> options) : base(options)
 	{
@@ -15,6 +15,6 @@ internal class CADRDbContext : DbContext
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
-		new UserConfiguration().Configure(modelBuilder.Entity<User>());
+		modelBuilder.ApplyConfigurationsFromAssembly(typeof(CADRDbContext).Assembly);
 	}
 }
