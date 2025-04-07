@@ -1,0 +1,35 @@
+name: "OpenAPI docs"
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions: write-all
+
+concurrency:
+  group: '${{ github.ref }}-${{ github.workflow }}'
+  cancel-in-progress: true
+
+jobs:
+  generate:
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+      - name: Build
+        run: dotnet build
+      - name: "Update docs"
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin gh-pages:gh-pages
+          git switch gh-pages
+          mv -f "src/API/obj/API.json" "main-openapi.json"
+          git add "main-openapi.json"
+          git commit -m "docs: update OpenAPI docs" || echo "No changes"
+          git push origin gh-pages
