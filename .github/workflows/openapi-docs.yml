@@ -27,9 +27,9 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git fetch origin gh-pages:gh-pages
-          git switch gh-pages
+          git fetch origin openapi-docs:openapi-docs
+          git switch openapi-docs
           mv -f "src/API/obj/API.json" "main-openapi.json"
           git add "main-openapi.json"
           git commit -m "docs: update OpenAPI docs" || echo "No changes"
-          git push origin gh-pages
+          git push origin openapi-docs
