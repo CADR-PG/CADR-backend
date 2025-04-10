@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace API.Database.Migrations
 {
     /// <inheritdoc />
-    public partial class CADRDB : Migration
+    public partial class CADRB : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

@@ -8,7 +8,7 @@ internal static class Extensions
 	public static void AddUsersModule(this IServiceCollection services, IConfiguration configuration)
 	{
 		services.AddScoped<LoginHandler>();
-		services.AddScoped<RegistrationHandler>();
+		services.AddScoped<RegisterHandler>();
 		services.AddScoped<LogoutHandler>();
 	}
 
@@ -17,7 +17,7 @@ internal static class Extensions
 		endpoints.MapGroup("users")
 			.Map<LoginEndpoint>();
 		endpoints.MapGroup("users")
-			.Map<RegistrationEndpoint>();
+			.Map<RegisterEndpoint>();
 		endpoints.MapGroup("users")
 			.Map<LogoutEndpoint>();
 	}

@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace API.Database.Migrations
 {
     [DbContext(typeof(CADRDbContext))]
-    [Migration("20250407173411_CADRDB")]
-    partial class CADRDB
+    [Migration("20250410192020_CADRB")]
+    partial class CADRB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
