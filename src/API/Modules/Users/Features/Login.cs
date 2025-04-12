@@ -14,7 +14,7 @@ internal record Login([FromBody] Login.Credentials Body) : IHttpRequest
 	internal record Credentials(string Email, string Password);
 }
 
-internal record UserReadModel(string token);
+internal record UserReadModel(string token, string refreshToken);
 
 
 internal sealed class LoginEndpoint : IEndpoint
@@ -41,6 +41,7 @@ internal sealed class LoginHandler(
 	if (result == PasswordVerificationResult.Success)
 	{
 		var token = tokenProvider.Create(user);
+		var refreshToken = tokenProvider.GenerateRefreshToken(user);
 
 		var cookieOptions = new CookieOptions
 		{
@@ -51,8 +52,9 @@ internal sealed class LoginHandler(
 		};
 
 		httpContextAccessor.HttpContext!.Response.Cookies.Append("jwt", token, cookieOptions);
+		httpContextAccessor.HttpContext.Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
 
-		var response = Results.Ok(new UserReadModel(token));
+		var response = Results.Ok(new UserReadModel(token, refreshToken));
 		return response;
 	}
 
