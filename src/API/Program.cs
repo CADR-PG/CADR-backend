@@ -1,6 +1,9 @@
 using API.Database;
 using API.Modules;
 using API.Modules.Users.Infrastructure;
+using API.Modules.Users.Models;
+using API.Modules.Users.Validators;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -15,6 +18,7 @@ var connectonString = builder.Configuration.GetConnectionString("Database")
 builder.Services.AddDbContext<CADRDbContext>(options =>
 	options.UseNpgsql(connectonString));
 builder.Services.AddSingleton<TokenProvider>();
+builder.Services.AddScoped<IValidator<User>, UserValidator>();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddAuthentication(options =>
