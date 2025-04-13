@@ -11,6 +11,7 @@ internal static class Extensions
 		services.AddScoped<RegisterHandler>();
 		services.AddScoped<LogoutHandler>();
 		services.AddScoped<RefreshHandler>();
+		services.AddScoped<LogoutHandler>();
 	}
 
 	public static void MapUsersEndpoints(this IEndpointRouteBuilder endpoints)
@@ -23,5 +24,7 @@ internal static class Extensions
 			.Map<LogoutEndpoint>();
 		endpoints.MapGroup("users")
 			.Map<RefreshEndpoint>();
+		endpoints.MapGroup("users")
+			.Map<LogoutEndpoint>();
 	}
 }

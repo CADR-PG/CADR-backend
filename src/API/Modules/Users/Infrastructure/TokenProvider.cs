@@ -64,5 +64,4 @@ public string GenerateRefreshToken(User user)
 var handler = new JsonWebTokenHandler();
 string refreshToken = handler.CreateToken(tokenDescritpor);
 return refreshToken;
-	}
 }
