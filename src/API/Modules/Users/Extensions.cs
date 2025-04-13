@@ -24,7 +24,5 @@ internal static class Extensions
 			.Map<LogoutEndpoint>();
 		endpoints.MapGroup("users")
 			.Map<RefreshEndpoint>();
-		endpoints.MapGroup("users")
-			.Map<LogoutEndpoint>();
 	}
 }
