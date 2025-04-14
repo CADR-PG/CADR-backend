@@ -1,0 +1,13 @@
+﻿services:
+
+  postgresql:
+    image: postgres:latest
+    container_name: postgresql
+    environment:
+      - POSTGRES_DB=cadr
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - ./.containers/cadr.database:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"

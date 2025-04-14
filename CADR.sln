@@ -7,6 +7,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 		.gitignore = .gitignore
 		Directory.Build.props = Directory.Build.props
+		Directory.Packages.props = Directory.Packages.props
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{E687C30C-DCBF-43AD-B31A-F7060BC55F99}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker", "docker", "{3C1B52A6-F60B-42C4-8839-AC9568B6AB6A}"
+	ProjectSection(SolutionItems) = preProject
+		tools\docker\docker-compose.yaml = tools\docker\docker-compose.yaml
 	EndProjectSection
 EndProject
 Global
@@ -19,5 +27,8 @@ Global
 		{EC47C3D2-4A84-40F6-929C-0B3E46071805}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC47C3D2-4A84-40F6-929C-0B3E46071805}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EC47C3D2-4A84-40F6-929C-0B3E46071805}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3C1B52A6-F60B-42C4-8839-AC9568B6AB6A} = {E687C30C-DCBF-43AD-B31A-F7060BC55F99}
 	EndGlobalSection
 EndGlobal
