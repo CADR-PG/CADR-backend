@@ -1,19 +1,18 @@
-using API.Modules.Users.Models;
+﻿using API.Modules.Users.Models;
+using API.Modules.Users.Services;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
-using System.Globalization;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 using JwtRegisteredClaimNames = System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames;
 
 namespace API.Modules.Users.Infrastructure;
 
-internal sealed class TokenProvider(IConfiguration configuration)
+internal sealed class TokenProvider(OptionsInjector optionsInjector)
 {
 	public string Create(User user)
 	{
-		string secretKey = configuration["Jwt:Secret"]!;
+		string secretKey = optionsInjector.GetSecret();
 		var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
 
 		var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -27,10 +26,10 @@ internal sealed class TokenProvider(IConfiguration configuration)
 				new Claim(JwtRegisteredClaimNames.Email, user.Email),
 				new Claim("email_verified", user.Email)
 			]),
-			Expires = DateTime.UtcNow.AddDays(configuration.GetValue<int>("Jwt:ExpireTimeInDays")),
+			Expires = DateTime.UtcNow.AddDays(optionsInjector.GetExpireTimeInDays()),
 			SigningCredentials = credentials,
-			Issuer = configuration["Jwt:Issuer"],
-			Audience = configuration["Jwt:Audience"],
+			Issuer = optionsInjector.GetIssuer(),
+			Audience = optionsInjector.GetAudience(),
 		};
 
 		var handler = new JsonWebTokenHandler();
@@ -41,7 +40,7 @@ internal sealed class TokenProvider(IConfiguration configuration)
 
 	public string GenerateRefreshToken(User user)
 	{
-		string secretKey = configuration["Jwt:Secret"]!;
+		string secretKey = optionsInjector.GetRefreshSecret();
 		var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
 
 		var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -49,17 +48,11 @@ internal sealed class TokenProvider(IConfiguration configuration)
 		var tokenDescritpor = new SecurityTokenDescriptor
 		{
 			Subject = new ClaimsIdentity(
-
-
 			[
 				new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-				new Claim(JwtRegisteredClaimNames.Email, user.Email),
-				new Claim("email_verified", user.Email)
 			]),
-			Expires = DateTime.UtcNow.AddDays(configuration.GetValue<int>("RefreshToken:ExpireTimeInDays")),
+			Expires = DateTime.UtcNow.AddDays(optionsInjector.GetRefreshExpireTimeInDays()),
 			SigningCredentials = credentials,
-			Issuer = configuration["RefreshToken:Issuer"],
-			Audience = configuration["RefreshToken:Audience"],
 		};
 		var handler = new JsonWebTokenHandler();
 		string refreshToken = handler.CreateToken(tokenDescritpor);

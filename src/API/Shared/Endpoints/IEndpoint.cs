@@ -1,4 +1,4 @@
-namespace API.Shared.Endpoints;
+﻿namespace API.Shared.Endpoints;
 
 internal interface IEndpoint
 {

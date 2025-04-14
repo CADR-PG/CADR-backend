@@ -1,4 +1,4 @@
-using API.Database;
+﻿using API.Database;
 using API.Modules.Users.Models;
 using API.Shared.Endpoints;
 using FluentValidation;

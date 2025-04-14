@@ -1,5 +1,6 @@
-using API.Database;
+﻿using API.Database;
 using API.Modules.Users.Models;
+using API.Modules.Users.Services;
 using API.Shared.Endpoints;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -20,14 +21,13 @@ internal sealed class LogoutEndpoint : IEndpoint
 }
 
 internal sealed class LogoutHandler(
-	IHttpContextAccessor httpContextAccessor
+	UserTokenAuthenticator userTokenAuthenticator
 ) : IHttpRequestHandler<Logout>
 {
 	public async Task<IResult> Handle(Logout request, CancellationToken cancellationToken)
 {
 	await Task.CompletedTask;
-	httpContextAccessor.HttpContext!.Response.Cookies.Delete("jwt");
-	httpContextAccessor.HttpContext.Response.Cookies.Delete("refreshToken");
+	userTokenAuthenticator.ClearTokens();
 	return Results.Ok(new LogoutReadModel("Logged out successfully"));
 }
 }

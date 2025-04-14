@@ -1,4 +1,4 @@
-using API.Modules.Users.Models;
+﻿using API.Modules.Users.Models;
 using FluentValidation;
 
 namespace API.Modules.Users.Validators;
