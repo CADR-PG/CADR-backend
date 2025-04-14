@@ -11,9 +11,11 @@ var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
 var connectonString = builder.Configuration.GetConnectionString("Database")
-		?? throw new InvalidOperationException("Connection string" + "'DefaultConnection' not found.");
+		?? throw new InvalidOperationException("Connection string" + "'Database' not found.");
 builder.Services.AddDbContext<CADRDbContext>(options =>
-	options.UseNpgsql(connectonString));
+{
+	options.UseNpgsql(connectonString);
+});
 builder.Services.AddSingleton<TokenProvider>();
 builder.Services.AddHttpContextAccessor();
 
