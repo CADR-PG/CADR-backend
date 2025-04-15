@@ -1,9 +1,9 @@
-﻿using API.Modules.Users.Features;
-using API.Shared.Endpoints;
+using API.Modules.Users.Features;
 using API.Modules.Users.Infrastructure;
 using API.Modules.Users.Models;
 using API.Modules.Users.Services;
 using API.Modules.Users.Validators;
+using API.Shared.Endpoints;
 using FluentValidation;
 
 namespace API.Modules.Users;

@@ -1,11 +1,11 @@
-﻿namespace API.Shared.Endpoints;
+namespace API.Shared.Endpoints;
 
 internal static class Extensions
 {
 	public static RouteHandlerBuilder MapGet<TRequest, THandler>(this IEndpointRouteBuilder endpoints, string template)
 		where TRequest : IHttpRequest
 		where THandler : IHttpRequestHandler<TRequest> =>
-		endpoints.MapGet(template, async(
+		endpoints.MapGet(template, async (
 					THandler handler,
 					[AsParameters] TRequest query,
 					CancellationToken cancellationToken) =>
@@ -15,7 +15,7 @@ internal static class Extensions
 	public static RouteHandlerBuilder MapPost<TRequest, THandler>(this IEndpointRouteBuilder endpoints, string template)
 		where TRequest : IHttpRequest
 		where THandler : IHttpRequestHandler<TRequest> =>
-		endpoints.MapPost(template, async(
+		endpoints.MapPost(template, async (
 					THandler handler,
 					[AsParameters] TRequest query,
 					CancellationToken cancellationToken) =>
@@ -25,7 +25,7 @@ internal static class Extensions
 	public static RouteHandlerBuilder MapPut<TRequest, THandler>(this IEndpointRouteBuilder endpoints, string template)
 		where TRequest : IHttpRequest
 		where THandler : IHttpRequestHandler<TRequest> =>
-		endpoints.MapPut(template, async(
+		endpoints.MapPut(template, async (
 					THandler handler,
 					[AsParameters] TRequest query,
 					CancellationToken cancellationToken) =>
@@ -35,7 +35,7 @@ internal static class Extensions
 	public static RouteHandlerBuilder MapPath<TRequest, THandler>(this IEndpointRouteBuilder endpoints, string template)
 		where TRequest : IHttpRequest
 		where THandler : IHttpRequestHandler<TRequest> =>
-		endpoints.MapPatch(template, async(
+		endpoints.MapPatch(template, async (
 					THandler handler,
 					[AsParameters] TRequest query,
 					CancellationToken cancellationToken) =>
@@ -47,7 +47,7 @@ internal static class Extensions
 		string template)
 		where TRequest : IHttpRequest
 		where THandler : IHttpRequestHandler<TRequest> =>
-		endpoints.MapDelete(template, async(
+		endpoints.MapDelete(template, async (
 					THandler handler,
 					[AsParameters] TRequest query,
 					CancellationToken cancellationToken) =>

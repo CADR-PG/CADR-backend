@@ -1,4 +1,4 @@
-﻿using API.Database.Configurations;
+using API.Database.Configurations;
 using API.Modules.Users.Models;
 using Microsoft.EntityFrameworkCore;
 

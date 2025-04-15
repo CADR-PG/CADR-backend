@@ -1,4 +1,4 @@
-﻿using API.Database;
+using API.Database;
 using API.Modules.Users.Infrastructure;
 using API.Modules.Users.Models;
 using API.Modules.Users.Services;
@@ -29,22 +29,22 @@ internal sealed class LoginHandler(
 ) : IHttpRequestHandler<Login>
 {
 	public async Task<IResult> Handle(Login request, CancellationToken cancellationToken)
-{
-	var credentials = request.Body;
-	var passwordHasher = new PasswordHasher<User>();
-
-	var user = await dbContext.Users
-		.FirstOrDefaultAsync(x => x.Email.Trim() == credentials.Email.Trim(), cancellationToken);
-	if (user is null)
-		return Results.NotFound();
-
-	var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash.Trim(), credentials.Password.Trim());
-	if (result == PasswordVerificationResult.Success)
 	{
-		userTokenAuthenticator.SetTokens(user);
-		return Results.Ok(new UserReadModel("Logged in successfully"));
-	}
+		var credentials = request.Body;
+		var passwordHasher = new PasswordHasher<User>();
 
-	return Results.Unauthorized();
-}
+		var user = await dbContext.Users
+			.FirstOrDefaultAsync(x => x.Email.Trim() == credentials.Email.Trim(), cancellationToken);
+		if (user is null)
+			return Results.NotFound();
+
+		var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash.Trim(), credentials.Password.Trim());
+		if (result == PasswordVerificationResult.Success)
+		{
+			userTokenAuthenticator.SetTokens(user);
+			return Results.Ok(new UserReadModel("Logged in successfully"));
+		}
+
+		return Results.Unauthorized();
+	}
 }

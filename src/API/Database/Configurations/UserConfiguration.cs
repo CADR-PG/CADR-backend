@@ -1,4 +1,4 @@
-﻿using API.Modules.Users.Models;
+using API.Modules.Users.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

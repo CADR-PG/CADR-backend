@@ -1,4 +1,4 @@
-﻿using API.Database;
+using API.Database;
 using API.Modules.Users.Infrastructure;
 using API.Modules.Users.Models;
 using API.Modules.Users.Services;
@@ -31,18 +31,18 @@ internal sealed class RefreshHandler(
 ) : IHttpRequestHandler<RefreshToken>
 {
 	public async Task<IResult> Handle(RefreshToken request, CancellationToken cancellationToken)
-{
-	var handler = new JwtSecurityTokenHandler();
-	var jwtSecurityToken = handler.ReadJwtToken(userTokenAuthenticator.GetToken());
-	var userId = jwtSecurityToken.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
-	var user = await dbContext.Users
-		.FirstOrDefaultAsync(x => x.Id.ToString() == userId, cancellationToken);
-	if (user is null)
-		return Results.NotFound();
+	{
+		var handler = new JwtSecurityTokenHandler();
+		var jwtSecurityToken = handler.ReadJwtToken(userTokenAuthenticator.GetToken());
+		var userId = jwtSecurityToken.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
+		var user = await dbContext.Users
+			.FirstOrDefaultAsync(x => x.Id.ToString() == userId, cancellationToken);
+		if (user is null)
+			return Results.NotFound();
 
-	userTokenAuthenticator.ClearTokens();
-	userTokenAuthenticator.SetTokens(user);
+		userTokenAuthenticator.ClearTokens();
+		userTokenAuthenticator.SetTokens(user);
 
-	return Results.Ok(new RefreshReadModel("Refreshed tokens"));
-}
+		return Results.Ok(new RefreshReadModel("Refreshed tokens"));
+	}
 }

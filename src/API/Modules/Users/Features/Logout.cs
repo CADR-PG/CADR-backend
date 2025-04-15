@@ -1,4 +1,4 @@
-﻿using API.Database;
+using API.Database;
 using API.Modules.Users.Models;
 using API.Modules.Users.Services;
 using API.Shared.Endpoints;
@@ -25,9 +25,9 @@ internal sealed class LogoutHandler(
 ) : IHttpRequestHandler<Logout>
 {
 	public async Task<IResult> Handle(Logout request, CancellationToken cancellationToken)
-{
-	await Task.CompletedTask;
-	userTokenAuthenticator.ClearTokens();
-	return Results.Ok(new LogoutReadModel("Logged out successfully"));
-}
+	{
+		await Task.CompletedTask;
+		userTokenAuthenticator.ClearTokens();
+		return Results.Ok(new LogoutReadModel("Logged out successfully"));
+	}
 }
