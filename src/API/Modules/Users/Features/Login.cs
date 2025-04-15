@@ -15,7 +15,7 @@ internal record Login([FromBody] Login.Credentials Body) : IHttpRequest
 	internal record Credentials(string Email, string Password);
 }
 
-internal record UserReadModel(string response);
+internal record UserReadModel(string Response);
 
 
 internal sealed class LoginEndpoint : IEndpoint
