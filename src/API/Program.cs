@@ -1,6 +1,6 @@
 using API.Database;
 using API.Modules;
-using API.Modules.Users.Infrastructure;
+using API.Modules.Users.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -11,13 +11,12 @@ var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
 var connectonString = builder.Configuration.GetConnectionString("Database")
-		?? throw new InvalidOperationException("Connection string" + "'Database' not found.");
+		?? throw new InvalidOperationException("Connection string" + "'DefaultConnection' not found.");
 builder.Services.AddDbContext<CADRDbContext>(options =>
-{
-	options.UseNpgsql(connectonString);
-});
-builder.Services.AddSingleton<TokenProvider>();
-builder.Services.AddHttpContextAccessor();
+	options.UseNpgsql(connectonString));
+configuration.AddUserSecrets<Program>();
+builder.Services.Configure<RefreshTokenOptions>(configuration.GetSection("RefreshToken"));
+builder.Services.Configure<JwtOptions>(configuration.GetSection("Jwt"));
 
 builder.Services.AddAuthentication(options =>
 {

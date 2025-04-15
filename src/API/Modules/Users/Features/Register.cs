@@ -1,12 +1,14 @@
 using API.Database;
 using API.Modules.Users.Models;
 using API.Shared.Endpoints;
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Modules.Users.Features;
 
-internal record Registration([FromBody] Registration.Credentials Body) : IHttpRequest
+internal record Register([FromBody] Register.Credentials Body) : IHttpRequest
 {
 	internal record Credentials(
 		string FirstName, string LastName,
@@ -14,23 +16,23 @@ internal record Registration([FromBody] Registration.Credentials Body) : IHttpRe
 		string PhoneNumber);
 };
 
-internal record RegistrationReadModel(string response);
+internal record RegisterReadModel(string response);
 
-internal sealed class RegistrationEndpoint : IEndpoint
+internal sealed class RegisterEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) =>
-		endpoints.MapPost<Registration, RegistrationHandler>("/register");
+		endpoints.MapPost<Register, RegisterHandler>("/register");
 }
 
-internal sealed class RegistrationHandler(
-	CADRDbContext dbContext
-) : IHttpRequestHandler<Registration>
+internal sealed class RegisterHandler(
+	CADRDbContext dbContext, IValidator<User> validator) : IHttpRequestHandler<Register>
 {
-	public async Task<IResult> Handle(Registration request, CancellationToken cancellationToken)
+	public async Task<IResult> Handle(Register request, CancellationToken cancellationToken)
 	{
 		var credentials = request.Body;
 
 		var passwordHasher = new PasswordHasher<User>();
+
 		var user = new User
 		{
 			FirstName = credentials.FirstName.Trim(),
@@ -39,9 +41,14 @@ internal sealed class RegistrationHandler(
 			PhoneNumber = credentials.PhoneNumber.Trim(),
 			PasswordHash = credentials.Password.Trim(),
 		};
+
+		ValidationResult validationResult = await validator.ValidateAsync(user, cancellationToken);
+		if (!validationResult.IsValid)
+			return Results.ValidationProblem(validationResult.ToDictionary());
+
 		user.PasswordHash = passwordHasher.HashPassword(user, credentials.Password);
 		dbContext.Users.Add(user);
 		await dbContext.SaveChangesAsync(cancellationToken);
-		return Results.Ok(new RegistrationReadModel("Registered successfully"));
+		return Results.Ok(new RegisterReadModel("Registered successfully"));
 	}
 }

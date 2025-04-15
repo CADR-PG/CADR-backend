@@ -1,6 +1,7 @@
 using API.Database;
 using API.Modules.Users.Infrastructure;
 using API.Modules.Users.Models;
+using API.Modules.Users.Services;
 using API.Shared.Endpoints;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -14,7 +15,7 @@ internal record Login([FromBody] Login.Credentials Body) : IHttpRequest
 	internal record Credentials(string Email, string Password);
 }
 
-internal record UserReadModel(string token);
+internal record UserReadModel(string Response);
 
 
 internal sealed class LoginEndpoint : IEndpoint
@@ -24,7 +25,7 @@ internal sealed class LoginEndpoint : IEndpoint
 }
 
 internal sealed class LoginHandler(
-	CADRDbContext dbContext, TokenProvider tokenProvider, IHttpContextAccessor httpContextAccessor
+	CADRDbContext dbContext, UserTokenAuthenticator userTokenAuthenticator
 ) : IHttpRequestHandler<Login>
 {
 	public async Task<IResult> Handle(Login request, CancellationToken cancellationToken)
@@ -40,20 +41,8 @@ internal sealed class LoginHandler(
 		var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash.Trim(), credentials.Password.Trim());
 		if (result == PasswordVerificationResult.Success)
 		{
-			var token = tokenProvider.Create(user);
-
-			var cookieOptions = new CookieOptions
-			{
-				HttpOnly = true,
-				Secure = true,
-				SameSite = SameSiteMode.Strict,
-				Expires = DateTime.UtcNow.AddHours(1)
-			};
-
-			httpContextAccessor.HttpContext!.Response.Cookies.Append("jwt", token, cookieOptions);
-
-			var response = Results.Ok(new UserReadModel(token));
-			return response;
+			userTokenAuthenticator.SetTokens(user);
+			return Results.Ok(new UserReadModel("Logged in successfully"));
 		}
 
 		return Results.Unauthorized();
