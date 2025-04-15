@@ -15,6 +15,7 @@ var connectonString = builder.Configuration.GetConnectionString("Database")
 builder.Services.AddDbContext<CADRDbContext>(options =>
 	options.UseNpgsql(connectonString));
 builder.Services.AddHttpContextAccessor();
+configuration.AddUserSecrets<Program>();
 builder.Services.Configure<RefreshTokenOptions>(configuration.GetSection("RefreshToken"));
 builder.Services.Configure<JwtOptions>(configuration.GetSection("Jwt"));
 
