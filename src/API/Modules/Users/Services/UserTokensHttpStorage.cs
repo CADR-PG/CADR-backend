@@ -15,12 +15,18 @@ internal class UserTokensHttpStorage(IHttpContextAccessor httpContextAccessor)
 
 		var accessTokenCookieOptions = new CookieOptions
 		{
-			HttpOnly = true, Secure = true, SameSite = SameSiteMode.Strict, Expires = accessToken.ExpiresAt,
+			HttpOnly = true,
+			Secure = true,
+			SameSite = SameSiteMode.Strict,
+			Expires = accessToken.ExpiresAt,
 		};
 
 		var refreshTokenCookieOptions = new CookieOptions
 		{
-			HttpOnly = true, Secure = true, SameSite = SameSiteMode.Strict, Expires = refreshToken.ExpiresAt,
+			HttpOnly = true,
+			Secure = true,
+			SameSite = SameSiteMode.Strict,
+			Expires = refreshToken.ExpiresAt,
 		};
 
 		Clear();

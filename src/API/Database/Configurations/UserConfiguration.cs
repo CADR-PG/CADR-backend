@@ -1,4 +1,4 @@
-﻿using API.Modules.Users.Entities;
+using API.Modules.Users.Entities;
 using API.Modules.Users.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;

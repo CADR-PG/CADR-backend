@@ -26,7 +26,7 @@ internal sealed class RefreshHandler(
 
 	public async Task<IResult> Handle(Refresh request, CancellationToken cancellationToken)
 	{
-		#pragma warning disable S1135
+#pragma warning disable S1135
 		// TODO MOVE TO DB
 		var refreshToken = userTokensHttpStorage.GetRefreshToken();
 		if (refreshToken is null) return Results.Unauthorized();

@@ -1,4 +1,4 @@
-﻿using API.Modules.Users.Services;
+using API.Modules.Users.Services;
 using API.Shared.Endpoints;
 
 namespace API.Modules.Users.Features;
