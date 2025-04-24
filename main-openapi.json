@@ -11,6 +11,7 @@
           "API"
         ],
         "summary": "Login",
+        "description": "Register a user with name, email and password",
         "requestBody": {
           "content": {
             "application/json": {
@@ -23,7 +24,14 @@
         },
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserReadModel"
+                }
+              }
+            }
           }
         }
       }
@@ -33,7 +41,7 @@
         "tags": [
           "API"
         ],
-        "summary": "Registration",
+        "summary": "Register",
         "requestBody": {
           "content": {
             "application/json": {
@@ -45,6 +53,26 @@
           "required": true
         },
         "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/refresh": {
+      "post": {
+        "tags": [
+          "API"
+        ],
+        "summary": "Refresh",
+        "responses": {
           "200": {
             "description": "OK"
           }
@@ -52,7 +80,7 @@
       }
     },
     "/users/logout": {
-      "delete": {
+      "post": {
         "tags": [
           "API"
         ],
@@ -86,9 +114,8 @@
         "required": [
           "firstName",
           "lastName",
-          "email",
           "password",
-          "phoneNumber"
+          "email"
         ],
         "type": "object",
         "properties": {
@@ -98,13 +125,61 @@
           "lastName": {
             "type": "string"
           },
-          "email": {
-            "type": "string"
-          },
           "password": {
             "type": "string"
           },
-          "phoneNumber": {
+          "email": {
+            "type": "string"
+          }
+        }
+      },
+      "HttpValidationProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "UserReadModel": {
+        "required": [
+          "id",
+          "email"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
             "type": "string"
           }
         }
