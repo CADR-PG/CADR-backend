@@ -1,5 +1,5 @@
 using API.Database.Configurations;
-using API.Modules.Users.Models;
+using API.Modules.Users.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Database;
