@@ -1,10 +1,12 @@
 using API.Database;
-using API.Modules.Users.Entities;
-using API.Modules.Users.ReadModels;
+using API.Modules.Users.Infrastructure;
+using API.Modules.Users.Models;
 using API.Modules.Users.Services;
 using API.Shared.Endpoints;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
 
 namespace API.Modules.Users.Features;
 
@@ -13,32 +15,36 @@ internal record Login([FromBody] Login.Credentials Body) : IHttpRequest
 	internal record Credentials(string Email, string Password);
 }
 
+internal record UserReadModel(string Response);
+
+
 internal sealed class LoginEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints)
-		=> endpoints.MapPost<Login, LoginHandler>("login")
-			.Produces<UserReadModel>()
-			.WithDescription("Register a user with name, email and password");
+		=> endpoints.MapPost<Login, LoginHandler>("login");
 }
 
 internal sealed class LoginHandler(
-	CADRDbContext dbContext,
-	IUserTokensProvider userTokensProvider,
-	UserTokensHttpStorage userTokensHttpStorage
+	CADRDbContext dbContext, UserTokenAuthenticator userTokenAuthenticator
 ) : IHttpRequestHandler<Login>
 {
 	public async Task<IResult> Handle(Login request, CancellationToken cancellationToken)
 	{
-		var (email, password) = request.Body;
+		var credentials = request.Body;
+		var passwordHasher = new PasswordHasher<User>();
 
-		var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Email.ToLower() == email.Trim(), cancellationToken);
-		if (user is null || !HashingService.IsValid(password, user.HashedPassword))
-			return Results.Problem(statusCode: 400, title: "InvalidLoginCredentials", detail: "Invalid email or password");
+		var user = await dbContext.Users
+			.FirstOrDefaultAsync(x => x.Email.Trim() == credentials.Email.Trim(), cancellationToken);
+		if (user is null)
+			return Results.NotFound();
 
-		var tokens = userTokensProvider.Generate(user);
-		userTokensHttpStorage.Set(tokens);
+		var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash.Trim(), credentials.Password.Trim());
+		if (result == PasswordVerificationResult.Success)
+		{
+			userTokenAuthenticator.SetTokens(user);
+			return Results.Ok(new UserReadModel("Logged in successfully"));
+		}
 
-		var readModel = UserReadModel.From(user);
-		return Results.Ok(readModel);
+		return Results.Unauthorized();
 	}
 }

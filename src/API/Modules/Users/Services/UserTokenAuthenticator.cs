@@ -1,4 +1,4 @@
-﻿using API.Modules.Users.Infrastructure;
+using API.Modules.Users.Infrastructure;
 using API.Modules.Users.Models;
 using API.Modules.Users.Options;
 using Microsoft.Extensions.Options;

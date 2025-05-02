@@ -1,4 +1,4 @@
-﻿namespace API.Modules.Users.Options;
+namespace API.Modules.Users.Options;
 
 internal class RefreshTokenOptions
 {

@@ -1,75 +1,54 @@
 using API.Database;
-using API.Modules.Users.Entities;
-using API.Modules.Users.Services;
+using API.Modules.Users.Models;
 using API.Shared.Endpoints;
 using FluentValidation;
+using FluentValidation.Results;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace API.Modules.Users.Features;
 
 internal record Register([FromBody] Register.Credentials Body) : IHttpRequest
 {
-	internal record Credentials(string FirstName, string LastName, string Email, string Password)
-	{
-		public string Email { get; } = Email.ToLower();
-	}
+	internal record Credentials(
+		string FirstName, string LastName,
+		string Email, string Password,
+		string PhoneNumber);
 };
+
+internal record RegisterReadModel(string response);
 
 internal sealed class RegisterEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) =>
-		endpoints.MapPost<Register, RegisterHandler>("/register")
-			.ProducesProblem(400)
-			.ProducesValidationProblem();
+		endpoints.MapPost<Register, RegisterHandler>("/register");
 }
 
 internal sealed class RegisterHandler(
-	CADRDbContext dbContext
-) : IHttpRequestHandler<Register>
+	CADRDbContext dbContext, IValidator<User> validator) : IHttpRequestHandler<Register>
 {
 	public async Task<IResult> Handle(Register request, CancellationToken cancellationToken)
 	{
-		var (firstName, lastName, email, password) = request.Body;
+		var credentials = request.Body;
 
-		var existingUser = await dbContext.Users.FirstOrDefaultAsync(u => email == u.Email.ToLower(), cancellationToken);
-		if (existingUser is not null) return Results.Problem(statusCode: 400, title: "EmailAlreadyExists", detail: $"A user with email `{email}` already exists.");
+		var passwordHasher = new PasswordHasher<User>();
 
 		var user = new User
 		{
-			Id = Guid.NewGuid(),
-			FirstName = firstName,
-			LastName = lastName,
-			Email = email,
-			HashedPassword = HashingService.Hash(password),
+			FirstName = credentials.FirstName.Trim(),
+			LastName = credentials.LastName.Trim(),
+			Email = credentials.Email.Trim(),
+			PhoneNumber = credentials.PhoneNumber.Trim(),
+			PasswordHash = credentials.Password.Trim(),
 		};
 
-		await dbContext.Users.AddAsync(user, cancellationToken);
+		ValidationResult validationResult = await validator.ValidateAsync(user, cancellationToken);
+		if (!validationResult.IsValid)
+			return Results.ValidationProblem(validationResult.ToDictionary());
+
+		user.PasswordHash = passwordHasher.HashPassword(user, credentials.Password);
+		dbContext.Users.Add(user);
 		await dbContext.SaveChangesAsync(cancellationToken);
-
-		return Results.NoContent();
-	}
-}
-
-internal sealed class RegisterValidator : AbstractValidator<Register>
-{
-	public RegisterValidator()
-	{
-		RuleFor(x => x.Body.FirstName)
-			.NotEmpty()
-			.WithMessage("First name is required")
-			.MaximumLength(50)
-			.WithMessage("First name must be less than 50 characters");
-		RuleFor(x => x.Body.LastName)
-			.NotEmpty()
-			.WithMessage("Last name is required")
-			.MaximumLength(50)
-			.WithMessage("Last name must be less than 50 characters");
-		RuleFor(x => x.Body.Email)
-			.NotEmpty().WithMessage("Email is required")
-			.EmailAddress().WithMessage("Email is not valid");
-		RuleFor(x => x.Body.Password)
-			.NotEmpty().WithMessage("Password is required")
-			.MinimumLength(8).WithMessage("Password must be at least 8 characters long");
+		return Results.Ok(new RegisterReadModel("Registered successfully"));
 	}
 }
