@@ -1,48 +1,43 @@
-﻿using API.Database;
-using API.Modules.Users.Infrastructure;
-using API.Modules.Users.Models;
+using API.Database;
 using API.Modules.Users.Services;
+using API.Modules.Users.ValueObjects;
 using API.Shared.Endpoints;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.JsonWebTokens;
 using System.IdentityModel.Tokens.Jwt;
-
 
 namespace API.Modules.Users.Features;
 
-
-internal record RefreshToken() : IHttpRequest
-{
-
-};
-
-internal record RefreshReadModel(string response);
+internal record Refresh : IHttpRequest;
 
 internal sealed class RefreshEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints)
-		=> endpoints.MapPost<RefreshToken, RefreshHandler>("refresh");
+		=> endpoints.MapPost<Refresh, RefreshHandler>("/refresh");
 }
 
 internal sealed class RefreshHandler(
 	CADRDbContext dbContext,
-	UserTokenAuthenticator userTokenAuthenticator
-) : IHttpRequestHandler<RefreshToken>
+	IUserTokensProvider userTokensProvider,
+	UserTokensHttpStorage userTokensHttpStorage
+) : IHttpRequestHandler<Refresh>
 {
-	public async Task<IResult> Handle(RefreshToken request, CancellationToken cancellationToken)
-{
-	var handler = new JwtSecurityTokenHandler();
-	var jwtSecurityToken = handler.ReadJwtToken(userTokenAuthenticator.GetToken());
-	var userId = jwtSecurityToken.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
-	var user = await dbContext.Users
-		.FirstOrDefaultAsync(x => x.Id.ToString() == userId, cancellationToken);
-	if (user is null)
-		return Results.NotFound();
 
-	userTokenAuthenticator.ClearTokens();
-	userTokenAuthenticator.SetTokens(user);
+	private static readonly JwtSecurityTokenHandler JwtSecurityTokenHandler = new();
 
-	return Results.Ok(new RefreshReadModel("Refreshed tokens"));
-}
+	public async Task<IResult> Handle(Refresh request, CancellationToken cancellationToken)
+	{
+#pragma warning disable S1135
+		// TODO MOVE TO DB
+		var refreshToken = userTokensHttpStorage.GetRefreshToken();
+		if (refreshToken is null) return Results.Unauthorized();
+		var jwtSecurityToken = JwtSecurityTokenHandler.ReadJwtToken(refreshToken);
+		var userId = new UserId(Guid.Parse(jwtSecurityToken.Claims.First(x => x.Type == JwtRegisteredClaimNames.Sub).Value));
+		var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == userId, cancellationToken);
+		if (user is null) return Results.Problem(statusCode: 400, title: "InvalidRefreshToken", detail: $"Refresh token `{refreshToken}` contains invalid credentials.");
+
+		var tokens = userTokensProvider.Generate(user);
+		userTokensHttpStorage.Set(tokens);
+
+		return Results.NoContent();
+	}
 }

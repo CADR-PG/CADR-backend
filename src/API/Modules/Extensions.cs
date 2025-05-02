@@ -1,6 +1,7 @@
 ﻿using API.Modules.Users;
 
 
+
 namespace API.Modules;
 
 internal static class Extensions

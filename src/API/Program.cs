@@ -1,38 +1,20 @@
-﻿using API.Database;
+using API.Database;
 using API.Modules;
-using API.Modules.Users.Infrastructure;
-using API.Modules.Users.Options;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using API.Modules.Users;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
-var connectonString = builder.Configuration.GetConnectionString("Database")
+builder.Services.AddHttpContextAccessor();
+var connectionString = builder.Configuration.GetConnectionString("Database")
 		?? throw new InvalidOperationException("Connection string" + "'DefaultConnection' not found.");
 builder.Services.AddDbContext<CADRDbContext>(options =>
-	options.UseNpgsql(connectonString));
-configuration.AddUserSecrets<Program>();
-builder.Services.Configure<RefreshTokenOptions>(configuration.GetSection("RefreshToken"));
-builder.Services.Configure<JwtOptions>(configuration.GetSection("Jwt"));
+	options.UseNpgsql(connectionString));
+builder.Services.AddScoped<CADRDbContext>();
 
-builder.Services.AddAuthentication(options =>
-{
-	options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-	options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(options =>
-{
-	options.TokenValidationParameters = new TokenValidationParameters
-	{
-		ValidateIssuerSigningKey = true,
-		IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Secret"]!)),
-		ValidateIssuer = true,
-		ValidateAudience = true,
-	};
-});
+builder.Services.AddAuthentication().AddJwtCookie(configuration);
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddModules(configuration);
