@@ -1,10 +1,12 @@
 using API.Modules.Users.Entities;
 using API.Modules.Users.Settings;
 using API.Modules.Users.ValueObjects;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using JwtRegisteredClaimNames = System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames;
 
@@ -43,12 +45,19 @@ internal sealed class JwtProvider(IOptions<UserTokensSettings> jwtSettings) : IU
 		};
 
 		var accessToken = JsonWebTokenHandler.CreateToken(tokenDescriptor);
-		return new UserToken(accessToken, expiresAt);
+		return new UserToken(accessToken, expiresAt, null);
 	}
 
 	private UserToken GenerateRefreshToken(User user)
 	{
 		var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Settings.RefreshSecret));
+		var randomBytes = new byte[64];
+		using (var rng = RandomNumberGenerator.Create())
+		{
+			rng.GetBytes(randomBytes);
+		}
+
+		var code = Convert.ToBase64String(randomBytes);
 
 		var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
@@ -58,6 +67,7 @@ internal sealed class JwtProvider(IOptions<UserTokensSettings> jwtSettings) : IU
 			Subject = new ClaimsIdentity(
 			[
 				new Claim(JwtRegisteredClaimNames.Sub, user.Id.Value.ToString()),
+				new Claim("code", code)
 			]),
 			Expires = expiresAt,
 			SigningCredentials = credentials,
@@ -65,7 +75,16 @@ internal sealed class JwtProvider(IOptions<UserTokensSettings> jwtSettings) : IU
 			Audience = Settings.Audience,
 		};
 
+		var hashedRefreshToken = new RefreshToken()
+		{
+			Id = Guid.NewGuid(),
+			HashedCode = code,
+			CreatedAt = DateTime.UtcNow,
+			ExpiresAt = expiresAt,
+			UserId = user.Id
+		};
+
 		var refreshToken = JsonWebTokenHandler.CreateToken(tokenDescriptor);
-		return new UserToken(refreshToken, expiresAt);
+		return new UserToken(refreshToken, expiresAt, hashedRefreshToken);
 	}
 }
