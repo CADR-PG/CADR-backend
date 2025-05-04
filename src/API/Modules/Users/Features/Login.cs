@@ -38,7 +38,7 @@ internal sealed class LoginHandler(
 		var tokens = userTokensProvider.Generate(user);
 		userTokensHttpStorage.Set(tokens);
 
-		await dbContext.RefreshTokens.AddAsync(tokens.RefreshToken.RefreshToken!, cancellationToken);
+		user.AddRefreshToken(tokens.RefreshToken.RefreshToken!);
 		await dbContext.SaveChangesAsync(cancellationToken);
 
 		var readModel = UserReadModel.From(user);

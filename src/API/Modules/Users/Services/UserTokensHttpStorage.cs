@@ -1,4 +1,6 @@
+using API.Database;
 using API.Modules.Users.ValueObjects;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace API.Modules.Users.Services;
 
