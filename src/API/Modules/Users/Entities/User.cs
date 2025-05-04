@@ -11,9 +11,4 @@ internal class User
 	public required string Email { get; set; }
 	public required string HashedPassword { get; set; }
 	public required List<RefreshToken> RefreshTokens { get; set; }
-
-	public void AddRefreshTokensToList(RefreshToken refreshToken)
-	{
-		RefreshTokens.Add(refreshToken);
-	}
 }
