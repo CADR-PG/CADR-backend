@@ -7,6 +7,7 @@ namespace API.Database;
 internal class CADRDbContext : DbContext
 {
 	public required DbSet<User> Users { get; init; }
+	public required DbSet<RefreshToken> RefreshTokens { get; init; }
 
 	public CADRDbContext(DbContextOptions<CADRDbContext> options) : base(options)
 	{

@@ -42,6 +42,7 @@ internal sealed class RegisterHandler(
 			LastName = lastName,
 			Email = email,
 			HashedPassword = HashingService.Hash(password),
+			RefreshTokens = new List<RefreshToken>()
 		};
 
 		await dbContext.Users.AddAsync(user, cancellationToken);

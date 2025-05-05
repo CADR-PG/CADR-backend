@@ -31,12 +31,20 @@ internal sealed class RefreshHandler(
 		var refreshToken = userTokensHttpStorage.GetRefreshToken();
 		if (refreshToken is null) return Results.Unauthorized();
 		var jwtSecurityToken = JwtSecurityTokenHandler.ReadJwtToken(refreshToken);
+		var codeFromRefreshToken = jwtSecurityToken.Claims.First(x => x.Type == "code").Value;
 		var userId = new UserId(Guid.Parse(jwtSecurityToken.Claims.First(x => x.Type == JwtRegisteredClaimNames.Sub).Value));
-		var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == userId, cancellationToken);
+		var user = await dbContext.Users.Include(u => u.RefreshTokens).FirstOrDefaultAsync(x => x.Id == userId, cancellationToken);
+		var token = user?.RefreshTokens.FirstOrDefault(x => HashingService.IsValid(x.HashedCode, codeFromRefreshToken));
+
+		if (token is not null) user?.RefreshTokens.Remove(token);
+		await dbContext.SaveChangesAsync(cancellationToken);
 		if (user is null) return Results.Problem(statusCode: 400, title: "InvalidRefreshToken", detail: $"Refresh token `{refreshToken}` contains invalid credentials.");
 
 		var tokens = userTokensProvider.Generate(user);
 		userTokensHttpStorage.Set(tokens);
+
+		user.AddRefreshToken(tokens.RefreshToken.RefreshToken!);
+		await dbContext.SaveChangesAsync(cancellationToken);
 
 		return Results.NoContent();
 	}
