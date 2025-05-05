@@ -25,7 +25,7 @@ internal sealed class LogoutHandler(
 		var refreshToken = userTokensHttpStorage.GetRefreshToken();
 		if (refreshToken is null)
 		{
-			return Results.BadRequest("Brak tokenu odświeżania");
+			return Results.Problem(statusCode: 404, title: "RefreshTokenNotFound", detail: "Refresh token is not provided.");
 		}
 
 		var jwtSecurityToken = new JwtSecurityTokenHandler().ReadJwtToken(refreshToken);
