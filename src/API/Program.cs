@@ -33,7 +33,7 @@ builder.Services.AddOpenApi();
 var app = builder.Build();
 
 app.MapOpenApi();
-app.MapScalarApiReference(options => options
+app.MapScalarApiReference("/docs", options => options
 	.WithTitle("CADR API")
 	.WithTheme(ScalarTheme.Default)
 	.WithDarkMode(true)
