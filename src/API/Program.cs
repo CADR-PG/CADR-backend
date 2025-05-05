@@ -1,10 +1,10 @@
 using API.Database;
 using API.Modules;
 using API.Modules.Users;
-using Microsoft.EntityFrameworkCore;
-using Scalar.AspNetCore;
 using Azure.Identity;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
+using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
