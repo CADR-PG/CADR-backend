@@ -1,0 +1,56 @@
+using FluentValidation;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.EntityFrameworkCore;
+using Shared.Endpoints;
+using Users.Core.Database;
+using Users.Core.Entities;
+using Users.Core.Services;
+
+namespace Users.Core.Features;
+
+
+internal sealed record Register([FromBody] Register.Credentials Body) : IHttpRequest
+{
+	internal sealed record Credentials(string FirstName, string LastName, string Email, string Password);
+}
+
+internal sealed class RegisterEndpoint : IEndpoint
+{
+	public static void Register(IEndpointRouteBuilder endpoints) =>
+		endpoints.MapPost<Register, RegisterHandler>("/register")
+			.ProducesProblem(400)
+			.ProducesValidationProblem();
+}
+
+internal sealed class RegisterHandler(
+	UsersDbContext dbContext
+) : IHttpRequestHandler<Register>
+{
+	public async Task<IResult> Handle(Register request, CancellationToken cancellationToken)
+	{
+		var (firstName, lastName, email, password) = request.Body;
+
+		var existingUser = await dbContext.Users.FirstOrDefaultAsync(u => email == u.Email, cancellationToken);
+		if (existingUser is not null)
+			return Results.Problem(statusCode: 400, title: "EmailAlreadyExists",
+				detail: $"A user with email `{email}` already exists.");
+
+		var user = new User
+		{
+			Id = Guid.NewGuid(),
+			FirstName = firstName,
+			LastName = lastName,
+			Email = email,
+			HashedPassword = HashingService.Hash(password),
+			LastLoggedInAt = DateTime.UtcNow,
+			RefreshTokens = []
+		};
+
+		await dbContext.Users.AddAsync(user, cancellationToken);
+		await dbContext.SaveChangesAsync(cancellationToken);
+
+		return Results.NoContent();
+	}
+}
