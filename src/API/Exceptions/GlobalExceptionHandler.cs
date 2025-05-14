@@ -5,17 +5,17 @@ namespace API.Exceptions;
 
 internal sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
 {
-	public ErrorResult InternalServerError { get; } = new("InternalServerError", "Please contact the application administrator.", 500);
+	private ErrorResult InternalServerError { get; } = new("InternalServerError", "Please contact the application administrator.", 500);
 
 	public async ValueTask<bool> TryHandleAsync(
-        HttpContext httpContext,
-        Exception exception,
-        CancellationToken cancellationToken)
-    {
-        logger.LogError(
-            exception, "Exception occurred: {Message}", exception.Message);
+		HttpContext httpContext,
+		Exception exception,
+		CancellationToken cancellationToken)
+	{
+		logger.LogError(
+			exception, "Exception occurred: {Message}", exception.Message);
 
-        await InternalServerError.ExecuteAsync(httpContext);
-        return true;
-    }
+		await InternalServerError.ExecuteAsync(httpContext);
+		return true;
+	}
 }

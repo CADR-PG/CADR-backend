@@ -2,7 +2,7 @@ using Shared.Endpoints.Results;
 
 namespace Shared.Endpoints;
 
-public static class Errors
+public static class SharedErrors
 {
 	public static class Types
 	{

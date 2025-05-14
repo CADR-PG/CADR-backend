@@ -22,7 +22,7 @@ internal sealed class LoginEndpoint : IEndpoint
 	public static void Register(IEndpointRouteBuilder endpoints)
 		=> endpoints.MapPost<Login, LoginHandler>("login")
 			.Produces<UserReadModel>()
-			.ProducesError(400, $"`ValidationError` with details or `{nameof(Errors.InvalidLoginCredentialsError)}`")
+			.ProducesError(400, $"`{nameof(Shared.Endpoints.SharedErrors.ValidationError)}` with details or `{nameof(Errors.InvalidLoginCredentialsError)}`")
 			.WithDescription($"Login with email and password. Returns `{nameof(UserReadModel)}` on success.")
 			.AddValidation<Login.Credentials>();
 }

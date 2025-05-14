@@ -23,7 +23,7 @@ internal sealed class RegisterEndpoint : IEndpoint
 	public static void Register(IEndpointRouteBuilder endpoints) =>
 		endpoints.MapPost<Register, RegisterHandler>("/register")
 			.Produces(204)
-			.ProducesError(400, $"`ValidationError` with details or `{nameof(Errors.EmailAlreadyTakenError)}`")
+			.ProducesError(400, $"`{SharedErrors.Types.ValidationError}` with details or `{nameof(Errors.EmailAlreadyTakenError)}`")
 			.WithDescription("Register new user. User will receive an email with activation link.")
 			.AddValidation<Register.Credentials>();
 }

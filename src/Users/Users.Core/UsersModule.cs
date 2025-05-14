@@ -47,7 +47,7 @@ public class UsersModule : IModule
 				OnChallenge = context =>
 				{
 					context.HandleResponse();
-					return Shared.Endpoints.Errors.UnauthorizedError.ExecuteAsync(context.HttpContext);
+					return Shared.Endpoints.SharedErrors.UnauthorizedError.ExecuteAsync(context.HttpContext);
 				},
 			};
 		});

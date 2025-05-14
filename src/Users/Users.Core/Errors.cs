@@ -6,5 +6,5 @@ public static class Errors
 {
 	public static ErrorResult InvalidLoginCredentialsError => new(nameof(InvalidLoginCredentialsError), "Invalid email or password.");
 	public static ErrorResult InvalidRefreshCredentialsError => new(nameof(InvalidRefreshCredentialsError), "Missing or invalid refresh token.");
-	public static ErrorResult EmailAlreadyTakenError => new(nameof(EmailAlreadyTakenError), $"The email is already associated with another user.");
+	public static ErrorResult EmailAlreadyTakenError => new(nameof(EmailAlreadyTakenError), "The email is already associated with another user.");
 }

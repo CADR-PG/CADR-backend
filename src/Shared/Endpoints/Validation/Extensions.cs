@@ -63,7 +63,7 @@ public static class Extensions
 					.GroupBy(x => x.PropertyName)
 					.Select(x => new ErrorResultDetail(x.Key, x.Select(y => y.ErrorMessage)));
 
-				return Errors.ValidationError(errorDetails);
+				return SharedErrors.ValidationError(errorDetails);
 			};
 		});
 }
