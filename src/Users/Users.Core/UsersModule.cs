@@ -27,6 +27,7 @@ public class UsersModule : IModule
 		services.AddScoped<RegisterHandler>();
 		services.AddScoped<LogoutHandler>();
 		services.AddScoped<RefreshHandler>();
+		services.AddScoped<GetCurrentUserHandler>();
 		services.AddSingleton<ITokenProvider, JwtTokenProvider>();
 
 		var jwtSettings = configuration.GetSettings<JwtSettings>();
@@ -40,9 +41,15 @@ public class UsersModule : IModule
 				{
 					context.Token = context.Request.Query[CookieTokenStorage.AccessTokenCookieKey];
 					return Task.CompletedTask;
-				}
+				},
+				OnChallenge = context =>
+				{
+					context.HandleResponse();
+					return Shared.Endpoints.Errors.UnauthorizedError.ExecuteAsync(context.HttpContext);
+				},
 			};
 		});
+		services.AddAuthorization();
 	}
 
 	public void MapEndpoints(IEndpointRouteBuilder endpoints)
@@ -50,5 +57,6 @@ public class UsersModule : IModule
 			.Map<LoginEndpoint>()
 			.Map<RegisterEndpoint>()
 			.Map<RefreshEndpoint>()
-			.Map<LogoutEndpoint>();
+			.Map<LogoutEndpoint>()
+			.Map<GetCurrentUserEndpoint>();
 }

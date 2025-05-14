@@ -1,0 +1,14 @@
+using Shared.Endpoints.Results;
+
+namespace Shared.Endpoints;
+
+public static class Errors
+{
+	public static class Types
+	{
+		public const string ValidationError = nameof(ValidationError);
+		public const string UnauthorizedError = nameof(UnauthorizedError);
+	}
+
+	public static ErrorResult UnauthorizedError => new(Types.UnauthorizedError, "Missing or invalid credentials.", 401);
+}

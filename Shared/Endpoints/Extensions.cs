@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 
 namespace Shared.Endpoints;
@@ -10,7 +11,7 @@ public static class Extensions
 		where TRequest : IHttpRequest
 		where THandler : IHttpRequestHandler<TRequest> =>
 		endpoints.MapGet(template, async (
-					THandler handler,
+					[FromServices] THandler handler,
 					[AsParameters] TRequest query,
 					CancellationToken cancellationToken) =>
 				await handler.Handle(query, cancellationToken))
@@ -20,7 +21,7 @@ public static class Extensions
 		where TRequest : IHttpRequest
 		where THandler : IHttpRequestHandler<TRequest> =>
 		endpoints.MapPost(template, async (
-					THandler handler,
+					[FromServices] THandler handler,
 					[AsParameters] TRequest query,
 					CancellationToken cancellationToken) =>
 				await handler.Handle(query, cancellationToken))
@@ -30,7 +31,7 @@ public static class Extensions
 		where TRequest : IHttpRequest
 		where THandler : IHttpRequestHandler<TRequest> =>
 		endpoints.MapPut(template, async (
-					THandler handler,
+					[FromServices] THandler handler,
 					[AsParameters] TRequest query,
 					CancellationToken cancellationToken) =>
 				await handler.Handle(query, cancellationToken))
@@ -40,7 +41,7 @@ public static class Extensions
 		where TRequest : IHttpRequest
 		where THandler : IHttpRequestHandler<TRequest> =>
 		endpoints.MapPatch(template, async (
-					THandler handler,
+					[FromServices] THandler handler,
 					[AsParameters] TRequest query,
 					CancellationToken cancellationToken) =>
 				await handler.Handle(query, cancellationToken))
@@ -52,7 +53,7 @@ public static class Extensions
 		where TRequest : IHttpRequest
 		where THandler : IHttpRequestHandler<TRequest> =>
 		endpoints.MapDelete(template, async (
-					THandler handler,
+					[FromServices] THandler handler,
 					[AsParameters] TRequest query,
 					CancellationToken cancellationToken) =>
 				await handler.Handle(query, cancellationToken))

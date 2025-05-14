@@ -41,6 +41,7 @@ app.UseHttpsRedirection();
 app.MapDocumentation();
 
 app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapEndpoints(applicationContext);
 
