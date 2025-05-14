@@ -17,5 +17,6 @@
     <PackageVersion Include="Microsoft.Extensions.ApiDescription.Server" Version="9.0.3" />
     <PackageVersion Include="Scalar.AspNetCore" Version="2.1.5" />
     <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.7.0.110445" />
+    <PackageVersion Include="Swashbuckle.AspNetCore" Version="8.1.1" />
   </ItemGroup>
 </Project>

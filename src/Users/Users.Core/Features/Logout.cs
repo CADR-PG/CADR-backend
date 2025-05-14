@@ -12,7 +12,9 @@ internal record struct Logout(HttpContext HttpContext) : IHttpRequest;
 internal sealed class LogoutEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) =>
-		endpoints.MapPost<Logout, LogoutHandler>("logout");
+		endpoints.MapPost<Logout, LogoutHandler>("logout")
+			.Produces(204)
+			.WithDescription("Logout current logged in user.");
 }
 
 internal sealed class LogoutHandler(

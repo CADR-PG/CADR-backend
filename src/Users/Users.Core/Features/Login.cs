@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Shared.Endpoints;
+using Shared.Endpoints.Results;
 using Users.Core.Database;
 using Users.Core.ReadModels;
 using Users.Core.Services;
@@ -19,7 +20,8 @@ internal sealed class LoginEndpoint : IEndpoint
 	public static void Register(IEndpointRouteBuilder endpoints)
 		=> endpoints.MapPost<Login, LoginHandler>("login")
 			.Produces<UserReadModel>()
-			.WithDescription("Register a user with name, email and password");
+			.ProducesError(400, $"`ValidationError` with details or `{nameof(Errors.InvalidLoginCredentialsError)}`")
+			.WithDescription($"Login with email and password. Returns `{nameof(UserReadModel)}` on success.");
 }
 
 internal sealed class LoginHandler(
@@ -33,7 +35,7 @@ internal sealed class LoginHandler(
 
 		var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Email == email, cancellationToken);
 		if (user is null || !HashingService.IsValid(password, user.HashedPassword))
-			return Results.Problem(statusCode: 400, title: "InvalidLoginCredentials", detail: "Invalid email or password");
+			return Errors.InvalidLoginCredentialsError;
 
 		var tokens = tokenProvider.Generate(user);
 		request.HttpContext.SetTokenCookies(tokens);

@@ -1,9 +1,9 @@
-using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Shared.Endpoints;
+using Shared.Endpoints.Results;
 using Users.Core.Database;
 using Users.Core.Entities;
 using Users.Core.Services;
@@ -20,8 +20,9 @@ internal sealed class RegisterEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) =>
 		endpoints.MapPost<Register, RegisterHandler>("/register")
-			.ProducesProblem(400)
-			.ProducesValidationProblem();
+			.Produces(204)
+			.ProducesError(400, $"`ValidationError` with details or `{nameof(Errors.EmailAlreadyTakenError)}`")
+			.WithDescription("Register new user. User will receive an email with activation link.");
 }
 
 internal sealed class RegisterHandler(
@@ -33,9 +34,7 @@ internal sealed class RegisterHandler(
 		var (firstName, lastName, email, password) = request.Body;
 
 		var existingUser = await dbContext.Users.FirstOrDefaultAsync(u => email == u.Email, cancellationToken);
-		if (existingUser is not null)
-			return Results.Problem(statusCode: 400, title: "EmailAlreadyExists",
-				detail: $"A user with email `{email}` already exists.");
+		if (existingUser is not null) return Errors.EmailAlreadyTakenError;
 
 		var user = new User
 		{

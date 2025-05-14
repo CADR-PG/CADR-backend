@@ -1,7 +1,9 @@
 using API.Documentation;
+using API.Exceptions;
 using Azure.Identity;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
-using Microsoft.AspNetCore.Mvc;
+using FluentValidation;
+using Microsoft.AspNetCore.Http.Json;
 using Shared;
 using Shared.Modules;
 using Users.Core;
@@ -24,8 +26,15 @@ if (builder.Environment.IsProduction())
 
 builder.RegisterModules(applicationContext);
 builder.Services.AddDocumentation();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+builder.Services.Configure<JsonOptions>(options =>
+{
+});
 
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 app.UseHttpsRedirection();
 

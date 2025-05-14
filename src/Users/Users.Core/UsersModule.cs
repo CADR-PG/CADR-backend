@@ -46,7 +46,7 @@ public class UsersModule : IModule
 	}
 
 	public void MapEndpoints(IEndpointRouteBuilder endpoints)
-		=> endpoints.MapGroup(Name)
+		=> endpoints.MapGroup(Name.ToLowerInvariant())
 			.Map<LoginEndpoint>()
 			.Map<RegisterEndpoint>()
 			.Map<RefreshEndpoint>()
