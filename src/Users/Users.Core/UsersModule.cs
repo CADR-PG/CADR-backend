@@ -1,3 +1,4 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
@@ -22,13 +23,14 @@ public class UsersModule : IModule
 	{
 		var postgreSqlSettings = configuration.GetSettings<PostgreSqlSettings>();
 		services.AddDbContext<UsersDbContext>(options => options.UseNpgsql(postgreSqlSettings.ConnectionString));
-		services.AddSettingsWithOptions<JwtSettings>();
+		services.AddSettingsWithOptions<JwtSettings>(configuration);
 		services.AddScoped<LoginHandler>();
 		services.AddScoped<RegisterHandler>();
 		services.AddScoped<LogoutHandler>();
 		services.AddScoped<RefreshHandler>();
 		services.AddScoped<GetCurrentUserHandler>();
 		services.AddSingleton<ITokenProvider, JwtTokenProvider>();
+		services.AddValidatorsFromAssemblyContaining<UsersModule>(includeInternalTypes: true);
 
 		var jwtSettings = configuration.GetSettings<JwtSettings>();
 

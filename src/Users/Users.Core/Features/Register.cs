@@ -1,9 +1,11 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Shared.Endpoints;
 using Shared.Endpoints.Results;
+using Shared.Endpoints.Validation;
 using Users.Core.Database;
 using Users.Core.Entities;
 using Users.Core.Services;
@@ -22,7 +24,8 @@ internal sealed class RegisterEndpoint : IEndpoint
 		endpoints.MapPost<Register, RegisterHandler>("/register")
 			.Produces(204)
 			.ProducesError(400, $"`ValidationError` with details or `{nameof(Errors.EmailAlreadyTakenError)}`")
-			.WithDescription("Register new user. User will receive an email with activation link.");
+			.WithDescription("Register new user. User will receive an email with activation link.")
+			.AddValidation<Register.Credentials>();
 }
 
 internal sealed class RegisterHandler(
@@ -51,5 +54,16 @@ internal sealed class RegisterHandler(
 		await dbContext.SaveChangesAsync(cancellationToken);
 
 		return Results.NoContent();
+	}
+}
+
+internal sealed class RegisterValidator : AbstractValidator<Register.Credentials>
+{
+	public RegisterValidator()
+	{
+		RuleFor(x => x.Email).NotEmpty().EmailAddress();
+		RuleFor(x => x.FirstName).NotEmpty();
+		RuleFor(x => x.LastName).NotEmpty();
+		RuleFor(x => x.Password).MinimumLength(8);
 	}
 }

@@ -16,4 +16,4 @@ public record ErrorResult(string Type, string Message, [property: JsonIgnore] in
 	}
 }
 
-public record ErrorResultDetail(string Context, string Message);
+public record ErrorResultDetail(string Context, IEnumerable<string> Messages);

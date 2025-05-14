@@ -1,9 +1,11 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Shared.Endpoints;
 using Shared.Endpoints.Results;
+using Shared.Endpoints.Validation;
 using Users.Core.Database;
 using Users.Core.ReadModels;
 using Users.Core.Services;
@@ -21,7 +23,8 @@ internal sealed class LoginEndpoint : IEndpoint
 		=> endpoints.MapPost<Login, LoginHandler>("login")
 			.Produces<UserReadModel>()
 			.ProducesError(400, $"`ValidationError` with details or `{nameof(Errors.InvalidLoginCredentialsError)}`")
-			.WithDescription($"Login with email and password. Returns `{nameof(UserReadModel)}` on success.");
+			.WithDescription($"Login with email and password. Returns `{nameof(UserReadModel)}` on success.")
+			.AddValidation<Login.Credentials>();
 }
 
 internal sealed class LoginHandler(
@@ -45,5 +48,14 @@ internal sealed class LoginHandler(
 
 		var readModel = UserReadModel.From(user);
 		return Results.Ok(readModel);
+	}
+}
+
+internal sealed class LoginValidator : AbstractValidator<Login.Credentials>
+{
+	public LoginValidator()
+	{
+		RuleFor(x => x.Email).NotEmpty().EmailAddress();
+		RuleFor(x => x.Password).NotEmpty();
 	}
 }

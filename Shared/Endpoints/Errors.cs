@@ -11,4 +11,5 @@ public static class Errors
 	}
 
 	public static ErrorResult UnauthorizedError => new(Types.UnauthorizedError, "Missing or invalid credentials.", 401);
+	public static ErrorResult ValidationError(IEnumerable<ErrorResultDetail>? details = null) => new(Types.ValidationError, "Validation error.") { Details = details ?? [] };
 }
