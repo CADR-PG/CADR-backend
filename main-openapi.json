@@ -1,5 +1,5 @@
 {
-  "openapi": "3.0.1",
+  "openapi": "3.0.4",
   "info": {
     "title": "API | v1",
     "version": "1.0.0"
@@ -11,12 +11,12 @@
           "API"
         ],
         "summary": "Login",
-        "description": "Register a user with name, email and password",
+        "description": "Login with email and password. Returns `UserReadModel` on success.",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Credentials"
+                "$ref": "#/components/schemas/Login.Credentials"
               }
             }
           },
@@ -24,11 +24,21 @@
         },
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "UserReadModel",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UserReadModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ErrorResult:  `ValidationError` with details or `InvalidLoginCredentialsError`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResult"
                 }
               }
             }
@@ -42,23 +52,27 @@
           "API"
         ],
         "summary": "Register",
+        "description": "Register new user. User will receive an email with activation link.",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Credentials2"
+                "$ref": "#/components/schemas/Register.Credentials"
               }
             }
           },
           "required": true
         },
         "responses": {
+          "204": {
+            "description": "No Content"
+          },
           "400": {
-            "description": "Bad Request",
+            "description": "ErrorResult:  `ValidationError` with details or `EmailAlreadyTakenError`",
             "content": {
-              "application/problem+json": {
+              "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                  "$ref": "#/components/schemas/ErrorResult"
                 }
               }
             }
@@ -72,9 +86,27 @@
           "API"
         ],
         "summary": "Refresh",
+        "description": "Refresh current user access. Returns `UserReadModel` on success.",
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "UserReadModel",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserReadModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ErrorResult:  `InvalidRefreshCredentialsError`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResult"
+                }
+              }
+            }
           }
         }
       }
@@ -85,9 +117,41 @@
           "API"
         ],
         "summary": "Logout",
+        "description": "Logout current logged in user.",
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/users/me": {
+      "get": {
+        "tags": [
+          "API"
+        ],
+        "summary": "GetCurrentUser",
+        "description": "Get current logged in user. Returns `UserReadModel`.",
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "UserReadModel",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserReadModel"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "ErrorResult:  `UnauthorizedError`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResult"
+                }
+              }
+            }
           }
         }
       }
@@ -95,7 +159,47 @@
   },
   "components": {
     "schemas": {
-      "Credentials": {
+      "ErrorResult": {
+        "required": [
+          "type",
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "details": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ErrorResultDetail"
+            }
+          }
+        }
+      },
+      "ErrorResultDetail": {
+        "required": [
+          "context",
+          "messages"
+        ],
+        "type": "object",
+        "properties": {
+          "context": {
+            "type": "string"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "Login.Credentials": {
+        "title": "Login.Credentials",
         "required": [
           "email",
           "password"
@@ -110,12 +214,13 @@
           }
         }
       },
-      "Credentials2": {
+      "Register.Credentials": {
+        "title": "Register.Credentials",
         "required": [
           "firstName",
           "lastName",
-          "password",
-          "email"
+          "email",
+          "password"
         ],
         "type": "object",
         "properties": {
@@ -125,53 +230,21 @@
           "lastName": {
             "type": "string"
           },
-          "password": {
-            "type": "string"
-          },
           "email": {
             "type": "string"
-          }
-        }
-      },
-      "HttpValidationProblemDetails": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "type": "string",
-            "nullable": true
           },
-          "title": {
-            "type": "string",
-            "nullable": true
-          },
-          "status": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "detail": {
-            "type": "string",
-            "nullable": true
-          },
-          "instance": {
-            "type": "string",
-            "nullable": true
-          },
-          "errors": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
+          "password": {
+            "type": "string"
           }
         }
       },
       "UserReadModel": {
         "required": [
           "id",
-          "email"
+          "email",
+          "firstName",
+          "lastName",
+          "lastLoggedInAt"
         ],
         "type": "object",
         "properties": {
@@ -181,6 +254,16 @@
           },
           "email": {
             "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "lastLoggedInAt": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       }
