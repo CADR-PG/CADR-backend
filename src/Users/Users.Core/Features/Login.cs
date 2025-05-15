@@ -36,15 +36,17 @@ internal sealed class LoginHandler(
 	{
 		var (email, password) = request.Body;
 
-		var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Email == email, cancellationToken);
+		var user = await dbContext.Users
+			.Include(x => x.RefreshTokens)
+			.FirstOrDefaultAsync(x => x.Email == email, cancellationToken);
 		if (user is null || !HashingService.IsValid(password, user.HashedPassword))
 			return Errors.InvalidLoginCredentialsError;
 
 		var tokens = tokenProvider.Generate(user);
-		request.HttpContext.SetTokenCookies(tokens);
-
 		user.Login(tokens);
 		await dbContext.SaveChangesAsync(cancellationToken);
+
+		request.HttpContext.SetTokenCookies(tokens);
 
 		var readModel = UserReadModel.From(user);
 		return Results.Ok(readModel);

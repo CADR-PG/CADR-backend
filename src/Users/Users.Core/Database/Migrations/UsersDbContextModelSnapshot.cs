@@ -26,7 +26,6 @@ namespace Users.Core.Database.Migrations
             modelBuilder.Entity("Users.Core.Entities.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
@@ -48,7 +47,6 @@ namespace Users.Core.Database.Migrations
             modelBuilder.Entity("Users.Core.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<string>("Email")

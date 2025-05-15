@@ -15,4 +15,4 @@ public record CurrentUser(UserId Id)
 
 		return ValueTask.FromResult(currentUser);
 	}
-};
+}

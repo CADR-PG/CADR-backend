@@ -11,8 +11,7 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
 	{
 		builder.HasKey(u => u.Id);
 		builder.Property(x => x.Id)
-			.HasConversion(x => x.Value, x => new UserId(x))
-			.ValueGeneratedOnAdd();
+			.HasConversion(x => x.Value, x => new UserId(x));
 
 		builder.Property(u => u.FirstName).IsRequired().HasMaxLength(100);
 		builder.Property(u => u.LastName).IsRequired().HasMaxLength(100);
@@ -21,7 +20,6 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
 
 		builder.HasMany(x => x.RefreshTokens)
 			.WithOne()
-			.HasPrincipalKey(x => x.Id)
 			.HasForeignKey(x => x.UserId)
 			.IsRequired();
 	}

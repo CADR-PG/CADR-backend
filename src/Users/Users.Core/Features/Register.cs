@@ -47,7 +47,6 @@ internal sealed class RegisterHandler(
 			Email = email,
 			HashedPassword = HashingService.Hash(password),
 			LastLoggedInAt = DateTime.UtcNow,
-			RefreshTokens = []
 		};
 
 		await dbContext.Users.AddAsync(user, cancellationToken);

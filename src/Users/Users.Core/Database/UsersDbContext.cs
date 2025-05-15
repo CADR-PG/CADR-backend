@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Users.Core.Entities;
-using Users.Core.Features;
 
 namespace Users.Core.Database;
 

@@ -12,7 +12,7 @@ using Users.Core.Database;
 namespace Users.Core.Database.Migrations
 {
     [DbContext(typeof(UsersDbContext))]
-    [Migration("20250515145219_Initial")]
+    [Migration("20250515160629_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -29,7 +29,6 @@ namespace Users.Core.Database.Migrations
             modelBuilder.Entity("Users.Core.Entities.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
@@ -51,7 +50,6 @@ namespace Users.Core.Database.Migrations
             modelBuilder.Entity("Users.Core.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<string>("Email")

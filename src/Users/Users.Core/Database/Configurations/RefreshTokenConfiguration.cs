@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Shared.ValueObjects;
 using Users.Core.Entities;
 using Users.Core.ValueObjects;
 
@@ -11,8 +12,7 @@ internal sealed class RefreshTokenConfiguration : IEntityTypeConfiguration<Refre
 	{
 		builder.HasKey(x => x.Id);
 		builder.Property(x => x.Id)
-			.HasConversion(x => x.Value, x => new TokenId(x))
-			.ValueGeneratedOnAdd();
+			.HasConversion(x => x.Value, x => new TokenId(x));
 
 		builder.Property(x => x.CreatedAt).IsRequired();
 		builder.Property(x => x.ExpiresAt).IsRequired();

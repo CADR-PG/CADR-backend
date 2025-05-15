@@ -11,7 +11,7 @@ internal class User
 	public required string Email { get; set; }
 	public required string HashedPassword { get; set; }
 	public required DateTime LastLoggedInAt { get; set; }
-	public required List<RefreshToken> RefreshTokens { get; init; }
+	public List<RefreshToken> RefreshTokens { get; set; } = [];
 
 	public void Login(UserTokens userTokens)
 	{
@@ -22,7 +22,7 @@ internal class User
 			Id = tokenId,
 			ExpiresAt = expiresAt,
 			CreatedAt = userTokens.CreatedAt,
-			UserId = Id
+			UserId = Id.Value
 		});
 
 		LastLoggedInAt = userTokens.CreatedAt;

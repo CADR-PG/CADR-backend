@@ -36,18 +36,19 @@ public class UsersModule : IModule
 
 		services.AddAuthentication().AddJwtBearer(options =>
 		{
+			options.MapInboundClaims = false;
 			options.TokenValidationParameters = JwtTokenProvider.GetAccessTokenValidationParameters(jwtSettings);
 			options.Events = new JwtBearerEvents
 			{
 				OnMessageReceived = context =>
 				{
-					context.Token = context.Request.Query[CookieTokenStorage.AccessTokenCookieKey];
+					context.Token = context.Request.Cookies[CookieTokenStorage.AccessTokenCookieKey];
 					return Task.CompletedTask;
 				},
 				OnChallenge = context =>
 				{
 					context.HandleResponse();
-					return Shared.Endpoints.SharedErrors.UnauthorizedError.ExecuteAsync(context.HttpContext);
+					return SharedErrors.UnauthorizedError.ExecuteAsync(context.HttpContext);
 				},
 			};
 		});
