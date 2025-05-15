@@ -1,12 +1,19 @@
-using API.Database;
-using API.Modules;
-using API.Modules.Users;
+using API.Documentation;
+using API.Exceptions;
 using Azure.Identity;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
-using Microsoft.EntityFrameworkCore;
-using Scalar.AspNetCore;
+using FluentValidation;
+using Microsoft.AspNetCore.Http.Json;
+using Shared;
+using Shared.Modules;
+using Users.Core;
+
 
 var builder = WebApplication.CreateBuilder(args);
+
+var applicationContext = new ApplicationContext([
+	new UsersModule()
+]);
 
 if (builder.Environment.IsProduction())
 {
@@ -17,39 +24,25 @@ if (builder.Environment.IsProduction())
 	builder.Services.AddOpenTelemetry().UseAzureMonitor();
 }
 
-builder.Services.AddHttpContextAccessor();
-var connectionString = builder.Configuration.GetConnectionString("Database")
-		?? throw new InvalidOperationException("Connection string" + "'Database' not found.");
-builder.Services.AddDbContext<CADRDbContext>(options =>
-	options.UseNpgsql(connectionString));
-builder.Services.AddScoped<CADRDbContext>();
-
-builder.Services.AddAuthentication().AddJwtCookie(builder.Configuration);
-
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddModules(builder.Configuration);
-builder.Services.AddOpenApi();
+builder.RegisterModules(applicationContext);
+builder.Services.AddDocumentation();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+builder.Services.Configure<JsonOptions>(options =>
+{
+});
 
 var app = builder.Build();
 
-app.MapOpenApi();
-app.MapScalarApiReference("/docs", options => options
-	.WithTitle("CADR API")
-	.WithTheme(ScalarTheme.Default)
-	.WithDarkMode(true)
-	.WithDefaultHttpClient(ScalarTarget.JavaScript, ScalarClient.Axios)
-	.WithSidebar(true)
-	.WithDownloadButton(true)
-	.WithDarkModeToggle(true)
-	.WithDotNetFlag(true)
-	.WithTestRequestButton(true)
-	.WithModels(false)
-	.WithDefaultOpenAllTags(false));
+app.UseExceptionHandler();
 
 app.UseHttpsRedirection();
 
-app.MapEndpoints();
+app.MapDocumentation();
 
 app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapEndpoints(applicationContext);
 
 await app.RunAsync();

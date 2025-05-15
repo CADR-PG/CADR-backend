@@ -244,10 +244,18 @@ dotnet_diagnostic.ca2225.severity = none
 dotnet_diagnostic.CA1304.severity = none
 dotnet_diagnostic.CA1311.severity = none
 dotnet_diagnostic.CA1716.severity = none
+dotnet_diagnostic.CA1032.severity = none
+dotnet_diagnostic.CA1725.severity = none
+dotnet_diagnostic.CA1040.severity = none
+dotnet_diagnostic.CA1819.severity = none
+dotnet_diagnostic.CA1724.severity = none
+dotnet_diagnostic.CA1308.severity = none
+dotnet_diagnostic.CA1034.severity = none
 dotnet_diagnostic.CA1862.severity = suggestion
 
 # Resharper
 resharper_class_never_instantiated_global_highlighting=none
+
 
 [**/Migrations/*]
 generated_code = true
