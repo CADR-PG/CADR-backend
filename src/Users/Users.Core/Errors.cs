@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Shared.Endpoints.Results;
 
 namespace Users.Core;

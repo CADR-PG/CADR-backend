@@ -22,7 +22,8 @@ internal sealed class LoginEndpoint : IEndpoint
 	public static void Register(IEndpointRouteBuilder endpoints)
 		=> endpoints.MapPost<Login, LoginHandler>("login")
 			.Produces<UserReadModel>()
-			.ProducesError(400, $"`{nameof(Shared.Endpoints.SharedErrors.ValidationError)}` with details or `{nameof(Errors.InvalidLoginCredentialsError)}`")
+			.ProducesError(400,
+				$"`{nameof(Shared.Endpoints.SharedErrors.ValidationError)}` with details or `{nameof(Errors.InvalidLoginCredentialsError)}`")
 			.WithDescription($"Login with email and password. Returns `{nameof(UserReadModel)}` on success.")
 			.AddValidation<Login.Credentials>();
 }
@@ -43,7 +44,13 @@ internal sealed class LoginHandler(
 			return Errors.InvalidLoginCredentialsError;
 
 		var tokens = tokenProvider.Generate(user);
-		user.Login(tokens);
+
+		var refreshToken = request.HttpContext.GetRefreshToken();
+		if (await tokenProvider.GetTokenIdentifiers(refreshToken) is { } tokenIdentifiers)
+			user.Refresh(tokenIdentifiers.TokenId, tokens);
+		else
+			user.Login(tokens);
+
 		await dbContext.SaveChangesAsync(cancellationToken);
 
 		request.HttpContext.SetTokenCookies(tokens);

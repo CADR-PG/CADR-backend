@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Shared.Endpoints;
+using Shared.Endpoints.Requests;
 using Users.Core.Database;
 using Users.Core.Services;
 

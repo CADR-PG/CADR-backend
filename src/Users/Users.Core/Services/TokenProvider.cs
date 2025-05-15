@@ -12,14 +12,14 @@ namespace Users.Core.Services;
 internal interface ITokenProvider
 {
 	public UserTokens Generate(User user);
-	public Task<UserTokenIdentifiers?> GetTokenIdentifiers(string token);
+	public Task<UserTokenIdentifiers?> GetTokenIdentifiers(string? token);
 }
 
 internal sealed class JwtTokenProvider : ITokenProvider
 {
 	private readonly JwtSettings _jwtSettings;
 	private readonly TokenValidationParameters _refreshTokenValidationParameters;
-	private static readonly JsonWebTokenHandler JsonWebTokenHandler = new();
+	private static readonly JsonWebTokenHandler JsonWebTokenHandler = new() { MapInboundClaims = false };
 
 	public JwtTokenProvider(IOptions<JwtSettings> jwtSettings)
 	{
@@ -80,7 +80,7 @@ internal sealed class JwtTokenProvider : ITokenProvider
 		return new UserToken(tokenId, refreshToken, expiresAt);
 	}
 
-	public async Task<UserTokenIdentifiers?> GetTokenIdentifiers(string token)
+	public async Task<UserTokenIdentifiers?> GetTokenIdentifiers(string? token)
 	{
 		if (!JsonWebTokenHandler.CanReadToken(token)) return null;
 
@@ -88,10 +88,10 @@ internal sealed class JwtTokenProvider : ITokenProvider
 
 		if (!tokenValidationResult.IsValid) return null;
 
-		var tokenId = Guid.Parse(tokenValidationResult.Claims[JwtRegisteredClaimNames.Jti].ToString()!);
 		var userId = Guid.Parse(tokenValidationResult.Claims[JwtRegisteredClaimNames.Sub].ToString()!);
+		var tokenId = Guid.Parse(tokenValidationResult.Claims[JwtRegisteredClaimNames.Jti].ToString()!);
 
-		return new UserTokenIdentifiers(tokenId, userId);
+		return new UserTokenIdentifiers(userId, tokenId);
 	}
 
 	public static TokenValidationParameters GetAccessTokenValidationParameters(JwtSettings jwtSettings)

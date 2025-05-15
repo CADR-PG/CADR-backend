@@ -31,8 +31,7 @@ internal sealed class RefreshHandler(
 	public async Task<IResult> Handle(Refresh request, CancellationToken cancellationToken)
 	{
 		var refreshToken = request.HttpContext.GetRefreshToken();
-
-		if (refreshToken is null || await tokenProvider.GetTokenIdentifiers(refreshToken) is not { } identifiers)
+		if (await tokenProvider.GetTokenIdentifiers(refreshToken) is not { } identifiers)
 			return Errors.InvalidRefreshCredentialsError;
 
 		var user = await dbContext.Users
