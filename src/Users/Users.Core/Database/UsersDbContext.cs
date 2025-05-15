@@ -1,11 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Users.Core.Entities;
+using Users.Core.Features;
 
 namespace Users.Core.Database;
 
-internal class UsersDbContext(DbContextOptions<UsersDbContext> dbContextOptions) : DbContext(dbContextOptions)
+internal sealed class UsersDbContext(DbContextOptions<UsersDbContext> dbContextOptions) : DbContext(dbContextOptions)
 {
 	public required DbSet<User> Users { get; init; }
+	public required DbSet<RefreshToken> RefreshTokens { get; init; }
 
 	protected override void OnModelCreating(ModelBuilder builder)
 	{
