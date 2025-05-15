@@ -55,6 +55,6 @@ internal class User
 		if (refreshTokenId is null)
 			RefreshTokens.RemoveAll(x => x.ExpiresAt < DateTime.UtcNow);
 		else
-			RefreshTokens.RemoveAll(x => x.ExpiresAt < DateTime.UtcNow);
+			RefreshTokens.RemoveAll(x => x.ExpiresAt < DateTime.UtcNow || x.Id == refreshTokenId);
 	}
 }
