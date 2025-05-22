@@ -21,7 +21,8 @@ internal sealed class MailingService(IOptions<MailingSettings> mailingSettings) 
 		message.To.Add(new MailboxAddress(name, email));
 		message.Subject = subject;
 
-		message.Body = new TextPart ("plain") {
+		message.Body = new TextPart("plain")
+		{
 			Text = body
 		};
 
