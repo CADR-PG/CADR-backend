@@ -1,5 +1,3 @@
-using FluentValidation;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
@@ -25,8 +23,7 @@ internal sealed class ConfirmEmailEndpoint : IEndpoint
 			.Produces(204)
 			.ProducesError(400, $"`{nameof(Errors.InvalidEmailConfirmationCredentialsError)}`")
 			.ProducesError(401, "`UnauthorizedError`")
-			.WithDescription($"Changes current user password. Returns `{nameof(UserReadModel)}`.")
-			.AddValidation<ChangePassword.Data>();
+			.WithDescription($"Changes current user password. Returns `{nameof(UserReadModel)}`.");
 }
 
 internal sealed class ConfirmEmailHandler(

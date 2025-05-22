@@ -28,7 +28,10 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
 			confirmation.Property(x => x.Code)
 				.IsRequired(false);
 
-			confirmation.Property(x => x.IsConfirmed)
+			confirmation.Property(x => x.ExpiresAt)
+				.IsRequired(false);
+
+			confirmation.Property(x => x.SentAt)
 				.IsRequired(false);
 		});
 

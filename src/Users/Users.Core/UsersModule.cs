@@ -25,15 +25,21 @@ public class UsersModule : IModule
 		var postgreSqlSettings = configuration.GetSettings<PostgreSqlSettings>();
 		services.AddDbContext<UsersDbContext>(options => options.UseNpgsql(postgreSqlSettings.ConnectionString));
 		services.AddSettingsWithOptions<JwtSettings>(configuration);
+		services.AddMailingService(configuration);
 		services.AddScoped<LoginHandler>();
 		services.AddScoped<RegisterHandler>();
 		services.AddScoped<LogoutHandler>();
 		services.AddScoped<RefreshHandler>();
 		services.AddScoped<GetCurrentUserHandler>();
+		services.AddScoped<ChangeUserInfoHandler>();
+		services.AddScoped<ChangeEmailHandler>();
+		services.AddScoped<ChangePasswordValidator>();
+		services.AddScoped<ConfirmEmailHandler>();
+		services.AddScoped<ResendEmailConfirmationHandler>();
+		services.AddScoped<GetCurrentUserHandler>();
 		services.AddSingleton<ITokenProvider, JwtTokenProvider>();
-		services.AddSingleton<EmailConfirmationService>();
+		services.AddScoped<EmailConfirmationService>();
 		services.AddValidatorsFromAssemblyContaining<UsersModule>(includeInternalTypes: true);
-		services.AddMailingService(configuration);
 
 		var jwtSettings = configuration.GetSettings<JwtSettings>();
 
@@ -64,5 +70,9 @@ public class UsersModule : IModule
 			.Map<RegisterEndpoint>()
 			.Map<RefreshEndpoint>()
 			.Map<LogoutEndpoint>()
-			.Map<GetCurrentUserEndpoint>();
+			.Map<GetCurrentUserEndpoint>()
+			.Map<ChangeUserInfoEndpoint>()
+			.Map<ChangeEmailEndpoint>()
+			.Map<ConfirmEmailEndpoint>()
+			.Map<ResendEmailConfirmationEndpoint>();
 }
