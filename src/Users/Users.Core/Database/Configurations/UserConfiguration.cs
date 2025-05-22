@@ -7,18 +7,32 @@ namespace Users.Core.Database.Configurations;
 
 internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
 {
-	public void Configure(EntityTypeBuilder<User> builder)
+	public void Configure(EntityTypeBuilder<User> user)
 	{
-		builder.HasKey(u => u.Id);
-		builder.Property(x => x.Id)
+		user.HasKey(u => u.Id);
+		user.Property(x => x.Id)
 			.HasConversion(x => x.Value, x => new UserId(x));
 
-		builder.Property(u => u.FirstName).IsRequired().HasMaxLength(100);
-		builder.Property(u => u.LastName).IsRequired().HasMaxLength(100);
-		builder.Property(u => u.HashedPassword).IsRequired().HasMaxLength(1024);
-		builder.Property(u => u.Email).IsRequired().HasMaxLength(320);
+		user.Property(u => u.FirstName).IsRequired().HasMaxLength(100);
+		user.Property(u => u.LastName).IsRequired().HasMaxLength(100);
+		user.Ignore(u => u.FullName);
+		user.Property(u => u.HashedPassword).IsRequired().HasMaxLength(1024);
+		user.Property(u => u.Email).IsRequired().HasMaxLength(320);
 
-		builder.HasMany(x => x.RefreshTokens)
+		user.ComplexProperty(x => x.EmailConfirmation, confirmation =>
+		{
+			confirmation.Property(x => x.IsConfirmed)
+				.HasDefaultValue(false)
+				.IsRequired();
+
+			confirmation.Property(x => x.Code)
+				.IsRequired(false);
+
+			confirmation.Property(x => x.IsConfirmed)
+				.IsRequired(false);
+		});
+
+		user.HasMany(x => x.RefreshTokens)
 			.WithOne()
 			.HasForeignKey(x => x.UserId)
 			.IsRequired();

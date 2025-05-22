@@ -251,6 +251,8 @@ dotnet_diagnostic.CA1819.severity = none
 dotnet_diagnostic.CA1724.severity = none
 dotnet_diagnostic.CA1308.severity = none
 dotnet_diagnostic.CA1034.severity = none
+dotnet_diagnostic.CA1805.severity = none
+dotnet_diagnostic.CA5394.severity = none
 dotnet_diagnostic.CA1862.severity = suggestion
 
 # Resharper

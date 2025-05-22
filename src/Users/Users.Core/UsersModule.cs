@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Endpoints;
 using Shared.Modules;
+using Shared.Services;
 using Shared.Settings;
 using Users.Core.Database;
 using Users.Core.Features;
@@ -30,7 +31,9 @@ public class UsersModule : IModule
 		services.AddScoped<RefreshHandler>();
 		services.AddScoped<GetCurrentUserHandler>();
 		services.AddSingleton<ITokenProvider, JwtTokenProvider>();
+		services.AddSingleton<EmailConfirmationService>();
 		services.AddValidatorsFromAssemblyContaining<UsersModule>(includeInternalTypes: true);
+		services.AddMailingService(configuration);
 
 		var jwtSettings = configuration.GetSettings<JwtSettings>();
 
