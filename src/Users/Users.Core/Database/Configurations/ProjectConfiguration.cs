@@ -14,7 +14,7 @@ internal sealed class ProjectConfiguration : IEntityTypeConfiguration<Project>
 		builder.Property(p => p.Name).IsRequired();
 		builder.Property(p => p.Description).IsRequired();
 		builder.Property(p => p.JsonDocument).IsRequired().HasColumnType("json").HasConversion(
-			v => JsonSerializer.Serialize(v, (JsonSerializerOptions) null!),
+			v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null!),
 			v => JsonSerializer.Deserialize<Dictionary<string, object>>(v, (JsonSerializerOptions)null!) ?? new Dictionary<string, object>()
 			);
 
