@@ -155,10 +155,294 @@
           }
         }
       }
+    },
+    "/users/change-info": {
+      "put": {
+        "tags": [
+          "API"
+        ],
+        "summary": "ChangeUserInfo",
+        "description": "Changes current user basic info. Returns `UserReadModel`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeUserInfo.Data"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "UserReadModel",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserReadModel"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "ErrorResult:  `UnauthorizedError`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/change-email": {
+      "post": {
+        "tags": [
+          "API"
+        ],
+        "summary": "ChangeEmail",
+        "description": "Changes current user email. Sends email with confirmation link and returns `UserReadModel`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeEmail.Data"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "UserReadModel",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserReadModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ErrorResult:  `ValidationError` with details or `EmailAlreadyTakenError`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "ErrorResult:  `UnauthorizedError`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/confirm-email": {
+      "get": {
+        "tags": [
+          "API"
+        ],
+        "summary": "ConfirmEmail",
+        "description": "Changes current user password. Returns `UserReadModel`.",
+        "parameters": [
+          {
+            "name": "Email",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Code",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "ErrorResult:  `InvalidEmailConfirmationCredentialsError`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "ErrorResult:  `UnauthorizedError`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/change-password": {
+      "post": {
+        "tags": [
+          "API"
+        ],
+        "summary": "ChangePassword",
+        "description": "Changes current user password. Returns `UserReadModel`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePassword.Data"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "UserReadModel",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserReadModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ErrorResult:  ValidationError` with details or `InvalidCurrentPasswordError`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "ErrorResult:  `UnauthorizedError`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/resend-email-confirmation": {
+      "post": {
+        "tags": [
+          "API"
+        ],
+        "summary": "ResendEmailConfirmation",
+        "description": "Resends email with confirmation link and returns `UserReadModel`.",
+        "parameters": [
+          {
+            "name": "Email",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "ErrorResult:  `ValidationError` with details or `ResendConfirmationTimeLimitError`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "ErrorResult:  `UnauthorizedError`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResult"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "ChangeEmail.Data": {
+        "title": "ChangeEmail.Data",
+        "required": [
+          "newEmail"
+        ],
+        "type": "object",
+        "properties": {
+          "newEmail": {
+            "type": "string"
+          }
+        }
+      },
+      "ChangePassword.Data": {
+        "title": "ChangePassword.Data",
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ],
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string"
+          },
+          "newPassword": {
+            "type": "string"
+          }
+        }
+      },
+      "ChangeUserInfo.Data": {
+        "title": "ChangeUserInfo.Data",
+        "required": [
+          "firstName",
+          "lastName"
+        ],
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          }
+        }
+      },
       "ErrorResult": {
         "required": [
           "type",
@@ -242,6 +526,7 @@
         "required": [
           "id",
           "email",
+          "isEmailConfirmed",
           "firstName",
           "lastName",
           "lastLoggedInAt"
@@ -254,6 +539,9 @@
           },
           "email": {
             "type": "string"
+          },
+          "isEmailConfirmed": {
+            "type": "boolean"
           },
           "firstName": {
             "type": "string"
