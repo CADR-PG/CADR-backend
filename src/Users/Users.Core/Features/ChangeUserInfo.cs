@@ -21,7 +21,7 @@ internal record struct ChangeUserInfo([FromBody] ChangeUserInfo.Data Body, Curre
 internal sealed class ChangeUserInfoEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints)
-		=> endpoints.MapGet<ChangeUserInfo, ChangeUserInfoHandler>("change-info")
+		=> endpoints.MapPut<ChangeUserInfo, ChangeUserInfoHandler>("change-info")
 			.RequireAuthorization()
 			.Produces<UserReadModel>()
 			.ProducesError(401, "`UnauthorizedError`")

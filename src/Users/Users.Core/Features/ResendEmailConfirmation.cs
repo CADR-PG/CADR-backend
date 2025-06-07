@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Shared.Endpoints;
@@ -11,13 +12,12 @@ using Users.Core.Services;
 
 namespace Users.Core.Features;
 
-internal record struct ResendEmailConfirmation(CurrentUser CurrentUser) : IHttpRequest;
+internal record struct ResendEmailConfirmation([FromQuery] string Email) : IHttpRequest;
 
 internal sealed class ResendEmailConfirmationEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints)
-		=> endpoints.MapGet<ResendEmailConfirmation, ResendEmailConfirmationHandler>("resend-email-confirmation")
-			.RequireAuthorization()
+		=> endpoints.MapPost<ResendEmailConfirmation, ResendEmailConfirmationHandler>("resend-email-confirmation")
 			.Produces(204)
 			.ProducesError(400,
 				$"`{SharedErrors.Types.ValidationError}` with details or `{nameof(Errors.ResendConfirmationTimeLimitError)}`")
@@ -33,7 +33,7 @@ internal sealed class ResendEmailConfirmationHandler(
 	public async Task<IResult> Handle(ResendEmailConfirmation request, CancellationToken cancellationToken)
 	{
 		var user = await dbContext.Users
-			.FirstAsync(x => x.Id == request.CurrentUser.Id, cancellationToken);
+			.FirstAsync(x => x.Email == request.Email, cancellationToken);
 
 		if (user.EmailConfirmation.SentAt > DateTime.UtcNow.AddMinutes(-1))
 			return Errors.ResendConfirmationTimeLimitError;

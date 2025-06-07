@@ -22,7 +22,7 @@ internal record struct ChangePassword([FromBody] ChangePassword.Data Body, Curre
 internal sealed class ChangePasswordEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints)
-		=> endpoints.MapGet<ChangePassword, ChangePasswordHandler>("change-password")
+		=> endpoints.MapPost<ChangePassword, ChangePasswordHandler>("change-password")
 			.RequireAuthorization()
 			.Produces<UserReadModel>()
 			.ProducesError(400, $"{nameof(SharedErrors.ValidationError)}` with details or `{nameof(Errors.InvalidCurrentPasswordError)}`")
@@ -41,7 +41,7 @@ internal sealed class ChangePasswordHandler(
 
 		var user = await dbContext.Users
 			.Include(x => x.RefreshTokens)
-			.FirstOrDefaultAsync(x => x.Email == currentPassword, cancellationToken);
+			.FirstOrDefaultAsync(x => x.Id == request.CurrentUser.Id, cancellationToken);
 
 		if (user is null || !HashingService.IsValid(currentPassword, user.HashedPassword))
 			return Errors.InvalidCurrentPasswordError;

@@ -33,7 +33,7 @@ public class UsersModule : IModule
 		services.AddScoped<GetCurrentUserHandler>();
 		services.AddScoped<ChangeUserInfoHandler>();
 		services.AddScoped<ChangeEmailHandler>();
-		services.AddScoped<ChangePasswordValidator>();
+		services.AddScoped<ChangePasswordHandler>();
 		services.AddScoped<ConfirmEmailHandler>();
 		services.AddScoped<ResendEmailConfirmationHandler>();
 		services.AddScoped<GetCurrentUserHandler>();
@@ -74,5 +74,6 @@ public class UsersModule : IModule
 			.Map<ChangeUserInfoEndpoint>()
 			.Map<ChangeEmailEndpoint>()
 			.Map<ConfirmEmailEndpoint>()
+			.Map<ChangePasswordEndpoint>()
 			.Map<ResendEmailConfirmationEndpoint>();
 }

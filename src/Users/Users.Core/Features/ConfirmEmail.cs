@@ -11,7 +11,7 @@ using Users.Core.ReadModels;
 
 namespace Users.Core.Features;
 
-internal record struct ConfirmEmail([FromQuery] Guid UserId, [FromQuery] int Code) : IHttpRequest
+internal record struct ConfirmEmail([FromQuery] string Email, [FromQuery] int Code) : IHttpRequest
 {
 	public record Data(string CurrentPassword, string NewPassword);
 }
@@ -32,11 +32,9 @@ internal sealed class ConfirmEmailHandler(
 {
 	public async Task<IResult> Handle(ConfirmEmail request, CancellationToken cancellationToken)
 	{
-		var userId = new UserId(request.UserId);
-
 		var user = await dbContext.Users
 			.Include(x => x.RefreshTokens)
-			.FirstOrDefaultAsync(x => x.Id == userId, cancellationToken);
+			.FirstOrDefaultAsync(x => x.Email == request.Email, cancellationToken);
 
 		if (user is null || !user.ConfirmEmail(request.Code))
 			return Errors.InvalidEmailConfirmationCredentialsError;
@@ -44,6 +42,6 @@ internal sealed class ConfirmEmailHandler(
 		await dbContext.SaveChangesAsync(cancellationToken);
 
 		var readModel = UserReadModel.From(user);
-		return Results.Ok(readModel);
+		return Results.NoContent();
 	}
 }

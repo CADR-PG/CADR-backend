@@ -1,4 +1,5 @@
 using MailKit.Net.Smtp;
+using MailKit.Security;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using Shared.Settings;
@@ -27,7 +28,7 @@ internal sealed class MailingService(IOptions<MailingSettings> mailingSettings) 
 		};
 
 		using var client = new SmtpClient();
-		await client.ConnectAsync(MailingSettings.SmtpHost, MailingSettings.SmtpPort, true);
+		await client.ConnectAsync(MailingSettings.SmtpHost, MailingSettings.SmtpPort, SecureSocketOptions.StartTls);
 		await client.AuthenticateAsync(MailingSettings.SmtpEmail, MailingSettings.SmtpPassword);
 		await client.SendAsync(message);
 		await client.DisconnectAsync(true);

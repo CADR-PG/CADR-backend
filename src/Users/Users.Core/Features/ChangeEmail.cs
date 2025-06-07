@@ -22,7 +22,7 @@ internal record struct ChangeEmail([FromBody] ChangeEmail.Data Body, CurrentUser
 internal sealed class ChangeEmailEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints)
-		=> endpoints.MapGet<ChangeEmail, ChangeEmailHandler>("change-change-email")
+		=> endpoints.MapPost<ChangeEmail, ChangeEmailHandler>("change-email")
 			.RequireAuthorization()
 			.Produces<UserReadModel>()
 			.ProducesError(400, $"`{SharedErrors.Types.ValidationError}` with details or `{nameof(Errors.EmailAlreadyTakenError)}`")
