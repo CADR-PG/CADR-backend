@@ -31,6 +31,7 @@ public class UsersModule : IModule
 		services.AddScoped<GetCurrentUserHandler>();
 		services.AddScoped<AddProjectHandler>();
 		services.AddScoped<GetAllUserProjectsHandler>();
+		services.AddScoped<ModifyProjectHandler>();
 		services.AddSingleton<ITokenProvider, JwtTokenProvider>();
 		services.AddValidatorsFromAssemblyContaining<UsersModule>(includeInternalTypes: true);
 
@@ -65,5 +66,6 @@ public class UsersModule : IModule
 			.Map<LogoutEndpoint>()
 			.Map<GetCurrentUserEndpoint>()
 			.Map<AddProjectEndpoint>()
-			.Map<GetAllUserProjectsEndpoint>();
+			.Map<GetAllUserProjectsEndpoint>()
+			.Map<ModifyProjectEndpoint>();
 }
