@@ -23,6 +23,36 @@ namespace Users.Core.Database.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Users.Core.Entities.Project", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("JsonDocument")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("LastUpdate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Projects", "Users");
+                });
+
             modelBuilder.Entity("Users.Core.Entities.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -77,6 +107,17 @@ namespace Users.Core.Database.Migrations
                     b.ToTable("Users", "Users");
                 });
 
+            modelBuilder.Entity("Users.Core.Entities.Project", b =>
+                {
+                    b.HasOne("Users.Core.Entities.User", "User")
+                        .WithMany("Projects")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Users.Core.Entities.RefreshToken", b =>
                 {
                     b.HasOne("Users.Core.Entities.User", null)
@@ -88,6 +129,8 @@ namespace Users.Core.Database.Migrations
 
             modelBuilder.Entity("Users.Core.Entities.User", b =>
                 {
+                    b.Navigation("Projects");
+
                     b.Navigation("RefreshTokens");
                 });
 #pragma warning restore 612, 618

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System.Text.Json;
 using Users.Core.Entities;
@@ -13,11 +14,7 @@ internal sealed class ProjectConfiguration : IEntityTypeConfiguration<Project>
 		builder.Property(p => p.Id).ValueGeneratedOnAdd();
 		builder.Property(p => p.Name).IsRequired();
 		builder.Property(p => p.Description).IsRequired();
-		builder.Property(p => p.JsonDocument).IsRequired().HasColumnType("json").HasConversion(
-			v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null!),
-			v => JsonSerializer.Deserialize<Dictionary<string, object>>(v, (JsonSerializerOptions)null!) ?? new Dictionary<string, object>()
-			);
-
-		builder.Property(p => p.UserId).IsRequired();
+		builder.Property(p => p.JsonDocument);
+		builder.HasOne(p => p.User).WithMany(u => u.Projects).HasForeignKey(p => p.UserId).OnDelete(DeleteBehavior.Cascade);
 	}
 }

@@ -13,6 +13,8 @@ internal class User
 	public required DateTime LastLoggedInAt { get; set; }
 	public List<RefreshToken> RefreshTokens { get; set; } = [];
 
+	public List<Project> Projects { get; set; } = [];
+
 	public void Login(UserTokens userTokens)
 	{
 		var (tokenId, _, expiresAt) = userTokens.RefreshToken;

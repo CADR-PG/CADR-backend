@@ -30,6 +30,7 @@ public class UsersModule : IModule
 		services.AddScoped<RefreshHandler>();
 		services.AddScoped<GetCurrentUserHandler>();
 		services.AddSingleton<ITokenProvider, JwtTokenProvider>();
+		services.AddScoped<AddProjectHandler>();
 		services.AddValidatorsFromAssemblyContaining<UsersModule>(includeInternalTypes: true);
 
 		var jwtSettings = configuration.GetSettings<JwtSettings>();
@@ -61,5 +62,6 @@ public class UsersModule : IModule
 			.Map<RegisterEndpoint>()
 			.Map<RefreshEndpoint>()
 			.Map<LogoutEndpoint>()
-			.Map<GetCurrentUserEndpoint>();
+			.Map<GetCurrentUserEndpoint>()
+			.Map<AddProjectEndpoint>();
 }
