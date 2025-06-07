@@ -33,8 +33,10 @@ internal sealed class ModifyProjectHandler(
 		var project = await dbContext.Projects.Where(p => p.Id == id).FirstOrDefaultAsync(cancellationToken);
 		if (project == null)
 			return Results.NotFound();
+
 		project.Name = name;
 		project.Description = description;
+		project.LastUpdate = DateTime.UtcNow;
 
 		await dbContext.SaveChangesAsync(cancellationToken);
 
