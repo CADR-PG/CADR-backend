@@ -37,6 +37,9 @@ internal sealed class AddProjectHandler(
 	{
 		var (name, description) = request.Body;
 		var currentUser = request.CurrentUser;
+		var exists = await dbContext.Projects.Where(p => p.UserId == currentUser.Id).AnyAsync(p => p.Name == name && p.Description == description, cancellationToken);
+		if (exists)
+			return Errors.ProjectWithThisNameAlreadyExists;
 		var project = new Project
 		{
 			Id = Guid.NewGuid(),
