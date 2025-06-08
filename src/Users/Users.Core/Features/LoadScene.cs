@@ -13,7 +13,7 @@ internal sealed record LoadScene([FromRoute] Guid ProjectId) : IHttpRequest;
 
 internal sealed class LoadSceneEndpoint : IEndpoint
 {
-	public static void Register(IEndpointRouteBuilder endpoints) => endpoints.MapGet<LoadScene, LoadSceneHandler>("load_scene/{ProjectId}")
+	public static void Register(IEndpointRouteBuilder endpoints) => endpoints.MapGet<LoadScene, LoadSceneHandler>("load-scene/{ProjectId}")
 		.RequireAuthorization();
 }
 

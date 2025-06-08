@@ -11,20 +11,21 @@ using Shared.Endpoints.Validation;
 using System.Text.Json;
 using Users.Core.Database;
 using Users.Core.Entities;
+using Users.Core.ReadModels;
 
 namespace Users.Core.Features;
 
 
-internal sealed record AddProject([FromBody] AddProject.Credentials Body, CurrentUser CurrentUser) : IHttpRequest
+internal sealed record AddProject([FromBody] AddProject.Data Body, CurrentUser CurrentUser) : IHttpRequest
 {
-	internal record Credentials(string Name, string Description);
+	internal record Data(string Name, string Description);
 }
 
 internal sealed class AddProjectEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
-		.MapPost<AddProject, AddProjectHandler>("add_project")
-		.AddValidation<AddProject.Credentials>()
+		.MapPost<AddProject, AddProjectHandler>("add-project")
+		.AddValidation<AddProject.Data>()
 		.RequireAuthorization()
 		.ProducesError(401, "`UnauthorizedError`");
 }
@@ -52,11 +53,13 @@ internal sealed class AddProjectHandler(
 		await dbContext.Projects.AddAsync(project, cancellationToken);
 		await dbContext.SaveChangesAsync(cancellationToken);
 
-		return Results.NoContent();
+		var readModel = ProjectReadModel.From(project);
+
+		return Results.Ok(readModel);
 	}
 }
 
-internal sealed class ProjectValidator : AbstractValidator<AddProject.Credentials>
+internal sealed class ProjectValidator : AbstractValidator<AddProject.Data>
 {
 	public ProjectValidator()
 	{

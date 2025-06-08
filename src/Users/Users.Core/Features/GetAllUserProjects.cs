@@ -27,6 +27,6 @@ internal sealed class GetAllUserProjectsHandler(
 	{
 		var projects = dbContext.Projects.Where(p => p.UserId == request.CurrentUser.Id);
 		var paginatedProjects = await Paginated.Create(projects);
-		return paginatedProjects.Items.Count == 0 ? Results.NoContent() : Results.Ok(paginatedProjects);
+		return Results.Ok(paginatedProjects);
 	}
 }

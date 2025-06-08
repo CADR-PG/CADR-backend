@@ -8,19 +8,20 @@ using Shared.Endpoints;
 using Shared.Endpoints.Validation;
 using Users.Core.Database;
 using Users.Core.Entities;
+using Users.Core.ReadModels;
 
 namespace Users.Core.Features;
 
-internal sealed record ModifyProject([FromBody] ModifyProject.Credentials Body) : IHttpRequest
+internal sealed record ModifyProject([FromRoute] Guid ProjectId, [FromBody] ModifyProject.Data Body) : IHttpRequest
 {
-	internal sealed record Credentials(Guid ProjectId, string Name, string Description);
+	internal sealed record Data(string Name, string Description);
 }
 
 internal sealed class ModifyProjectEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) =>
-		endpoints.MapPut<ModifyProject, ModifyProjectHandler>("modify_project")
-			.RequireAuthorization().AddValidation<ModifyProject.Credentials>();
+		endpoints.MapPut<ModifyProject, ModifyProjectHandler>("modify-project/{ProjectId}")
+			.RequireAuthorization().AddValidation<ModifyProject.Data>();
 }
 
 internal sealed class ModifyProjectHandler(
@@ -29,8 +30,8 @@ internal sealed class ModifyProjectHandler(
 {
 	public async Task<IResult> Handle(ModifyProject request, CancellationToken cancellationToken)
 	{
-		var (id, name, description) = request.Body;
-		var project = await dbContext.Projects.Where(p => p.Id == id).FirstOrDefaultAsync(cancellationToken);
+		var (name, description) = request.Body;
+		var project = await dbContext.Projects.Where(p => p.Id == request.ProjectId).FirstOrDefaultAsync(cancellationToken);
 		if (project == null)
 			return Results.NotFound();
 
@@ -39,12 +40,13 @@ internal sealed class ModifyProjectHandler(
 		project.LastUpdate = DateTime.UtcNow;
 
 		await dbContext.SaveChangesAsync(cancellationToken);
+		var readModel = ProjectReadModel.From(project);
 
-		return Results.Ok();
+		return Results.Ok(readModel);
 	}
 }
 
-internal sealed class ModifyProjectValidator : AbstractValidator<ModifyProject.Credentials>
+internal sealed class ModifyProjectValidator : AbstractValidator<ModifyProject.Data>
 {
 	public ModifyProjectValidator()
 	{

@@ -18,7 +18,7 @@ internal sealed record SaveScene([FromRoute] Guid ProjectId, [FromBody] object S
 internal sealed class SaveSceneEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) =>
-		endpoints.MapPost<SaveScene, SaveSceneHandler>("save_scene/{ProjectId}").RequireAuthorization().AddValidation<SaveScene>();
+		endpoints.MapPost<SaveScene, SaveSceneHandler>("save-scene/{ProjectId}").RequireAuthorization().AddValidation<SaveScene>();
 }
 
 internal sealed class SaveSceneHandler(UsersDbContext dbContext) : IHttpRequestHandler<SaveScene>
@@ -37,7 +37,7 @@ internal sealed class SaveSceneHandler(UsersDbContext dbContext) : IHttpRequestH
 
 		await dbContext.SaveChangesAsync(cancellationToken);
 
-		return Results.Ok();
+		return Results.NoContent();
 	}
 }
 
