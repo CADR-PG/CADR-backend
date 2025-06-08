@@ -13,7 +13,7 @@ using Users.Core.Database;
 namespace Users.Core.Database.Migrations
 {
     [DbContext(typeof(UsersDbContext))]
-    [Migration("20250608182740_TempProjects")]
+    [Migration("20250608184214_TempProjects")]
     partial class TempProjects
     {
         /// <inheritdoc />
