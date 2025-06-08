@@ -15,4 +15,8 @@
       <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Database\Migrations\" />
+    </ItemGroup>
+
 </Project>
