@@ -80,7 +80,7 @@ public class UsersModule : IModule
 			.Map<GetAllUserProjectsEndpoint>()
 			.Map<ModifyProjectEndpoint>()
 			.Map<SaveSceneEndpoint>()
-			.Map<LoadSceneEndpoint>();
+			.Map<LoadSceneEndpoint>()
 			.Map<ChangeUserInfoEndpoint>()
 			.Map<ChangeEmailEndpoint>()
 			.Map<ConfirmEmailEndpoint>()

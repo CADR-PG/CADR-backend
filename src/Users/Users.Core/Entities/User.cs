@@ -16,7 +16,7 @@ internal class User
 	public required DateTime LastLoggedInAt { get; set; }
 	public List<RefreshToken> RefreshTokens { get; set; } = [];
 	public List<Project> Projects { get; set; } = [];
-  
+
 	public void SetupEmailConfirmation()
 	{
 		var sentAt = DateTime.UtcNow;
