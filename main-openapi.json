@@ -156,6 +156,139 @@
         }
       }
     },
+    "/users/add-project": {
+      "post": {
+        "tags": [
+          "API"
+        ],
+        "summary": "AddProject",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddProject.Data"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "401": {
+            "description": "ErrorResult:  `UnauthorizedError`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/projects": {
+      "get": {
+        "tags": [
+          "API"
+        ],
+        "summary": "GetAllUserProjects",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/users/modify-project/{ProjectId}": {
+      "put": {
+        "tags": [
+          "API"
+        ],
+        "summary": "ModifyProject",
+        "parameters": [
+          {
+            "name": "ProjectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModifyProject.Data"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/users/save-scene/{ProjectId}": {
+      "post": {
+        "tags": [
+          "API"
+        ],
+        "summary": "SaveScene",
+        "parameters": [
+          {
+            "name": "ProjectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/users/load-scene/{ProjectId}": {
+      "get": {
+        "tags": [
+          "API"
+        ],
+        "summary": "LoadScene",
+        "parameters": [
+          {
+            "name": "ProjectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/users/change-info": {
       "put": {
         "tags": [
@@ -399,6 +532,22 @@
   },
   "components": {
     "schemas": {
+      "AddProject.Data": {
+        "title": "AddProject.Data",
+        "required": [
+          "name",
+          "description"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
       "ChangeEmail.Data": {
         "title": "ChangeEmail.Data",
         "required": [
@@ -494,6 +643,22 @@
             "type": "string"
           },
           "password": {
+            "type": "string"
+          }
+        }
+      },
+      "ModifyProject.Data": {
+        "title": "ModifyProject.Data",
+        "required": [
+          "name",
+          "description"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
             "type": "string"
           }
         }
