@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Endpoints;
 using Shared.Modules;
+using Shared.Services;
 using Shared.Settings;
 using Users.Core.Database;
 using Users.Core.Features;
@@ -24,6 +25,7 @@ public class UsersModule : IModule
 		var postgreSqlSettings = configuration.GetSettings<PostgreSqlSettings>();
 		services.AddDbContext<UsersDbContext>(options => options.UseNpgsql(postgreSqlSettings.ConnectionString));
 		services.AddSettingsWithOptions<JwtSettings>(configuration);
+		services.AddMailingService(configuration);
 		services.AddScoped<LoginHandler>();
 		services.AddScoped<RegisterHandler>();
 		services.AddScoped<LogoutHandler>();
@@ -34,7 +36,14 @@ public class UsersModule : IModule
 		services.AddScoped<ModifyProjectHandler>();
 		services.AddScoped<SaveSceneHandler>();
 		services.AddScoped<LoadSceneHandler>();
+		services.AddScoped<ChangeUserInfoHandler>();
+		services.AddScoped<ChangeEmailHandler>();
+		services.AddScoped<ChangePasswordHandler>();
+		services.AddScoped<ConfirmEmailHandler>();
+		services.AddScoped<ResendEmailConfirmationHandler>();
+		services.AddScoped<GetCurrentUserHandler>();
 		services.AddSingleton<ITokenProvider, JwtTokenProvider>();
+		services.AddScoped<EmailConfirmationService>();
 		services.AddValidatorsFromAssemblyContaining<UsersModule>(includeInternalTypes: true);
 
 		var jwtSettings = configuration.GetSettings<JwtSettings>();
@@ -72,4 +81,9 @@ public class UsersModule : IModule
 			.Map<ModifyProjectEndpoint>()
 			.Map<SaveSceneEndpoint>()
 			.Map<LoadSceneEndpoint>();
+			.Map<ChangeUserInfoEndpoint>()
+			.Map<ChangeEmailEndpoint>()
+			.Map<ConfirmEmailEndpoint>()
+			.Map<ChangePasswordEndpoint>()
+			.Map<ResendEmailConfirmationEndpoint>();
 }

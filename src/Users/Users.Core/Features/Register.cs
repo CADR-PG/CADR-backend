@@ -29,7 +29,8 @@ internal sealed class RegisterEndpoint : IEndpoint
 }
 
 internal sealed class RegisterHandler(
-	UsersDbContext dbContext
+	UsersDbContext dbContext,
+	EmailConfirmationService emailConfirmationService
 ) : IHttpRequestHandler<Register>
 {
 	public async Task<IResult> Handle(Register request, CancellationToken cancellationToken)
@@ -49,8 +50,12 @@ internal sealed class RegisterHandler(
 			LastLoggedInAt = DateTime.UtcNow,
 		};
 
+		user.SetupEmailConfirmation();
+
 		await dbContext.Users.AddAsync(user, cancellationToken);
 		await dbContext.SaveChangesAsync(cancellationToken);
+
+		await emailConfirmationService.SendEmailConfirmation(user);
 
 		return Results.NoContent();
 	}
