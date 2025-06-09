@@ -46,9 +46,9 @@ public sealed class HandlersTest : IAsyncLifetime, IDisposable
 		_dbContext.Add(new User
 		{
 			Id = userId,
-			FirstName = "Binjamin",
-			LastName = "Netanjachuj",
-			Email = "adolf@hitler.pl",
+			FirstName = "Jarosław",
+			LastName = "Kaczyński",
+			Email = "smolensk@2010.pl",
 			HashedPassword = HashingService.Hash(currentPassword),
 			LastLoggedInAt = DateTime.UtcNow
 		});
