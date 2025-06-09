@@ -33,6 +33,11 @@ public class UsersModule : IModule
 		services.AddScoped<LogoutHandler>();
 		services.AddScoped<RefreshHandler>();
 		services.AddScoped<GetCurrentUserHandler>();
+		services.AddScoped<AddProjectHandler>();
+		services.AddScoped<GetAllUserProjectsHandler>();
+		services.AddScoped<ModifyProjectHandler>();
+		services.AddScoped<SaveSceneHandler>();
+		services.AddScoped<LoadSceneHandler>();
 		services.AddScoped<ChangeUserInfoHandler>();
 		services.AddScoped<ChangeEmailHandler>();
 		services.AddScoped<ChangePasswordHandler>();
@@ -73,6 +78,11 @@ public class UsersModule : IModule
 			.Map<RefreshEndpoint>()
 			.Map<LogoutEndpoint>()
 			.Map<GetCurrentUserEndpoint>()
+			.Map<AddProjectEndpoint>()
+			.Map<GetAllUserProjectsEndpoint>()
+			.Map<ModifyProjectEndpoint>()
+			.Map<SaveSceneEndpoint>()
+			.Map<LoadSceneEndpoint>()
 			.Map<ChangeUserInfoEndpoint>()
 			.Map<ChangeEmailEndpoint>()
 			.Map<ConfirmEmailEndpoint>()

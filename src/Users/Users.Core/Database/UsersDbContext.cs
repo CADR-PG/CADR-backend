@@ -7,6 +7,8 @@ internal sealed class UsersDbContext(DbContextOptions<UsersDbContext> dbContextO
 {
 	public DbSet<User> Users { get; init; }
 	public DbSet<RefreshToken> RefreshTokens { get; init; }
+	public DbSet<Project> Projects { get; init; }
+
 
 	protected override void OnModelCreating(ModelBuilder builder)
 	{
