@@ -9,11 +9,13 @@ using Shared.Endpoints;
 using Shared.Modules;
 using Shared.Services;
 using Shared.Settings;
+using System.Runtime.CompilerServices;
 using Users.Core.Database;
 using Users.Core.Features;
 using Users.Core.Services;
 using Users.Core.Settings;
 
+[assembly: InternalsVisibleTo("Users.Tests")]
 namespace Users.Core;
 
 public class UsersModule : IModule

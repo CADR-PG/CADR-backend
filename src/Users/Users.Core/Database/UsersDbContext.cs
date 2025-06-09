@@ -5,8 +5,8 @@ namespace Users.Core.Database;
 
 internal sealed class UsersDbContext(DbContextOptions<UsersDbContext> dbContextOptions) : DbContext(dbContextOptions)
 {
-	public required DbSet<User> Users { get; init; }
-	public required DbSet<RefreshToken> RefreshTokens { get; init; }
+	public DbSet<User> Users { get; init; }
+	public DbSet<RefreshToken> RefreshTokens { get; init; }
 
 	protected override void OnModelCreating(ModelBuilder builder)
 	{
