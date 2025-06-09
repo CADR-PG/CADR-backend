@@ -5,9 +5,10 @@ namespace Users.Core.Database;
 
 internal sealed class UsersDbContext(DbContextOptions<UsersDbContext> dbContextOptions) : DbContext(dbContextOptions)
 {
-	public required DbSet<User> Users { get; init; }
-	public required DbSet<RefreshToken> RefreshTokens { get; init; }
-	public required DbSet<Project> Projects { get; init; }
+	public DbSet<User> Users { get; init; } = null!;
+	public DbSet<RefreshToken> RefreshTokens { get; init; } = null!;
+	public DbSet<Project> Projects { get; init; } = null!;
+
 
 	protected override void OnModelCreating(ModelBuilder builder)
 	{
