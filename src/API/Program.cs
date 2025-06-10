@@ -35,7 +35,7 @@ const string CorsPolicyName = "CADR";
 builder.Services.AddCors(options =>
 {
 	options.AddPolicy(name: CorsPolicyName,
-		policy  =>
+		policy =>
 		{
 			policy.WithOrigins("https://localhost:5173/", "https://cadr.studio/")
 				.AllowAnyHeader()
