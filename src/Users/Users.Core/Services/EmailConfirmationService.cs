@@ -3,10 +3,15 @@ using Users.Core.Entities;
 
 namespace Users.Core.Services;
 
+#pragma warning disable CS9113 // Parameter is unread.
 internal sealed class EmailConfirmationService(IMailingService mailingService)
+#pragma warning restore CS9113 // Parameter is unread.
 {
-	public async Task SendEmailConfirmation(User user)
+	// ReSharper disable once MemberCanBeMadeStatic.Global
+#pragma warning disable CA1822
+	public Task SendEmailConfirmation(User user)
+#pragma warning restore CA1822
 	{
-		await mailingService.SendAsync(user.FullName, user.Email, "Email confirmation", $"Your confirmation code: {user.EmailConfirmation.Code}. Verify your mail: <TODO>");
+		return Task.CompletedTask;
 	}
 }
