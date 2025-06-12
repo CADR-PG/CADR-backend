@@ -9,7 +9,6 @@ internal sealed class UsersDbContext(DbContextOptions<UsersDbContext> dbContextO
 	public DbSet<RefreshToken> RefreshTokens { get; init; } = null!;
 	public DbSet<Project> Projects { get; init; } = null!;
 
-
 	protected override void OnModelCreating(ModelBuilder builder)
 	{
 		builder.HasDefaultSchema(UsersModule.Name);

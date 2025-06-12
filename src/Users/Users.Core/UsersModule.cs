@@ -25,6 +25,11 @@ public class UsersModule : IModule
 	public void Register(IServiceCollection services, IConfiguration configuration)
 	{
 		var postgreSqlSettings = configuration.GetSettings<PostgreSqlSettings>();
+
+		// TODO remove
+		using var dbContext = new UsersDbContext(new DbContextOptionsBuilder<UsersDbContext>().UseNpgsql(postgreSqlSettings.ConnectionString).Options);
+		dbContext.Database.Migrate();
+
 		services.AddDbContext<UsersDbContext>(options => options.UseNpgsql(postgreSqlSettings.ConnectionString));
 		services.AddSettingsWithOptions<JwtSettings>(configuration);
 		services.AddMailingService(configuration);
