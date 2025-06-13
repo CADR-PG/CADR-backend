@@ -37,7 +37,7 @@ builder.Services.AddCors(options =>
 	options.AddPolicy(name: CorsPolicyName,
 		policy =>
 		{
-			policy.WithOrigins("https://localhost:5173/", "https://cadr.studio/")
+			policy.WithOrigins("http://localhost:5173", "https://localhost:5173", "https://cadr.studio")
 				.AllowAnyHeader()
 				.AllowAnyMethod()
 				.AllowCredentials();
