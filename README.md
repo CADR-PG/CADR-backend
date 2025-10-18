@@ -1,141 +1,106 @@
-# CADR-backend
+# 🧠 CADR Backend
 
-## 📘 Project Description
+**CADR Backend** is the server-side part of the [CADR](https://github.com/CADR-PG) project — a robust application for collaborative asset management and real-time scene editing for 3D game development teams.
 
-**CADR-backend** is the server-side component of the **CADR** system, built using **ASP.NET Core**.  
-The application serves as the backend — responsible for user authentication, data management, and communication with the database through a REST API.  
-The project was designed with a focus on **security, scalability**, and **clean architecture**.
+The frontend repository is here: [CADR Frontend](https://github.com/CADR-PG/CADR-front)
 
 ---
 
-## ⚙️ Technologies and Tools
+## 🌐 Production Access
 
-- **C# / .NET 8.0** – main language and application platform
-- **ASP.NET Core Web API** – framework for building modern REST APIs
-- **Entity Framework Core** – ORM for database access
-- **JWT (JSON Web Token)** – user authentication using tokens stored in HttpOnly cookies
-- **PostgreSQL / MSSQL** – database (depending on configuration)
-- **Docker & Docker Compose** – application containerization
-- **Scalar** – automatic API documentation
+API documentation and the live production instance are available at:
+
+👉 [https://api.cadr.studio/docs/](https://api.cadr.studio/docs/)
 
 ---
 
-## 🚀 Installation and Running
+## ⚙️ Technologies
 
-### 1️⃣ Requirements
+The project is written in **C#** using **.NET 9** and **ASP.NET Core** framework.
 
-- .NET SDK 9.0 or newer  
-- Docker (optional, for containerized setup)  
-- PostgreSQL  
-- Visual Studio / Rider / VS Code  
+Technologies and services used:
+
+* 🧩 **.NET 9**
+* 🚀 **ASP.NET Core**
+* 🗄️ **Entity Framework Core**
+* 🐘 **PostgreSQL**
+* ☁️ **Azure Storage**
 
 ---
 
-### 2️⃣ Clone the Repository
+## 🧰 Running the Project Locally
+
+### 🔐 Setting up HTTPS Certificates (one-time)
+
+Before the first run, local development HTTPS certificates need to be configured.
+Documentation: [ASP.NET Core – Docker HTTPS setup](https://learn.microsoft.com/en-us/aspnet/core/security/docker-https?view=aspnetcore-9.0)
+
+#### Linux / macOS:
 
 ```bash
-git clone https://github.com/CADR-PG/CADR-backend.git
-cd CADR-backend
+dotnet dev-certs https --clean
+dotnet dev-certs https -ep ${HOME}/.aspnet/https/aspnetapp.pfx -p dev
+dotnet dev-certs https --trust
 ```
 
----
+#### Windows:
 
-### 3️⃣ Environment Configuration
-
-Create an `.env` file or configure environment variables inside `appsettings.Development.json`:
-
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Port=5432;Database=cadr;Username=XXXX;Password=XXXXX"
-  },
-  "Jwt": {
-    "Issuer": "XXXXXX",
-    "Audience": "xxxxx",
-    "Key": "xxxxx"
-  }
-}
+```powershell
+dotnet dev-certs https --clean
+dotnet dev-certs https -ep %USERPROFILE%/.aspnet/https/aspnetapp.pfx -p dev
+dotnet dev-certs https --trust
 ```
 
----
+### 🐳 Running the Project with Docker
 
-### 4️⃣ Database Migrations
-
-Apply migrations (if the project uses them):
+From the project root directory:
 
 ```bash
-dotnet ef database update
+docker compose -f tools/docker/docker-compose.api.yml -p cadr up
 ```
 
----
-
-### 5️⃣ Run the Application
-
-#### 💻 Locally:
-
-```bash
-dotnet run --project src/CADR-backend
-```
-The app will be available at:  
-👉 `https://localhost:5001`  
-👉 `http://localhost:5000`
-
-#### 🐳 Using Docker:
-
-```bash
-docker-compose up --build
-```
+Local development links:
+- CADR API (HTTP): http://localhost:8080/
+- CADR API (HTTPS): https://localhost:8081/
+- mailpit (email & SMTP testing): http://localhost:8025/
 
 ---
 
-## 🗂️ Project Structure
+## 🧩 Modules
 
-```
-CADR-backend/
-├── src/
-│   ├── CADR.Api/              # Main API application
-│   ├── CADR.Core/             # Domain logic and models
-│   ├── CADR.Infrastructure/   # Data access layer, EF Core
-│   └── CADR.Application/      # Services, DTOs, business logic
-├── tests/                     # Unit/integration tests
-├── docker-compose.yml
-├── README.md
-└── LICENSE
-```
+### 👤 `users`
+User management, authentication, and session handling:
 
----
-
-## 📄 API Documentation
-
-After running the app, open:  
-📍 `https://localhost:5001/swagger/index.html`  
-Here you'll find the full API documentation in Swagger UI format.
+- login / registration
+- session based on **Access JWT** (http-only cookie)
+- session refresh using **Refresh JWT**
+- logout (removing tokens from cookies)
+- retrieve and update user data
+- change email + confirmation email
+- password change (after login)
+- resend email confirmation
 
 ---
 
-## 🔒 Authentication
+### 📁 `projects`
+Project management module (currently linked to `users` module, planned to be separated):
 
-The system uses **JWT tokens** stored in **HttpOnly cookies**, enhancing security.  
-It also supports **refresh tokens** for seamless session renewal without re-login.
-
----
-
-## 🧠 Key Features
-
-- User registration and login  
-- JWT-based authentication  
-- CRUD operations for main resources  
-- Database integration via EF Core  
-- Data validation and clean, layered architecture  
+- add a project (name, description)
+- edit project details
+- fetch user project list (with pagination)
+- fetch raw scene file
+- save raw scene file
 
 ---
 
-## 📜 License
+## 🔧 Planned Refactor
 
-This project is released under the **MIT License** — you are free to use, modify, and distribute the code, provided that attribution to the authors is maintained.
-
----
-
-### ❤️ Thanks for your support!
-
-If you like this project — give it a ⭐ on GitHub!
+### Refactoring and Future Development:
+- migrate to **.NET 10**
+- separate `projects` module from `users`
+- change project storage → **Azure Blob Storage**
+- update CI/CD and Azure deployment process
+- implement custom **discriminated unions** using `generic type`
+- improve email client security
+- add new **integration tests**
+- (optional) implement **HATEOAS**
