@@ -1,0 +1,30 @@
+﻿services:
+  cadr.postgres:
+    image: postgres:latest
+    container_name: cadr.postgres
+    environment:
+      - POSTGRES_DB=cadr
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - ./.containers/cadr.database:/var/lib/postgresql/18/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  cadr.mailpit:
+    image: axllent/mailpit
+    container_name: cadr.mailpit
+    environment:
+      - MP_SMTP_AUTH=cadr.studio@gmail.com:cadr
+      - MP_SMTP_AUTH_ALLOW_INSECURE=true
+      - MP_DATABASE=/data/mailpit.db
+      - TZ=Europe/Warsaw
+    volumes:
+      - ./.containers/cadr.mailpit:/data
+    ports:
+      - "8025:8025"
+      - "1025:1025"

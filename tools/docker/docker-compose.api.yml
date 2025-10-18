@@ -1,0 +1,21 @@
+include:
+  - docker-compose.services.yaml
+services:
+  cadr.api:
+    depends_on:
+      cadr.postgres:
+        condition: service_healthy
+    build:
+      context: ./../../
+      dockerfile: tools/docker/api.Dockerfile
+    environment:
+      ASPNETCORE_URLS: https://+:8081;http://+:8080
+      ASPNETCORE_Kestrel__Certificates__Default__Password: dev
+      ASPNETCORE_Kestrel__Certificates__Default__Path: /https/aspnetapp.pfx
+      ASPNETCORE_ENVIRONMENT: Docker
+    volumes:
+      - ${HOME}/.aspnet/https:/https/
+      - ./.containers/cadr.api:/home/app/.aspnet
+    ports:
+      - "8080:8080"
+      - "8081:8081"

@@ -46,6 +46,16 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Docker"))
+{
+	using var scope = app.Services.CreateScope();
+
+	foreach (var module in applicationContext.Modules)
+	{
+		await module.RunInDevelopmentMode(scope.ServiceProvider);
+	}
+}
+
 app.UseExceptionHandler();
 
 app.UseHttpsRedirection();
