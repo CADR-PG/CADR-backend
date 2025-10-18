@@ -10,6 +10,11 @@
       - ./.containers/cadr.database:/var/lib/postgresql/18/data
     ports:
       - "5432:5432"
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
   cadr.mailpit:
     image: axllent/mailpit
     container_name: cadr.mailpit

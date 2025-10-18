@@ -3,8 +3,8 @@ include:
 services:
   cadr.api:
     depends_on:
-      - cadr.postgres
-      - cadr.mailpit
+      cadr.postgres:
+        condition: service_healthy
     build:
       context: ./../../
       dockerfile: tools/docker/api.Dockerfile
