@@ -1,7 +1,7 @@
 ﻿services:
-  postgresql:
+  cadr.postgres:
     image: postgres:latest
-    container_name: postgresql
+    container_name: cadr.postgres
     environment:
       - POSTGRES_DB=cadr
       - POSTGRES_USER=postgres
@@ -10,9 +10,9 @@
       - ./.containers/cadr.database:/var/lib/postgresql/18/data
     ports:
       - "5432:5432"
-  mailpit:
+  cadr.mailpit:
     image: axllent/mailpit
-    container_name: mailpit
+    container_name: cadr.mailpit
     environment:
       - MP_DATABASE=/data/mailpit.db
       - TZ=Europe/Warsaw

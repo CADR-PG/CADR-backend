@@ -16,4 +16,10 @@ public static class Extensions
 		foreach (var module in applicationContext.Modules)
 			module.MapEndpoints(endpoints);
 	}
+
+	public static void ApplyMigration(this IEndpointRouteBuilder endpoints, ApplicationContext applicationContext)
+	{
+		foreach (var module in applicationContext.Modules)
+			module.MapEndpoints(endpoints);
+	}
 }

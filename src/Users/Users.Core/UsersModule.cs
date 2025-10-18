@@ -88,4 +88,10 @@ public class UsersModule : IModule
 			.Map<ConfirmEmailEndpoint>()
 			.Map<ChangePasswordEndpoint>()
 			.Map<ResendEmailConfirmationEndpoint>();
+
+	public async ValueTask RunInDevelopmentMode(IServiceProvider services)
+	{
+		var dbContext = services.GetRequiredService<UsersDbContext>();
+		await dbContext.Database.MigrateAsync();
+	}
 }

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Shared.Modules;
 using Users.Core.Entities;
 
 namespace Users.Core.Database;
@@ -16,4 +17,6 @@ internal sealed class UsersDbContext(DbContextOptions<UsersDbContext> dbContextO
 		builder.ApplyConfigurationsFromAssembly(typeof(UsersDbContext).Assembly);
 		base.OnModelCreating(builder);
 	}
+
+	public static string Schema => "users";
 }
