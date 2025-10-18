@@ -1,0 +1,23 @@
+﻿<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/tools/" />
+  <Folder Name="/tools/docker/">
+    <File Path="tools\docker\docker-compose.services.yaml" />
+    <File Path="tools\docker\api.Dockerfile" />
+    <File Path="tools\docker\docker-compose.api.yml" />
+  </Folder>
+  <Folder Name="/tools/efcore/" />
+  <Folder Name="/Users/">
+    <Project Path="src\Users\Users.Contracts\Users.Contracts.csproj" Type="Classic C#" />
+    <Project Path="src\Users\Users.Core\Users.Core.csproj" Type="Classic C#" />
+    <Project Path="src\Users\Users.Tests\Users.Tests.csproj" Type="Classic C#" />
+  </Folder>
+  <Project Path="src\API\API.csproj" Type="Classic C#" />
+  <Project Path="src\Shared\Shared.csproj" Type="Classic C#" />
+</Solution>

@@ -1,0 +1,13 @@
+include:
+  - docker-compose.services.yaml
+services:
+  cadr.api:
+    image: api
+    build:
+      context: .
+      dockerfile: api.Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    ports:
+      - "8080:8080"
+      - "8081:8081"
