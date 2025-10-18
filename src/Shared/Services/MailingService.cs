@@ -28,7 +28,7 @@ internal sealed class MailingService(IOptions<MailingSettings> mailingSettings) 
 		};
 
 		using var client = new SmtpClient();
-		await client.ConnectAsync(MailingSettings.SmtpHost, MailingSettings.SmtpPort, SecureSocketOptions.StartTls);
+		await client.ConnectAsync(MailingSettings.SmtpHost, MailingSettings.SmtpPort);
 		await client.AuthenticateAsync(MailingSettings.SmtpEmail, MailingSettings.SmtpPassword);
 		await client.SendAsync(message);
 		await client.DisconnectAsync(true);

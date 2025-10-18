@@ -14,6 +14,8 @@
     image: axllent/mailpit
     container_name: cadr.mailpit
     environment:
+      - MP_SMTP_AUTH=cadr.studio@gmail.com:cadr
+      - MP_SMTP_AUTH_ALLOW_INSECURE=true
       - MP_DATABASE=/data/mailpit.db
       - TZ=Europe/Warsaw
     volumes:
