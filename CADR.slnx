@@ -1,4 +1,9 @@
 ﻿<Solution>
+  <Folder Name="/Projects/" />
+  <Folder Name="/Projects/">
+    <Project Path="src/Projects/Projects.Contracts/Projects.Contracts.csproj" />
+    <Project Path="src/Projects/Projects.Core/Projects.Core.csproj" />
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
     <File Path=".gitignore" />
