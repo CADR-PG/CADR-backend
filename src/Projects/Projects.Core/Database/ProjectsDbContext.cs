@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using Shared.Modules;
 using Projects.Core.Entities;
+using Shared.Modules;
 
 namespace Projects.Core.Database;
 

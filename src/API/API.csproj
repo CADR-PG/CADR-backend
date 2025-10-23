@@ -40,6 +40,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Projects\Projects.Contracts\Projects.Contracts.csproj" />
+    <ProjectReference Include="..\Projects\Projects.Core\Projects.Core.csproj" />
     <ProjectReference Include="..\Shared\Shared.csproj" />
     <ProjectReference Include="..\Users\Users.Core\Users.Core.csproj" />
   </ItemGroup>
