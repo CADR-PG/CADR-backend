@@ -1,6 +1,7 @@
 name: Deploy to Azure - test
 
 on:
+  push:
   workflow_dispatch:
 
 jobs:
