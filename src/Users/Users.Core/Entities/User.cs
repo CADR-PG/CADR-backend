@@ -15,7 +15,6 @@ internal class User
 	public required string HashedPassword { get; set; }
 	public required DateTime LastLoggedInAt { get; set; }
 	public List<RefreshToken> RefreshTokens { get; set; } = [];
-	public List<Project> Projects { get; set; } = [];
 
 	public void SetupEmailConfirmation()
 	{

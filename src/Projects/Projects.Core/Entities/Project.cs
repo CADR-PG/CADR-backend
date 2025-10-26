@@ -1,8 +1,9 @@
 using Shared.ValueObjects;
+using Users.Contracts.Database.References;
 
-namespace Users.Core.Entities;
+namespace Projects.Core.Entities;
 
-internal class Project
+public class Project
 {
 	public required Guid Id { get; init; }
 	public required string? Name { get; set; }
@@ -12,5 +13,5 @@ internal class Project
 	public string? JsonDocument { get; set; }
 
 	public UserId UserId { get; init; }
-	public User? User { get; init; }
+	public UserReference? User { get; init; }
 }

@@ -1,6 +1,6 @@
-using Users.Core.Entities;
+using Projects.Core.Entities;
 
-namespace Users.Core.ReadModels;
+namespace Projects.Core.ReadModels;
 
 internal record ProjectReadModel(Guid Id, string? Name, string? Description, DateTime LastUpdate)
 {

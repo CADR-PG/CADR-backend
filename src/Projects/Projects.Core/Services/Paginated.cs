@@ -1,8 +1,6 @@
-using System.Collections.ObjectModel;
-
-namespace Users.Core.Services;
 using Microsoft.EntityFrameworkCore;
 
+namespace Projects.Core.Services;
 public record Paginated<T>(IReadOnlyList<T> Items, int TotalCount, int PageNumber, int PageSize)
 	where T : class
 {

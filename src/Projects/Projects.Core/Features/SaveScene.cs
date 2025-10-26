@@ -4,11 +4,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Projects.Core.Database;
 using Shared.Endpoints;
 using Shared.Endpoints.Validation;
-using Users.Core.Database;
 
-namespace Users.Core.Features;
+namespace Projects.Core.Features;
 
 internal sealed record SaveScene([FromRoute] Guid ProjectId, [FromBody] object Scene) : IHttpRequest
 {
@@ -21,7 +21,7 @@ internal sealed class SaveSceneEndpoint : IEndpoint
 		endpoints.MapPost<SaveScene, SaveSceneHandler>("save-scene/{ProjectId}").RequireAuthorization().AddValidation<SaveScene>();
 }
 
-internal sealed class SaveSceneHandler(UsersDbContext dbContext) : IHttpRequestHandler<SaveScene>
+internal sealed class SaveSceneHandler(ProjectsDbContext dbContext) : IHttpRequestHandler<SaveScene>
 {
 	public async Task<IResult> Handle(SaveScene request, CancellationToken cancellationToken)
 	{

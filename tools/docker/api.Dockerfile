@@ -10,6 +10,8 @@ COPY ["src/API/API.csproj", "src/API/"]
 COPY ["src/Shared/Shared.csproj", "src/Shared/"]
 COPY ["src/Users/Users.Core/Users.Core.csproj", "src/Users/Users.Core/"]
 COPY ["src/Users/Users.Contracts/Users.Contracts.csproj", "src/Users/Users.Contracts/"]
+COPY ["src/Projects/Projects.Core/Projects.Core.csproj", "src/Projects/Projects.Core/"]
+COPY ["src/Projects/Projects.Contracts/Projects.Contracts.csproj", "src/Projects/Projects.Contracts/"]
 RUN dotnet restore "src/API/API.csproj"
 COPY . .
 WORKDIR "/src/src/API"

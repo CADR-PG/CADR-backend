@@ -4,13 +4,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Projects.Core.Database;
+using Projects.Core.Entities;
+using Projects.Core.ReadModels;
 using Shared.Endpoints;
 using Shared.Endpoints.Validation;
-using Users.Core.Database;
-using Users.Core.Entities;
-using Users.Core.ReadModels;
 
-namespace Users.Core.Features;
+namespace Projects.Core.Features;
 
 internal sealed record ModifyProject([FromRoute] Guid ProjectId, [FromBody] ModifyProject.Data Body) : IHttpRequest
 {
@@ -25,7 +25,7 @@ internal sealed class ModifyProjectEndpoint : IEndpoint
 }
 
 internal sealed class ModifyProjectHandler(
-	UsersDbContext dbContext
+	ProjectsDbContext dbContext
 ) : IHttpRequestHandler<ModifyProject>
 {
 	public async Task<IResult> Handle(ModifyProject request, CancellationToken cancellationToken)

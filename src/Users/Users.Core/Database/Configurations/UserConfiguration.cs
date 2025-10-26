@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Shared.ValueObjects;
 using Users.Core.Entities;
 
 namespace Users.Core.Database.Configurations;
@@ -10,8 +9,6 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
 	public void Configure(EntityTypeBuilder<User> user)
 	{
 		user.HasKey(u => u.Id);
-		user.Property(x => x.Id)
-			.HasConversion(x => x.Value, x => new UserId(x));
 
 		user.Property(u => u.FirstName).IsRequired().HasMaxLength(100);
 		user.Property(u => u.LastName).IsRequired().HasMaxLength(100);

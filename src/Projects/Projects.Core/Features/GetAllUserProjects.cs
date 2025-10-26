@@ -2,13 +2,13 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Projects.Core.Database;
+using Projects.Core.Entities;
+using Projects.Core.Services;
 using Shared.Endpoints;
 using Shared.Endpoints.Requests;
-using Users.Core.Database;
-using Users.Core.Entities;
-using Users.Core.Services;
 
-namespace Users.Core.Features;
+namespace Projects.Core.Features;
 
 internal record struct GetAllUserProjects(CurrentUser CurrentUser) : IHttpRequest;
 
@@ -20,8 +20,8 @@ internal sealed class GetAllUserProjectsEndpoint : IEndpoint
 }
 
 internal sealed class GetAllUserProjectsHandler(
-	UsersDbContext dbContext
-	) : IHttpRequestHandler<GetAllUserProjects>
+	ProjectsDbContext dbContext
+) : IHttpRequestHandler<GetAllUserProjects>
 {
 	public async Task<IResult> Handle(GetAllUserProjects request, CancellationToken cancellationToken)
 	{

@@ -4,16 +4,16 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Projects.Core.Database;
+using Projects.Core.Entities;
+using Projects.Core.ReadModels;
 using Shared.Endpoints;
 using Shared.Endpoints.Requests;
 using Shared.Endpoints.Results;
 using Shared.Endpoints.Validation;
 using System.Text.Json;
-using Users.Core.Database;
-using Users.Core.Entities;
-using Users.Core.ReadModels;
 
-namespace Users.Core.Features;
+namespace Projects.Core.Features;
 
 
 internal sealed record AddProject([FromBody] AddProject.Data Body, CurrentUser CurrentUser) : IHttpRequest
@@ -31,8 +31,8 @@ internal sealed class AddProjectEndpoint : IEndpoint
 }
 
 internal sealed class AddProjectHandler(
-	UsersDbContext dbContext
-	) : IHttpRequestHandler<AddProject>
+	ProjectsDbContext dbContext
+) : IHttpRequestHandler<AddProject>
 {
 	public async Task<IResult> Handle(AddProject request, CancellationToken cancellationToken)
 	{
