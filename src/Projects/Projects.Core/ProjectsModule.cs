@@ -1,7 +1,9 @@
-// using Microsoft.AspNetCore.Authentication.JwtBearer;
-
 using FluentValidation;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Projects.Core.Database;
 using Projects.Core.Features;
 using Shared.Endpoints;
