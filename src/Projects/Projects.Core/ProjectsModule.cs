@@ -1,4 +1,6 @@
 // using Microsoft.AspNetCore.Authentication.JwtBearer;
+
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Shared.Endpoints;
 using Shared.Modules;
@@ -11,6 +13,7 @@ namespace Projects.Core;
 public class ProjectsModule : IModule
 {
 	public static string Name => "Projects";
+
 	public void Register(IServiceCollection services, IConfiguration configuration)
 	{
 		var postgreSqlSettings = configuration.GetSettings<PostgreSqlSettings>();
@@ -21,7 +24,9 @@ public class ProjectsModule : IModule
 		services.AddScoped<SaveSceneHandler>();
 		services.AddScoped<GetAllUserProjectsHandler>();
 		services.AddScoped<ModifyProjectHandler>();
+		services.AddValidatorsFromAssemblyContaining<ProjectsModule>(includeInternalTypes: true);
 	}
+
 
 	public void MapEndpoints(IEndpointRouteBuilder endpoints)
 		=> endpoints.MapGroup(Name.ToLowerInvariant())

@@ -12,5 +12,4 @@ public class Project
 	public string? JsonDocument { get; set; }
 
 	public UserId UserId { get; init; }
-	// public User? User { get; init; }
 }
