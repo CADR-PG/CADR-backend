@@ -2,10 +2,13 @@ name: Deploy to Azure
 
 on:
   workflow_dispatch:
+  push:
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: 'Production'
     permissions:
       id-token: write #This is required for requesting the JWT
       contents: read #This is required for actions/checkout
