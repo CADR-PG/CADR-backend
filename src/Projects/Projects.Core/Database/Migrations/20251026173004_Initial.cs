@@ -32,7 +32,7 @@ namespace Projects.Core.Database.Migrations
                     table.ForeignKey(
                         name: "FK_Projects_Users_UserId",
                         column: x => x.UserId,
-                        principalSchema: "users",
+                        principalSchema: "Users",
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);

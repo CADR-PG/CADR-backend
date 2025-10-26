@@ -72,7 +72,7 @@ namespace Projects.Core.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users", "users", t =>
+                    b.ToTable("Users", "Users", t =>
                         {
                             t.ExcludeFromMigrations();
                         });

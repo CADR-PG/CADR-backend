@@ -12,7 +12,7 @@ using Projects.Core.Database;
 namespace Projects.Core.Database.Migrations
 {
     [DbContext(typeof(ProjectsDbContext))]
-    [Migration("20251026170350_Initial")]
+    [Migration("20251026173004_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -75,7 +75,7 @@ namespace Projects.Core.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users", "users", t =>
+                    b.ToTable("Users", "Users", t =>
                         {
                             t.ExcludeFromMigrations();
                         });

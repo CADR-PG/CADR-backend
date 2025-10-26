@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -31,6 +32,7 @@ public class ProjectsModule : IModule
 
 	public void MapEndpoints(IEndpointRouteBuilder endpoints)
 		=> endpoints.MapGroup(Name.ToLowerInvariant())
+			.WithTags(Name)
 			.Map<AddProjectEndpoint>()
 			.Map<GetAllUserProjectsEndpoint>()
 			.Map<LoadSceneEndpoint>()
