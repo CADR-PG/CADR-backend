@@ -12,8 +12,8 @@ using Projects.Core.Database;
 namespace Projects.Core.Database.Migrations
 {
     [DbContext(typeof(ProjectsDbContext))]
-    [Migration("20251026120835_26_11_2025")]
-    partial class _26_11_2025
+    [Migration("20251026170350_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -51,7 +51,45 @@ namespace Projects.Core.Database.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("UserId");
+
                     b.ToTable("Projects", "Projects");
+                });
+
+            modelBuilder.Entity("Users.Contracts.Database.References.UserReference", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users", "users", t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
+                });
+
+            modelBuilder.Entity("Projects.Core.Entities.Project", b =>
+                {
+                    b.HasOne("Users.Contracts.Database.References.UserReference", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 #pragma warning restore 612, 618
         }

@@ -10,6 +10,7 @@ public class UserReferenceConfiguration : IEntityTypeConfiguration<UserReference
 	public void Configure(EntityTypeBuilder<UserReference> builder)
 	{
 		builder.Metadata.SetIsTableExcludedFromMigrations(true);
+		builder.ToTable("Users", UsersConstants.DatabaseSchema);
 		builder.HasKey(u => u.Id);
 	}
 }
