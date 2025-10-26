@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Projects.Core.Entities;
-using Shared.Modules;
+using Shared.ValueObjects;
+using Users.Contracts.Database.References;
 
 namespace Projects.Core.Database;
 
@@ -8,13 +9,18 @@ internal sealed class ProjectsDbContext(DbContextOptions<ProjectsDbContext> dbCo
 {
 	public DbSet<Project> Projects { get; init; } = null!;
 
-
 	protected override void OnModelCreating(ModelBuilder builder)
 	{
 		builder.HasDefaultSchema(ProjectsModule.Name);
 		builder.ApplyConfigurationsFromAssembly(typeof(ProjectsDbContext).Assembly);
+		builder.ApplyConfigurationsFromAssembly(typeof(UserReference).Assembly);
 		base.OnModelCreating(builder);
 	}
 
-	public static string Schema => "users";
+	protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+	{
+		configurationBuilder
+			.Properties<UserId>()
+			.HaveConversion<UserIdConverter>();
+	}
 }

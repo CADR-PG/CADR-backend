@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Shared.Modules;
+using Shared.ValueObjects;
 using Users.Core.Entities;
 
 namespace Users.Core.Database;
@@ -9,7 +10,6 @@ internal sealed class UsersDbContext(DbContextOptions<UsersDbContext> dbContextO
 	public DbSet<User> Users { get; init; } = null!;
 	public DbSet<RefreshToken> RefreshTokens { get; init; } = null!;
 
-
 	protected override void OnModelCreating(ModelBuilder builder)
 	{
 		builder.HasDefaultSchema(UsersModule.Name);
@@ -17,5 +17,10 @@ internal sealed class UsersDbContext(DbContextOptions<UsersDbContext> dbContextO
 		base.OnModelCreating(builder);
 	}
 
-	public static string Schema => "users";
+	protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+	{
+		configurationBuilder
+			.Properties<UserId>()
+			.HaveConversion<UserIdConverter>();
+	}
 }

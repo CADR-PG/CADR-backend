@@ -27,7 +27,6 @@ public class ProjectsModule : IModule
 		services.AddValidatorsFromAssemblyContaining<ProjectsModule>(includeInternalTypes: true);
 	}
 
-
 	public void MapEndpoints(IEndpointRouteBuilder endpoints)
 		=> endpoints.MapGroup(Name.ToLowerInvariant())
 			.Map<AddProjectEndpoint>()
