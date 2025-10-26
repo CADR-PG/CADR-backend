@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Projects.Core.Database;
 using Shared.Endpoints;
 using System.Text.Json;
-using Projects.Core.Database;
 
 namespace Projects.Core.Features;
 

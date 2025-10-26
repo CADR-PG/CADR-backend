@@ -2,11 +2,11 @@
 
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Projects.Core.Database;
+using Projects.Core.Features;
 using Shared.Endpoints;
 using Shared.Modules;
 using Shared.Settings;
-using Projects.Core.Database;
-using Projects.Core.Features;
 
 namespace Projects.Core;
 

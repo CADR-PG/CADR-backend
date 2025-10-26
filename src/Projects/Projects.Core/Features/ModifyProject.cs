@@ -4,11 +4,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
-using Shared.Endpoints;
-using Shared.Endpoints.Validation;
 using Projects.Core.Database;
 using Projects.Core.Entities;
 using Projects.Core.ReadModels;
+using Shared.Endpoints;
+using Shared.Endpoints.Validation;
 
 namespace Projects.Core.Features;
 
