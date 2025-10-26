@@ -20,6 +20,5 @@ internal sealed class ProjectConfiguration : IEntityTypeConfiguration<Project>
 		builder.Property(p => p.Name).IsRequired();
 		builder.Property(p => p.Description).IsRequired();
 		builder.Property(p => p.JsonDocument);
-		// builder.HasOne(p => p.User).WithMany(u => u.Projects).HasForeignKey(p => p.UserId).OnDelete(DeleteBehavior.Cascade);
 	}
 }
