@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Users.Core.Database.Migrations
 {
     /// <inheritdoc />
-    public partial class _26_10_2025 : Migration
+    public partial class ExtractProjectsModule : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
