@@ -13,8 +13,8 @@ using Users.Core.Database;
 namespace Users.Core.Database.Migrations
 {
     [DbContext(typeof(UsersDbContext))]
-    [Migration("20251026120905_26_10_2025")]
-    partial class _26_10_2025
+    [Migration("20251026120905_ExtractProjectsModule")]
+    partial class ExtractProjectsModule
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

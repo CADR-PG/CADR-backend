@@ -20,7 +20,7 @@ public class ProjectsModule : IModule
 	public void Register(IServiceCollection services, IConfiguration configuration)
 	{
 		var postgreSqlSettings = configuration.GetSettings<PostgreSqlSettings>();
-		services.AddDbContext<ProjectsDbContext>(options => options.UseNpgsql(postgreSqlSettings.ConnectionString));
+		services.AddDbContext<ProjectsDbContext>(options => options.UseNpgsql(postgreSqlSettings.ConnectionString, x => x.MigrationsHistoryTable("__EFMigrationsHistory", Name)));
 		services.AddScoped<AddProjectHandler>();
 		services.AddScoped<DeleteProjectHandler>();
 		services.AddScoped<LoadSceneHandler>();
