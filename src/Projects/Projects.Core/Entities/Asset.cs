@@ -8,15 +8,18 @@ abstract class Asset
 	public required Guid Id { get; init; }
 	public required string Name { get; set; }
 	public required AssetType Type { get; set; }
-	public required Guid? ParentId { get; set; }
-	bool IsRoot => ParentId == null;
+	public Guid? ParentId { get; set; }
 	public required string BlobName { get; set; }
 	// temporary commented, because it is never used
 	// public readonly string BlobContainerName = "project-assets";
 	public required Guid ProjectId { get; set; }
+	public Project? Project { get; init; }
 }
 
-sealed class AssetFolder : Asset { }
+sealed class AssetFolder : Asset
+{
+	public bool IsRoot => ParentId == null;
+}
 
 sealed class AssetFile : Asset
 {
