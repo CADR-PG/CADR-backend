@@ -28,3 +28,14 @@
     ports:
       - "8025:8025"
       - "1025:1025"
+  cadr.azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    container_name: cadr.azurite
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+    volumes:
+      - ./.containers/cadr.azurite:/data
+    command: azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0
+    restart: always
