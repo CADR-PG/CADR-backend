@@ -15,7 +15,6 @@ internal sealed class AssetConfiguration : IEntityTypeConfiguration<Asset>
 			.HasMaxLength(200);
 		builder.Property(a => a.Type).IsRequired();
 		builder.Property(a => a.ParentId)
-			.IsRequired()
 			.HasDefaultValue(null);
 		builder.Property(a => a.BlobName).IsRequired();
 
