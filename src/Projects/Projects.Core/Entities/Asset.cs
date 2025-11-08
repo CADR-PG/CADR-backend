@@ -10,8 +10,8 @@ abstract class Asset
 	public required AssetType Type { get; set; }
 	public Guid? ParentId { get; set; }
 	public required string BlobName { get; set; }
-	// temporary commented, because it is never used
-	// public readonly string BlobContainerName = "project-assets";
+
+	public readonly string BlobContainerName = "project-assets";
 	public required Guid ProjectId { get; set; }
 	public Project? Project { get; init; }
 }

@@ -1,3 +1,4 @@
+using Azure.Storage.Blobs;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -7,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Projects.Core.Database;
 using Projects.Core.Features;
+using Projects.Core.Features.Projects;
 using Shared.Endpoints;
 using Shared.Modules;
 using Shared.Settings;
@@ -28,6 +30,7 @@ public class ProjectsModule : IModule
 		services.AddScoped<GetAllUserProjectsHandler>();
 		services.AddScoped<ModifyProjectHandler>();
 		services.AddValidatorsFromAssemblyContaining<ProjectsModule>(includeInternalTypes: true);
+
 	}
 
 	public void MapEndpoints(IEndpointRouteBuilder endpoints)

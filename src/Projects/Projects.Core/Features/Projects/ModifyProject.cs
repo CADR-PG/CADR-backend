@@ -5,12 +5,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Projects.Core.Database;
-using Projects.Core.Entities;
 using Projects.Core.ReadModels;
 using Shared.Endpoints;
 using Shared.Endpoints.Validation;
 
-namespace Projects.Core.Features;
+namespace Projects.Core.Features.Projects;
 
 internal sealed record ModifyProject([FromRoute] Guid ProjectId, [FromBody] ModifyProject.Data Body) : IHttpRequest
 {

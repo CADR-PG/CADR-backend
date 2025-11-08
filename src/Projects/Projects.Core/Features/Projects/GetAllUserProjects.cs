@@ -1,14 +1,12 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.EntityFrameworkCore;
 using Projects.Core.Database;
-using Projects.Core.Entities;
 using Projects.Core.Services;
 using Shared.Endpoints;
 using Shared.Endpoints.Requests;
 
-namespace Projects.Core.Features;
+namespace Projects.Core.Features.Projects;
 
 internal record struct GetAllUserProjects(CurrentUser CurrentUser) : IHttpRequest;
 

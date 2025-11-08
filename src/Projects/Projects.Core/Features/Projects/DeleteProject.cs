@@ -8,7 +8,7 @@ using Projects.Core.Database;
 using Shared.Endpoints;
 using Shared.Endpoints.Validation;
 
-namespace Projects.Core.Features;
+namespace Projects.Core.Features.Projects;
 
 internal sealed record DeleteProject([FromRoute] Guid ProjectId) : IHttpRequest
 {
