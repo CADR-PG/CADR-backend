@@ -1,3 +1,5 @@
+using Azure.Identity;
+using Microsoft.Extensions.Azure;
 using Azure.Storage.Blobs;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
@@ -6,7 +8,9 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Projects.Core.Database;
+using Projects.Core.Entities;
 using Projects.Core.Features;
 using Projects.Core.Features.Projects;
 using Shared.Endpoints;
@@ -30,7 +34,13 @@ public class ProjectsModule : IModule
 		services.AddScoped<GetAllUserProjectsHandler>();
 		services.AddScoped<ModifyProjectHandler>();
 		services.AddValidatorsFromAssemblyContaining<ProjectsModule>(includeInternalTypes: true);
+		services.AddAzureClients(builder =>
+		{
+			var projectSettings = configuration.GetSection("Projects");
+			var connectionString = projectSettings["AccountUrl"];
 
+			builder.AddBlobServiceClient(connectionString);
+		});
 	}
 
 	public void MapEndpoints(IEndpointRouteBuilder endpoints)

@@ -16,7 +16,7 @@ internal sealed class AssetConfiguration : IEntityTypeConfiguration<Asset>
 		builder.Property(a => a.Type).IsRequired();
 		builder.Property(a => a.ParentId)
 			.HasDefaultValue(null);
-		builder.Property(a => a.BlobName).IsRequired();
+		builder.Property(a => a.BlobPath).IsRequired();
 
 		builder.HasOne(x => x.Project)
 			.WithMany()
