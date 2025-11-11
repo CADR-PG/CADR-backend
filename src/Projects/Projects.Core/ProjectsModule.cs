@@ -57,5 +57,13 @@ public class ProjectsModule : IModule
 	{
 		var dbContext = services.GetRequiredService<ProjectsDbContext>();
 		await dbContext.Database.MigrateAsync();
+
+		var blobServiceClient = services.GetRequiredService<BlobServiceClient>();
+		var containerClient = blobServiceClient.GetBlobContainerClient(Asset.BlobContainerName);
+
+		bool exists = await containerClient.ExistsAsync();
+
+		if (!exists)
+			await containerClient.CreateAsync();
 	}
 }
