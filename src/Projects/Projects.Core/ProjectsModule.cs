@@ -12,6 +12,7 @@ using Microsoft.Extensions.Hosting;
 using Projects.Core.Database;
 using Projects.Core.Entities;
 using Projects.Core.Features;
+using Projects.Core.Features.Assets;
 using Projects.Core.Features.Projects;
 using Shared.Endpoints;
 using Shared.Modules;
@@ -33,6 +34,7 @@ public class ProjectsModule : IModule
 		services.AddScoped<SaveSceneHandler>();
 		services.AddScoped<GetAllUserProjectsHandler>();
 		services.AddScoped<ModifyProjectHandler>();
+		services.AddScoped<CreateAssetHandler>();
 		services.AddValidatorsFromAssemblyContaining<ProjectsModule>(includeInternalTypes: true);
 		services.AddAzureClients(builder =>
 		{
@@ -51,7 +53,8 @@ public class ProjectsModule : IModule
 			.Map<LoadSceneEndpoint>()
 			.Map<ModifyProjectEndpoint>()
 			.Map<SaveSceneEndpoint>()
-			.Map<DeleteProjectEndpoint>();
+			.Map<DeleteProjectEndpoint>()
+			.Map<CreateAssetEndpoint>();
 
 	public async ValueTask RunInDevelopmentMode(IServiceProvider services)
 	{
