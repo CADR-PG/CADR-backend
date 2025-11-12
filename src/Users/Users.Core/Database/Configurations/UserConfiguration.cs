@@ -16,6 +16,9 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
 		user.Property(u => u.HashedPassword).IsRequired().HasMaxLength(1024);
 		user.Property(u => u.Email).IsRequired().HasMaxLength(320);
 
+		user.Property(u => u.PasswordResetToken).IsRequired(false);
+		user.Property(u => u.PasswordResetExpiresAt).IsRequired(false);
+
 		user.ComplexProperty(x => x.EmailConfirmation, confirmation =>
 		{
 			confirmation.Property(x => x.IsConfirmed)
@@ -23,6 +26,7 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
 				.IsRequired();
 
 			confirmation.Property(x => x.Code)
+				.HasMaxLength(6)
 				.IsRequired(false);
 
 			confirmation.Property(x => x.ExpiresAt)

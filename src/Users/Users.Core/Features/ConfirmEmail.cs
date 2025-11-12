@@ -11,7 +11,7 @@ using Users.Core.ReadModels;
 
 namespace Users.Core.Features;
 
-internal record struct ConfirmEmail([FromQuery] string Email, [FromQuery] int Code) : IHttpRequest
+internal record struct ConfirmEmail([FromQuery] string Email, [FromQuery] string Code) : IHttpRequest
 {
 	public record Data(string CurrentPassword, string NewPassword);
 }

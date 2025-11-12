@@ -27,7 +27,7 @@ internal sealed class ResendEmailConfirmationEndpoint : IEndpoint
 
 internal sealed class ResendEmailConfirmationHandler(
 	UsersDbContext dbContext,
-	EmailConfirmationService emailConfirmationService
+	UserMailingService userMailingService
 ) : IHttpRequestHandler<ResendEmailConfirmation>
 {
 	public async Task<IResult> Handle(ResendEmailConfirmation request, CancellationToken cancellationToken)
@@ -41,7 +41,7 @@ internal sealed class ResendEmailConfirmationHandler(
 		user.SetupEmailConfirmation();
 		await dbContext.SaveChangesAsync(cancellationToken);
 
-		await emailConfirmationService.SendEmailConfirmation(user);
+		await userMailingService.SendEmailConfirmation(user);
 
 		return Results.NoContent();
 	}

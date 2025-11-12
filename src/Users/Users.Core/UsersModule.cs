@@ -41,7 +41,7 @@ public class UsersModule : IModule
 		services.AddScoped<ResendEmailConfirmationHandler>();
 		services.AddScoped<GetCurrentUserHandler>();
 		services.AddSingleton<ITokenProvider, JwtTokenProvider>();
-		services.AddScoped<EmailConfirmationService>();
+		services.AddScoped<UserMailingService>();
 		services.AddValidatorsFromAssemblyContaining<UsersModule>(includeInternalTypes: true);
 
 		var jwtSettings = configuration.GetSettings<JwtSettings>();
