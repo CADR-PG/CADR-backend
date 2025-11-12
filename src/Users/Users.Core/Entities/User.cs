@@ -13,6 +13,8 @@ internal class User
 	public required string Email { get; set; }
 	public EmailConfirmation EmailConfirmation { get; init; } = new();
 	public required string HashedPassword { get; set; }
+	public Guid? PasswordResetToken { get; set; }
+	public DateTime? PasswordResetExpiresAt { get; set; }
 	public required DateTime LastLoggedInAt { get; set; }
 	public List<RefreshToken> RefreshTokens { get; set; } = [];
 
@@ -21,12 +23,12 @@ internal class User
 		var sentAt = DateTime.UtcNow;
 
 		EmailConfirmation.IsConfirmed = false;
-		EmailConfirmation.Code = Random.Shared.Next(0, 1_000_000);
+		EmailConfirmation.Code = $"{Random.Shared.Next(1_000_000):D6}";
 		EmailConfirmation.SentAt = sentAt;
 		EmailConfirmation.ExpiresAt = sentAt.AddDays(1);
 	}
 
-	public bool ConfirmEmail(int requestCode)
+	public bool ConfirmEmail(string requestCode)
 	{
 		if (!(EmailConfirmation.ExpiresAt > DateTime.UtcNow) || EmailConfirmation.Code != requestCode)
 			return false;
@@ -36,7 +38,6 @@ internal class User
 		EmailConfirmation.SentAt = null;
 		EmailConfirmation.ExpiresAt = null;
 		return true;
-
 	}
 
 	public void Login(UserTokens userTokens)

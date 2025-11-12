@@ -30,7 +30,7 @@ internal sealed class RegisterEndpoint : IEndpoint
 
 internal sealed class RegisterHandler(
 	UsersDbContext dbContext,
-	EmailConfirmationService emailConfirmationService
+	UserMailingService userMailingService
 ) : IHttpRequestHandler<Register>
 {
 	public async Task<IResult> Handle(Register request, CancellationToken cancellationToken)
@@ -55,7 +55,7 @@ internal sealed class RegisterHandler(
 		await dbContext.Users.AddAsync(user, cancellationToken);
 		await dbContext.SaveChangesAsync(cancellationToken);
 
-		await emailConfirmationService.SendEmailConfirmation(user);
+		await userMailingService.SendEmailConfirmation(user);
 
 		return Results.NoContent();
 	}

@@ -33,7 +33,7 @@ internal sealed class ChangeEmailEndpoint : IEndpoint
 
 internal sealed class ChangeEmailHandler(
 	UsersDbContext dbContext,
-	EmailConfirmationService emailConfirmationService
+	UserMailingService userMailingService
 ) : IHttpRequestHandler<ChangeEmail>
 {
 	public async Task<IResult> Handle(ChangeEmail request, CancellationToken cancellationToken)
@@ -50,7 +50,7 @@ internal sealed class ChangeEmailHandler(
 		user.SetupEmailConfirmation();
 
 		await dbContext.SaveChangesAsync(cancellationToken);
-		await emailConfirmationService.SendEmailConfirmation(user);
+		await userMailingService.SendEmailConfirmation(user);
 
 		var readModel = UserReadModel.From(user);
 		return Results.Ok(readModel);
