@@ -35,11 +35,12 @@ public class ProjectsModule : IModule
 		services.AddScoped<GetAllUserProjectsHandler>();
 		services.AddScoped<ModifyProjectHandler>();
 		services.AddScoped<CreateAssetHandler>();
+		services.AddScoped<DeleteAssetHandler>();
 		services.AddValidatorsFromAssemblyContaining<ProjectsModule>(includeInternalTypes: true);
 		services.AddAzureClients(builder =>
 		{
-			var projectSettings = configuration.GetSection("Projects");
-			var connectionString = projectSettings["AccountUrl"];
+			var projectSettings = configuration.GetSection("Azure");
+			var connectionString = projectSettings["StorageAccountConnectionString"];
 
 			builder.AddBlobServiceClient(connectionString);
 		});
@@ -54,7 +55,8 @@ public class ProjectsModule : IModule
 			.Map<ModifyProjectEndpoint>()
 			.Map<SaveSceneEndpoint>()
 			.Map<DeleteProjectEndpoint>()
-			.Map<CreateAssetEndpoint>();
+			.Map<CreateAssetEndpoint>()
+			.Map<DeleteAssetEndpoint>();
 
 	public async ValueTask RunInDevelopmentMode(IServiceProvider services)
 	{
