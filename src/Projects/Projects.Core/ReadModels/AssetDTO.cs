@@ -5,7 +5,7 @@ namespace Projects.Core.ReadModels;
 
 internal class AssetDTO
 {
-	public Guid  Id { get; init; }
+	public Guid Id { get; init; }
 	public string Name { get; init; } = null!;
 	public AssetType Type { get; init; }
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
