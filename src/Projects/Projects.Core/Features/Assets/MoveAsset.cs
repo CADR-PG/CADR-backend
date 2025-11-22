@@ -1,4 +1,5 @@
 using Azure.Storage.Blobs;
+using FluentValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,14 +15,14 @@ namespace Projects.Core.Features.Assets;
 
 internal sealed record MoveAsset([FromBody] MoveAsset.Data Body, [FromRoute] Guid ProjectId) : IHttpRequest
 {
-	internal record Data(Guid AssetId, Guid? TargetParentId);
+	internal record Data(Guid? AssetId, Guid? TargetParentId);
 }
 
 internal sealed class MoveAssetEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
 		.MapPost<MoveAsset, MoveAssetHandler>("move-asset/{projectId}")
-		.AddValidation<CreateAsset.Data>()
+		.AddValidation<MoveAsset.Data>()
 		.RequireAuthorization()
 		.ProducesError(401, "`UnauthorizedError`");
 }
@@ -39,8 +40,16 @@ internal sealed class MoveAssetHandler(
 			return Results.NotFound();
 
 		asset.ParentId = targetParentId;
-		dbContext.Assets.Update(asset);
 		await dbContext.SaveChangesAsync(cancellationToken);
 		return Results.Ok();
+	}
+}
+
+internal sealed class MoveAssetValidator : AbstractValidator<MoveAsset.Data>
+{
+	public MoveAssetValidator()
+	{
+		RuleFor(x => x.AssetId).NotEmpty();
+		RuleFor(x => x.TargetParentId).NotEmpty();
 	}
 }

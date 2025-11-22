@@ -50,8 +50,8 @@ internal sealed class CreateAssetHandler(
 					Id = id,
 					Name = name,
 					Type = type,
+					BlobPath = "",
 					ParentId = parent,
-					BlobPath = projectId + "/" + id,
 					ProjectId = projectId
 				};
 				break;
