@@ -1,8 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 
 namespace Projects.Core.Services;
-public record Paginated<T>(IReadOnlyList<T> Items, int TotalCount, int PageNumber, int PageSize)
-	where T : class
+public record Paginated<T>(IReadOnlyList<T> Items, int TotalCount, int PageNumber, int PageSize) where T : class
 {
 	public int TotalPages => (int)Math.Ceiling(TotalCount / (double)PageSize);
 
