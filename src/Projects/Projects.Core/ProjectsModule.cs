@@ -38,6 +38,7 @@ public class ProjectsModule : IModule
 		services.AddScoped<DeleteAssetHandler>();
 		services.AddScoped<MoveAssetHandler>();
 		services.AddScoped<AssetsTreeHandler>();
+		services.AddScoped<ChangeAssetNameHandler>();
 		services.AddValidatorsFromAssemblyContaining<ProjectsModule>(includeInternalTypes: true);
 		services.AddAzureClients(builder =>
 		{
@@ -60,7 +61,8 @@ public class ProjectsModule : IModule
 			.Map<CreateAssetEndpoint>()
 			.Map<DeleteAssetEndpoint>()
 			.Map<MoveAssetEndpoint>()
-			.Map<AssetsTreeEndpoint>();
+			.Map<AssetsTreeEndpoint>()
+			.Map<ChangeAssetNameEndpoint>();
 
 	public async ValueTask RunInDevelopmentMode(IServiceProvider services)
 	{
