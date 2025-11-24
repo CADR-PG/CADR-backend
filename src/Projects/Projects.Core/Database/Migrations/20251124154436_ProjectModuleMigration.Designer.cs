@@ -12,8 +12,8 @@ using Projects.Core.Database;
 namespace Projects.Core.Database.Migrations
 {
     [DbContext(typeof(ProjectsDbContext))]
-    [Migration("20251102203156_Initial_2")]
-    partial class Initial_2
+    [Migration("20251124154436_ProjectModuleMigration")]
+    partial class ProjectModuleMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -32,7 +32,7 @@ namespace Projects.Core.Database.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("BlobName")
+                    b.Property<string>("BlobPath")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -41,7 +41,7 @@ namespace Projects.Core.Database.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<Guid>("ParentId")
+                    b.Property<Guid?>("ParentId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("ProjectId")
