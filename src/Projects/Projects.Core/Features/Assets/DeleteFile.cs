@@ -14,7 +14,7 @@ using Shared.Endpoints.Validation;
 namespace Projects.Core.Features.Assets;
 
 
-internal sealed record DeleteAsset([FromBody] DeleteAsset.Data Body, [FromRoute] Guid ProjectId) : IHttpRequest
+internal sealed record DeleteFile([FromBody] DeleteFile.Data Body, [FromRoute] Guid ProjectId) : IHttpRequest
 {
 	internal record Data(Guid AssetId);
 }
@@ -22,8 +22,8 @@ internal sealed record DeleteAsset([FromBody] DeleteAsset.Data Body, [FromRoute]
 internal sealed class DeleteAssetEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
-		.MapDelete<DeleteAsset, DeleteAssetHandler>("delete-asset/{projectId}")
-		.AddValidation<DeleteAsset.Data>()
+		.MapDelete<DeleteFile, DeleteAssetHandler>("delete-asset/{projectId}")
+		.AddValidation<DeleteFile.Data>()
 		.RequireAuthorization()
 		.ProducesError(401, "`UnauthorizedError`");
 }
@@ -31,9 +31,9 @@ internal sealed class DeleteAssetEndpoint : IEndpoint
 internal sealed class DeleteAssetHandler(
 	ProjectsDbContext dbContext,
 	BlobServiceClient blobServiceClient
-	) : IHttpRequestHandler<DeleteAsset>
+	) : IHttpRequestHandler<DeleteFile>
 {
-	public async Task<IResult> Handle(DeleteAsset request, CancellationToken cancellationToken)
+	public async Task<IResult> Handle(DeleteFile request, CancellationToken cancellationToken)
 	{
 		var assetId = request.Body.AssetId;
 		var projectId = request.ProjectId;
@@ -56,7 +56,7 @@ internal sealed class DeleteAssetHandler(
 	}
 }
 
-internal sealed class DeleteAssetValidator : AbstractValidator<DeleteAsset.Data>
+internal sealed class DeleteAssetValidator : AbstractValidator<DeleteFile.Data>
 {
 	public DeleteAssetValidator()
 	{

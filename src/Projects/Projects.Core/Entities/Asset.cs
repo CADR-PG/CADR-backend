@@ -10,7 +10,9 @@ abstract class Asset
 	public required AssetType Type { get; set; }
 	public Guid? ParentId { get; set; }
 	public required string BlobPath { get; set; }
+
 	public const string BlobContainerName = "project-assets";
+
 	public DateTime CreatedAt { get; set; }
 	public DateTime UpdatedAt { get; set; }
 	public required Guid ProjectId { get; set; }
@@ -26,4 +28,5 @@ sealed class AssetFile : Asset
 {
 	public required string Extension { get; set; }
 	public required string ContentType { get; set; }
+	public required double FileSize { get; set; }
 }

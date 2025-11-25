@@ -34,7 +34,8 @@ public class ProjectsModule : IModule
 		services.AddScoped<SaveSceneHandler>();
 		services.AddScoped<GetAllUserProjectsHandler>();
 		services.AddScoped<ModifyProjectHandler>();
-		services.AddScoped<CreateAssetHandler>();
+		services.AddScoped<CreateFileHandler>();
+		services.AddScoped<CreateDirectoryHandler>();
 		services.AddScoped<DeleteAssetHandler>();
 		services.AddScoped<MoveAssetHandler>();
 		services.AddScoped<AssetsTreeHandler>();
@@ -59,7 +60,8 @@ public class ProjectsModule : IModule
 			.Map<ModifyProjectEndpoint>()
 			.Map<SaveSceneEndpoint>()
 			.Map<DeleteProjectEndpoint>()
-			.Map<CreateAssetEndpoint>()
+			.Map<CreateFileEndpoint>()
+			.Map<CreateDirectoryEndpoint>()
 			.Map<DeleteAssetEndpoint>()
 			.Map<MoveAssetEndpoint>()
 			.Map<AssetsTreeEndpoint>()
