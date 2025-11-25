@@ -44,8 +44,8 @@ internal sealed class CreateAssetHandler(
 		var id = Guid.NewGuid();
 		switch (type)
 		{
-			case AssetType.Folder:
-				asset = new AssetFolder
+			case AssetType.Directory:
+				asset = new AssetDirectory
 				{
 					Id = id,
 					Name = name,

@@ -55,7 +55,7 @@ internal sealed class ChangeAssetContentHandler(
 				BlobContainerName = Asset.BlobContainerName,
 				BlobName = file.BlobPath,
 				Resource = "b",
-				ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(15),
+				ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(3),
 			};
 
 			sas.SetPermissions(

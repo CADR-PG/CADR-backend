@@ -25,7 +25,7 @@ internal sealed class AssetConfiguration : IEntityTypeConfiguration<Asset>
 			.IsRequired();
 
 		builder.HasDiscriminator(a => a.Type)
-			.HasValue<AssetFolder>(AssetType.Folder)
+			.HasValue<AssetDirectory>(AssetType.Directory)
 			.HasValue<AssetFile>(AssetType.File);
 	}
 }

@@ -30,16 +30,16 @@ internal sealed class AssetsTreeHandler(
 		var projectId = request.ProjectId;
 		var assets = await dbContext.Assets.Where(a => a.ProjectId == projectId).ToListAsync(cancellationToken);
 
-		List<AssetDTO> Build(Guid? parentId)
+		List<AssetReadModel> Build(Guid? parentId)
 		{
 			return assets
 				.Where(a => a.ParentId == parentId)
-				.Select(a => new AssetDTO
+				.Select(a => new AssetReadModel
 				{
 					Id = a.Id,
 					Name = a.Name,
 					Type = a.Type,
-					Children = a.Type == AssetType.Folder
+					Children = a.Type == AssetType.Directory
 						? Build(a.Id)
 						: null
 				})
