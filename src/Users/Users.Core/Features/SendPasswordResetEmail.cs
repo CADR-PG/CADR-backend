@@ -9,7 +9,7 @@ using Users.Core.Services;
 
 namespace Users.Core.Features;
 
-internal record struct SendPasswordResetEmail([FromQuery] SendPasswordResetEmail.Credentials Body) : IHttpRequest
+internal record struct SendPasswordResetEmail([FromBody] SendPasswordResetEmail.Credentials Body) : IHttpRequest
 {
 	internal record Credentials(string Email);
 }
@@ -17,7 +17,7 @@ internal record struct SendPasswordResetEmail([FromQuery] SendPasswordResetEmail
 internal sealed class SendPasswordResetEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints)
-		=> endpoints.MapPost<SendPasswordResetEmail, SendPasswordResetHandler>("reset-password")
+		=> endpoints.MapPost<SendPasswordResetEmail, SendPasswordResetHandler>("send-reset-password-email")
 			.AllowAnonymous()
 			.Produces(204)
 			.WithDescription("Sends email with reset password token, when given email is valid.");
