@@ -138,8 +138,8 @@ namespace Projects.Core.Database.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<double>("FileSize")
-                        .HasColumnType("double precision");
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
 
                     b.HasDiscriminator().HasValue(1);
                 });

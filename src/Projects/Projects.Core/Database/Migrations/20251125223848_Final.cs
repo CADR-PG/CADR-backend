@@ -10,21 +10,29 @@ namespace Projects.Core.Database.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<double>(
+            migrationBuilder.AlterColumn<long>(
                 name: "FileSize",
                 schema: "Projects",
                 table: "Assets",
-                type: "double precision",
-                nullable: true);
+                type: "bigint",
+                nullable: true,
+                oldClrType: typeof(double),
+                oldType: "double precision",
+                oldNullable: true);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
+            migrationBuilder.AlterColumn<double>(
                 name: "FileSize",
                 schema: "Projects",
-                table: "Assets");
+                table: "Assets",
+                type: "double precision",
+                nullable: true,
+                oldClrType: typeof(long),
+                oldType: "bigint",
+                oldNullable: true);
         }
     }
 }

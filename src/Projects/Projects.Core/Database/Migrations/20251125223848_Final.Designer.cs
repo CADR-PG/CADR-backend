@@ -12,7 +12,7 @@ using Projects.Core.Database;
 namespace Projects.Core.Database.Migrations
 {
     [DbContext(typeof(ProjectsDbContext))]
-    [Migration("20251125221611_Final")]
+    [Migration("20251125223848_Final")]
     partial class Final
     {
         /// <inheritdoc />
@@ -141,8 +141,8 @@ namespace Projects.Core.Database.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<double>("FileSize")
-                        .HasColumnType("double precision");
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
 
                     b.HasDiscriminator().HasValue(1);
                 });
