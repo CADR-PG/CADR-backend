@@ -38,7 +38,7 @@ internal sealed class CreateFileHandler(
 {
 	public async Task<IResult> Handle(CreateFile request, CancellationToken cancellationToken)
 	{
-		var (name,  parent, contentType, fileSize) = request.Body;
+		var (name, parent, contentType, fileSize) = request.Body;
 		var projectId = request.ProjectId;
 		var id = Guid.NewGuid();
 		var asset = new AssetFile()

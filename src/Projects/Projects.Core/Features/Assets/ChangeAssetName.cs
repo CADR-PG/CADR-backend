@@ -39,6 +39,7 @@ internal sealed class ChangeAssetNameHandler(
 			return Results.NotFound();
 
 		asset.Name = assetName;
+		asset.UpdatedAt = DateTime.UtcNow;
 		await dbContext.SaveChangesAsync(cancellationToken);
 		return Results.NoContent();
 	}

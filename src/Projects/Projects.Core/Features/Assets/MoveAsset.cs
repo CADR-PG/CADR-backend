@@ -40,6 +40,7 @@ internal sealed class MoveAssetHandler(
 			return Results.NotFound();
 
 		asset.ParentId = targetParentId;
+		asset.UpdatedAt = DateTime.UtcNow;
 		await dbContext.SaveChangesAsync(cancellationToken);
 		return Results.Ok();
 	}

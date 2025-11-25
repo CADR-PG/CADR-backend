@@ -37,7 +37,7 @@ internal sealed class CreateDirectoryHandler(
 {
 	public async Task<IResult> Handle(CreateDirectory request, CancellationToken cancellationToken)
 	{
-		var (name,  parent) = request.Body;
+		var (name, parent) = request.Body;
 		var projectId = request.ProjectId;
 		var id = Guid.NewGuid();
 		var asset = new AssetDirectory
@@ -47,7 +47,9 @@ internal sealed class CreateDirectoryHandler(
 			Type = AssetType.Directory,
 			BlobPath = "",
 			ParentId = parent,
-			ProjectId = projectId
+			ProjectId = projectId,
+			CreatedAt = DateTime.UtcNow,
+			UpdatedAt = DateTime.UtcNow
 		};
 
 		await dbContext.Assets.AddAsync(asset, cancellationToken);

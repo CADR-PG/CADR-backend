@@ -44,6 +44,7 @@ internal sealed class ChangeAssetContentHandler(
 		if (asset is AssetFile file)
 		{
 			file.ContentType = contentType;
+			file.UpdatedAt = DateTime.UtcNow;
 			await dbContext.SaveChangesAsync(cancellationToken);
 			var container = blobServiceClient.GetBlobContainerClient(Asset.BlobContainerName);
 			var blob = container.GetBlobClient(file.BlobPath);
