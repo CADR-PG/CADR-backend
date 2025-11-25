@@ -28,5 +28,5 @@ sealed class AssetFile : Asset
 {
 	public required string Extension { get; set; }
 	public required string ContentType { get; set; }
-	public required double FileSize { get; set; }
+	public required long FileSize { get; set; }
 }

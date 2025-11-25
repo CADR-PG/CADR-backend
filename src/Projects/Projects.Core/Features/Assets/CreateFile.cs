@@ -19,7 +19,7 @@ namespace Projects.Core.Features.Assets;
 
 internal sealed record CreateFile([FromBody] CreateFile.Data Body, CurrentUser CurrentUser, [FromRoute] Guid ProjectId) : IHttpRequest
 {
-	internal record Data(string Name, Guid? ParentId, string ContentType, double FileSize);
+	internal record Data(string Name, Guid? ParentId, string ContentType, long FileSize);
 }
 
 internal sealed class CreateFileEndpoint : IEndpoint
@@ -53,7 +53,7 @@ internal sealed class CreateFileHandler(
 			CreatedAt = DateTime.UtcNow,
 			UpdatedAt = DateTime.UtcNow,
 			ContentType = contentType,
-			FileSize = fileSize
+			FileSize = fileSize * 1024 * 1024 // byte size
 		};
 
 		await dbContext.Assets.AddAsync(asset, cancellationToken);
@@ -76,7 +76,8 @@ internal sealed class CreateFileHandler(
 		return Results.Ok(new
 		{
 			AssetId = asset.Id,
-			UploadUrl = uploadUrl
+			UploadUrl = uploadUrl,
+			FIleSize = asset.FileSize
 		});
 	}
 }
