@@ -50,12 +50,15 @@ internal sealed class RegisterHandler(
 			LastLoggedInAt = DateTime.UtcNow,
 		};
 
-		user.SetupEmailConfirmation();
+		user.SetupEmailConfirmation(email);
 
 		await dbContext.Users.AddAsync(user, cancellationToken);
 		await dbContext.SaveChangesAsync(cancellationToken);
 
-		await userMailingService.SendEmailConfirmation(user);
+		// TODO: remove fire & forget
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+		userMailingService.SendUserCreatedEmailConfirmation(user);
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
 		return Results.NoContent();
 	}

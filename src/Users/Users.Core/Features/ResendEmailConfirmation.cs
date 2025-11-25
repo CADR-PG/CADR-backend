@@ -38,10 +38,10 @@ internal sealed class ResendEmailConfirmationHandler(
 		if (user.EmailConfirmation.SentAt > DateTime.UtcNow.AddMinutes(-1))
 			return Errors.ResendConfirmationTimeLimitError;
 
-		user.SetupEmailConfirmation();
+		user.SetupEmailConfirmation(request.Email);
 		await dbContext.SaveChangesAsync(cancellationToken);
 
-		await userMailingService.SendEmailConfirmation(user);
+		await userMailingService.ResendEmailConfirmation(user);
 
 		return Results.NoContent();
 	}

@@ -47,10 +47,14 @@ internal sealed class ChangeEmailHandler(
 			.FirstAsync(x => x.Id == request.CurrentUser.Id, cancellationToken);
 
 		user.Email = newEmail;
-		user.SetupEmailConfirmation();
+		user.SetupEmailConfirmation(request.Body.NewEmail);
 
 		await dbContext.SaveChangesAsync(cancellationToken);
-		await userMailingService.SendEmailConfirmation(user);
+
+		// TODO: remove fire & forget
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+		userMailingService.SendChangeEmailConfirmation(user);
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
 		var readModel = UserReadModel.From(user);
 		return Results.Ok(readModel);

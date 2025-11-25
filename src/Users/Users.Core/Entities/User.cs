@@ -18,7 +18,7 @@ internal class User
 	public required DateTime LastLoggedInAt { get; set; }
 	public List<RefreshToken> RefreshTokens { get; set; } = [];
 
-	public void SetupEmailConfirmation()
+	public void SetupEmailConfirmation(string email)
 	{
 		var sentAt = DateTime.UtcNow;
 
@@ -26,6 +26,7 @@ internal class User
 		EmailConfirmation.Code = $"{Random.Shared.Next(1_000_000):D6}";
 		EmailConfirmation.SentAt = sentAt;
 		EmailConfirmation.ExpiresAt = sentAt.AddDays(1);
+		EmailConfirmation.Email = email;
 	}
 
 	public bool ConfirmEmail(string requestCode)
@@ -37,6 +38,7 @@ internal class User
 		EmailConfirmation.Code = null;
 		EmailConfirmation.SentAt = null;
 		EmailConfirmation.ExpiresAt = null;
+		EmailConfirmation.Email = null;
 		return true;
 	}
 
