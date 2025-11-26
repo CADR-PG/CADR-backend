@@ -40,7 +40,7 @@ public class ProjectsModule : IModule
 		services.AddScoped<DeleteDirectoryHandler>();
 		services.AddScoped<MoveAssetHandler>();
 		services.AddScoped<GetAssetsTreeHandler>();
-		services.AddScoped<ChangeAssetNameHandler>();
+		services.AddScoped<RenameAssetHandler>();
 		services.AddScoped<ChangeAssetContentHandler>();
 		services.AddValidatorsFromAssemblyContaining<ProjectsModule>(includeInternalTypes: true);
 		services.AddAzureClients(builder =>
@@ -67,7 +67,7 @@ public class ProjectsModule : IModule
 			.Map<DeleteDirectoryEndpoint>()
 			.Map<MoveAssetEndpoint>()
 			.Map<GetAssetsTreeEndpoint>()
-			.Map<ChangeAssetNameEndpoint>()
+			.Map<RenameAssetEndpoint>()
 			.Map<ChangeAssetContentEndpoint>();
 
 	public async ValueTask RunInDevelopmentMode(IServiceProvider services)

@@ -12,25 +12,25 @@ using Shared.Endpoints.Validation;
 
 namespace Projects.Core.Features.Assets;
 
-internal sealed record ChangeAssetName([FromBody] ChangeAssetName.Data Body) : IHttpRequest
+internal sealed record RenameAsset([FromBody] RenameAsset.Data Body) : IHttpRequest
 {
 	internal record Data(Guid Id, string Name);
 }
 
-internal sealed class ChangeAssetNameEndpoint : IEndpoint
+internal sealed class RenameAssetEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
-		.MapPost<ChangeAssetName, ChangeAssetNameHandler>("change-asset-name")
-		.AddValidation<ChangeAssetName.Data>()
+		.MapPost<RenameAsset, RenameAssetHandler>("change-asset-name")
+		.AddValidation<RenameAsset.Data>()
 		.RequireAuthorization()
 		.ProducesError(401, "`Unauthorize`");
 }
 
-internal sealed class ChangeAssetNameHandler(
+internal sealed class RenameAssetHandler(
 	ProjectsDbContext dbContext
-) : IHttpRequestHandler<ChangeAssetName>
+) : IHttpRequestHandler<RenameAsset>
 {
-	public async Task<IResult> Handle(ChangeAssetName request, CancellationToken cancellationToken)
+	public async Task<IResult> Handle(RenameAsset request, CancellationToken cancellationToken)
 	{
 		var (assetId, assetName) = request.Body;
 		var asset = await dbContext.Assets.FirstOrDefaultAsync(a => a.Id == assetId, cancellationToken);
@@ -45,9 +45,9 @@ internal sealed class ChangeAssetNameHandler(
 	}
 }
 
-internal sealed class ChangeAssetNameValidator : AbstractValidator<ChangeAssetName.Data>
+internal sealed class RenameAssetValidator : AbstractValidator<RenameAsset.Data>
 {
-	public ChangeAssetNameValidator()
+	public RenameAssetValidator()
 	{
 		RuleFor(x => x.Id).NotEmpty();
 		RuleFor(x => x.Name).NotEmpty();

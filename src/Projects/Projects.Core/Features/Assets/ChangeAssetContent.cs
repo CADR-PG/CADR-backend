@@ -42,37 +42,30 @@ internal sealed class ChangeAssetContentHandler(
 			return Results.NotFound();
 
 
-		if (asset is AssetFile file)
+		if (asset is not AssetFile file)
+			return Results.BadRequest();
+
+		file.ContentType = contentType;
+		file.UpdatedAt = DateTime.UtcNow;
+		await dbContext.SaveChangesAsync(cancellationToken);
+		var container = blobServiceClient.GetBlobContainerClient(Asset.BlobContainerName);
+		var blob = container.GetBlobClient(file.BlobPath);
+		await blob.DeleteIfExistsAsync(cancellationToken: cancellationToken);
+		var sas = new Azure.Storage.Sas.BlobSasBuilder
 		{
-			file.ContentType = contentType;
-			file.UpdatedAt = DateTime.UtcNow;
-			await dbContext.SaveChangesAsync(cancellationToken);
-			var container = blobServiceClient.GetBlobContainerClient(Asset.BlobContainerName);
-			var blob = container.GetBlobClient(file.BlobPath);
-
-			await blob.DeleteIfExistsAsync(cancellationToken: cancellationToken);
-
-			var sas = new Azure.Storage.Sas.BlobSasBuilder
-			{
-				BlobContainerName = Asset.BlobContainerName,
-				BlobName = file.BlobPath,
-				Resource = "b",
-				ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(3),
-			};
-
-			sas.SetPermissions(
-				Azure.Storage.Sas.BlobContainerSasPermissions.Read |
-				Azure.Storage.Sas.BlobContainerSasPermissions.Write);
-			var uploadUrl = blob.GenerateSasUri(sas).AbsoluteUri;
-
-			return Results.Ok(new
-			{
-				AssetId = assetId,
-				UploadUrl = uploadUrl
-			});
-		}
-
-		return Results.BadRequest();
+			BlobContainerName = Asset.BlobContainerName,
+			BlobName = file.BlobPath,
+			Resource = "b",
+			ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(3),
+		};
+		sas.SetPermissions(
+			Azure.Storage.Sas.BlobContainerSasPermissions.Write);
+		var uploadUrl = blob.GenerateSasUri(sas).AbsoluteUri;
+		return Results.Ok(new
+		{
+			AssetId = assetId,
+			UploadUrl = uploadUrl
+		});
 	}
 }
 
