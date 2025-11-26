@@ -42,6 +42,7 @@ public class ProjectsModule : IModule
 		services.AddScoped<GetAssetsTreeHandler>();
 		services.AddScoped<RenameAssetHandler>();
 		services.AddScoped<ChangeAssetContentHandler>();
+		services.AddScoped<DownloadAssetHandler>();
 		services.AddValidatorsFromAssemblyContaining<ProjectsModule>(includeInternalTypes: true);
 		services.AddAzureClients(builder =>
 		{
@@ -68,7 +69,8 @@ public class ProjectsModule : IModule
 			.Map<MoveAssetEndpoint>()
 			.Map<GetAssetsTreeEndpoint>()
 			.Map<RenameAssetEndpoint>()
-			.Map<ChangeAssetContentEndpoint>();
+			.Map<ChangeAssetContentEndpoint>()
+			.Map<DownloadAssetEndpoint>();
 
 	public async ValueTask RunInDevelopmentMode(IServiceProvider services)
 	{
