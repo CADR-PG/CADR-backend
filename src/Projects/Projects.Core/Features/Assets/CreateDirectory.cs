@@ -26,7 +26,7 @@ internal sealed class CreateDirectoryEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
 		.MapPost<CreateDirectory, CreateDirectoryHandler>("create-directory/{projectId}")
-		.AddValidation<CreateFile.Data>()
+		.AddValidation<CreateDirectory.Data>()
 		.RequireAuthorization()
 		.ProducesError(401, "`UnauthorizedError`");
 }

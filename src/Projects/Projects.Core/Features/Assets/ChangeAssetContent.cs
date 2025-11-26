@@ -23,7 +23,7 @@ internal sealed record ChangeAssetContent([FromBody] ChangeAssetContent.Data Bod
 internal sealed class ChangeAssetContentEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
-		.MapPost<ChangeAssetContent, ChangeAssetContentHandler>("change-asset-content/{projectId}")
+		.MapPost<ChangeAssetContent, ChangeAssetContentHandler>("change-asset-content")
 		.AddValidation<ChangeAssetContent.Data>()
 		.RequireAuthorization()
 		.ProducesError(401, "`Unauthorize`");

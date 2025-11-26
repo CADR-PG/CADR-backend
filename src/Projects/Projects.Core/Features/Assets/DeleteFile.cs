@@ -22,13 +22,13 @@ internal sealed record DeleteFile([FromBody] DeleteFile.Data Body, [FromRoute] G
 internal sealed class DeleteAssetEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
-		.MapDelete<DeleteFile, DeleteAssetHandler>("delete-asset/{projectId}")
+		.MapDelete<DeleteFile, DeleteFileHandler>("delete-file/{projectId}")
 		.AddValidation<DeleteFile.Data>()
 		.RequireAuthorization()
 		.ProducesError(401, "`UnauthorizedError`");
 }
 
-internal sealed class DeleteAssetHandler(
+internal sealed class DeleteFileHandler(
 	ProjectsDbContext dbContext,
 	BlobServiceClient blobServiceClient
 	) : IHttpRequestHandler<DeleteFile>

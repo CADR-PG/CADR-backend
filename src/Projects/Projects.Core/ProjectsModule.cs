@@ -36,9 +36,10 @@ public class ProjectsModule : IModule
 		services.AddScoped<ModifyProjectHandler>();
 		services.AddScoped<CreateFileHandler>();
 		services.AddScoped<CreateDirectoryHandler>();
-		services.AddScoped<DeleteAssetHandler>();
+		services.AddScoped<DeleteFileHandler>();
+		services.AddScoped<DeleteDirectoryHandler>();
 		services.AddScoped<MoveAssetHandler>();
-		services.AddScoped<AssetsTreeHandler>();
+		services.AddScoped<GetAssetsTreeHandler>();
 		services.AddScoped<ChangeAssetNameHandler>();
 		services.AddScoped<ChangeAssetContentHandler>();
 		services.AddValidatorsFromAssemblyContaining<ProjectsModule>(includeInternalTypes: true);
@@ -63,8 +64,9 @@ public class ProjectsModule : IModule
 			.Map<CreateFileEndpoint>()
 			.Map<CreateDirectoryEndpoint>()
 			.Map<DeleteAssetEndpoint>()
+			.Map<DeleteDirectoryEndpoint>()
 			.Map<MoveAssetEndpoint>()
-			.Map<AssetsTreeEndpoint>()
+			.Map<GetAssetsTreeEndpoint>()
 			.Map<ChangeAssetNameEndpoint>()
 			.Map<ChangeAssetContentEndpoint>();
 
