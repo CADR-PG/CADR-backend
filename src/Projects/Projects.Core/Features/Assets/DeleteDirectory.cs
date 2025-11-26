@@ -34,53 +34,53 @@ internal sealed class DeleteDirectoryHandler(
 ) : IHttpRequestHandler<DeleteDirectory>
 {
 	public async Task<IResult> Handle(DeleteDirectory request, CancellationToken cancellationToken)
-    {
-       var assetId = request.Body.AssetId;
-       var projectId = request.ProjectId;
-       var container = blobServiceClient.GetBlobContainerClient(Asset.BlobContainerName);
-       var asset = await dbContext.Assets.FirstOrDefaultAsync(a => a.Id == assetId, cancellationToken);
+	{
+		var assetId = request.Body.AssetId;
+		var projectId = request.ProjectId;
+		var container = blobServiceClient.GetBlobContainerClient(Asset.BlobContainerName);
+		var asset = await dbContext.Assets.FirstOrDefaultAsync(a => a.Id == assetId, cancellationToken);
 
-       if (asset is null)
-          return Results.NotFound();
+		if (asset is null)
+			return Results.NotFound();
 
-       if (asset is AssetDirectory directory)
-       {
-          await DeleteDirectoryRecursive(assetId, projectId, container, cancellationToken);
-       }
-       else if (asset is AssetFile file)
-       {
-          var blobClient = container.GetBlobClient(file.BlobPath);
-          await blobClient.DeleteIfExistsAsync(cancellationToken: cancellationToken);
-       }
+		if (asset is AssetDirectory directory)
+		{
+			await DeleteDirectoryRecursive(assetId, projectId, container, cancellationToken);
+		}
+		else if (asset is AssetFile file)
+		{
+			var blobClient = container.GetBlobClient(file.BlobPath);
+			await blobClient.DeleteIfExistsAsync(cancellationToken: cancellationToken);
+		}
 
-       dbContext.Assets.Remove(asset);
-       await dbContext.SaveChangesAsync(cancellationToken);
+		dbContext.Assets.Remove(asset);
+		await dbContext.SaveChangesAsync(cancellationToken);
 
-       return Results.Ok();
-    }
+		return Results.Ok();
+	}
 
-    private async Task DeleteDirectoryRecursive(Guid directoryId, Guid projectId, BlobContainerClient container, CancellationToken cancellationToken)
-    {
-       var children = await dbContext.Assets
-          .Where(a => a.ParentId == directoryId)
-          .ToListAsync(cancellationToken);
+	private async Task DeleteDirectoryRecursive(Guid directoryId, Guid projectId, BlobContainerClient container, CancellationToken cancellationToken)
+	{
+		var children = await dbContext.Assets
+		   .Where(a => a.ParentId == directoryId)
+		   .ToListAsync(cancellationToken);
 
-       foreach (var child in children)
-       {
-          if (child is AssetDirectory)
-          {
-             await DeleteDirectoryRecursive(child.Id, projectId, container, cancellationToken);
-          }
-          else if (child is AssetFile file)
-          {
-             var blobClient = container.GetBlobClient(file.BlobPath);
-             await blobClient.DeleteIfExistsAsync(cancellationToken: cancellationToken);
-          }
-          dbContext.Assets.Remove(child);
-       }
+		foreach (var child in children)
+		{
+			if (child is AssetDirectory)
+			{
+				await DeleteDirectoryRecursive(child.Id, projectId, container, cancellationToken);
+			}
+			else if (child is AssetFile file)
+			{
+				var blobClient = container.GetBlobClient(file.BlobPath);
+				await blobClient.DeleteIfExistsAsync(cancellationToken: cancellationToken);
+			}
+			dbContext.Assets.Remove(child);
+		}
 
-       await dbContext.SaveChangesAsync(cancellationToken);
-    }
+		await dbContext.SaveChangesAsync(cancellationToken);
+	}
 }
 
 internal sealed class DeleteDirectoryValidator : AbstractValidator<DeleteDirectory.Data>
