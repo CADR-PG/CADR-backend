@@ -31,7 +31,7 @@ internal class User
 
 	public bool ConfirmEmail(string requestCode)
 	{
-		if (!(EmailConfirmation.ExpiresAt > DateTime.UtcNow) || EmailConfirmation.Code != requestCode)
+		if (EmailConfirmation.ExpiresAt < DateTime.UtcNow || EmailConfirmation.Code != requestCode)
 			return false;
 
 		EmailConfirmation.IsConfirmed = true;

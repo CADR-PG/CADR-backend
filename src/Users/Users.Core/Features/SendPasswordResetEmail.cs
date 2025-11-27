@@ -36,11 +36,14 @@ internal sealed class SendPasswordResetHandler(
 		if (user is null) return Results.NoContent();
 
 		user.PasswordResetToken = Guid.NewGuid();
-		user.PasswordResetExpiresAt = DateTime.UtcNow.AddHours(12);
+		user.PasswordResetExpiresAt = DateTime.UtcNow.AddHours(1);
 
 		await dbContext.SaveChangesAsync(cancellationToken);
 
-		await userMailingService.SendResetPassword(user);
+		// TODO xxx
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+		userMailingService.SendResetPassword(user);
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
 		return Results.NoContent();
 	}

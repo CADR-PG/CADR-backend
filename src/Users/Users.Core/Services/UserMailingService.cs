@@ -18,7 +18,7 @@ internal sealed class UserMailingService(IMailingService mailingService)
 
 	public async Task SendResetPassword(User user)
 	{
-		await mailingService.SendAsync(user.FullName, user.Email, "Reset password", $"Your reset password code: {user.PasswordResetToken}. Token is valid only for 12h. Or click: <TODO>");
+		await mailingService.SendAsync(user.FullName, user.Email, "Reset password", $"Your reset password code: {user.PasswordResetToken}. Token is valid only for 1h. Or click: <TODO>");
 	}
 
 	public async Task ResendEmailConfirmation(User user)
