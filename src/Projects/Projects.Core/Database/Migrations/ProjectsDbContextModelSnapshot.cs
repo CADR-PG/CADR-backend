@@ -89,8 +89,6 @@ namespace Projects.Core.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
-
                     b.ToTable("Projects", "Projects");
                 });
 
@@ -153,17 +151,6 @@ namespace Projects.Core.Database.Migrations
                         .IsRequired();
 
                     b.Navigation("Project");
-                });
-
-            modelBuilder.Entity("Projects.Core.Entities.Project", b =>
-                {
-                    b.HasOne("Users.Contracts.Database.References.UserReference", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 #pragma warning restore 612, 618
         }

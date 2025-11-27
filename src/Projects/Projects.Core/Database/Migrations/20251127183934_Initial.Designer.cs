@@ -12,8 +12,8 @@ using Projects.Core.Database;
 namespace Projects.Core.Database.Migrations
 {
     [DbContext(typeof(ProjectsDbContext))]
-    [Migration("20251125213827_Second")]
-    partial class Second
+    [Migration("20251127183934_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -92,8 +92,6 @@ namespace Projects.Core.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
-
                     b.ToTable("Projects", "Projects");
                 });
 
@@ -141,6 +139,9 @@ namespace Projects.Core.Database.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
                     b.HasDiscriminator().HasValue(1);
                 });
 
@@ -153,17 +154,6 @@ namespace Projects.Core.Database.Migrations
                         .IsRequired();
 
                     b.Navigation("Project");
-                });
-
-            modelBuilder.Entity("Projects.Core.Entities.Project", b =>
-                {
-                    b.HasOne("Users.Contracts.Database.References.UserReference", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 #pragma warning restore 612, 618
         }
