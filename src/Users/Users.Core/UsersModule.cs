@@ -40,8 +40,10 @@ public class UsersModule : IModule
 		services.AddScoped<ConfirmEmailHandler>();
 		services.AddScoped<ResendEmailConfirmationHandler>();
 		services.AddScoped<GetCurrentUserHandler>();
+		services.AddScoped<ResetPasswordWithTokenHandler>();
+		services.AddScoped<SendPasswordResetHandler>();
 		services.AddSingleton<ITokenProvider, JwtTokenProvider>();
-		services.AddScoped<EmailConfirmationService>();
+		services.AddScoped<UserMailingService>();
 		services.AddValidatorsFromAssemblyContaining<UsersModule>(includeInternalTypes: true);
 
 		var jwtSettings = configuration.GetSettings<JwtSettings>();
@@ -79,6 +81,8 @@ public class UsersModule : IModule
 			.Map<ChangeEmailEndpoint>()
 			.Map<ConfirmEmailEndpoint>()
 			.Map<ChangePasswordEndpoint>()
+			.Map<SendPasswordResetEndpoint>()
+			.Map<ResetPasswordWithTokenEndpoint>()
 			.Map<ResendEmailConfirmationEndpoint>();
 
 	public async ValueTask RunInDevelopmentMode(IServiceProvider services)

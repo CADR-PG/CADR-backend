@@ -27,7 +27,7 @@ internal sealed class ResendEmailConfirmationEndpoint : IEndpoint
 
 internal sealed class ResendEmailConfirmationHandler(
 	UsersDbContext dbContext,
-	EmailConfirmationService emailConfirmationService
+	UserMailingService userMailingService
 ) : IHttpRequestHandler<ResendEmailConfirmation>
 {
 	public async Task<IResult> Handle(ResendEmailConfirmation request, CancellationToken cancellationToken)
@@ -38,10 +38,10 @@ internal sealed class ResendEmailConfirmationHandler(
 		if (user.EmailConfirmation.SentAt > DateTime.UtcNow.AddMinutes(-1))
 			return Errors.ResendConfirmationTimeLimitError;
 
-		user.SetupEmailConfirmation();
+		user.SetupEmailConfirmation(request.Email);
 		await dbContext.SaveChangesAsync(cancellationToken);
 
-		await emailConfirmationService.SendEmailConfirmation(user);
+		await userMailingService.ResendEmailConfirmation(user);
 
 		return Results.NoContent();
 	}
