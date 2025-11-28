@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Projects.Core.Database;
-using Projects.Core.Features.Assets.Files;
 using Shared.Endpoints;
 using Shared.Endpoints.Results;
 using Shared.Endpoints.Validation;
@@ -33,14 +32,14 @@ internal sealed class RenameDirectoryHandler(
 {
 	public async Task<IResult> Handle(RenameDirectory request, CancellationToken cancellationToken)
 	{
-		var (projectId, directoryId, (name)) = request;
+		var (projectId, directoryId, body) = request;
 
 		var directory = await dbContext.AssetsDirectories.FirstOrDefaultAsync(af => af.ProjectId == projectId && af.Id == directoryId, cancellationToken);
 
 		if (directory is null)
 			return new ErrorResult("ProjectAssetsDirectoryNotFound", "Project assets directory not found", 404);
 
-		directory.Name = name;
+		directory.Name = body.Name;
 		directory.LastModifiedAt = DateTime.UtcNow;
 
 		await dbContext.SaveChangesAsync(cancellationToken);

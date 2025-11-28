@@ -34,14 +34,14 @@ internal sealed class MoveFileHandler(
 {
 	public async Task<IResult> Handle(MoveFile request, CancellationToken cancellationToken)
 	{
-		var (projectId, fileId, (targetDirectoryId)) = request;
+		var (projectId, fileId, body) = request;
 
 		var file = await dbContext.AssetsFiles.FirstOrDefaultAsync(af => af.ProjectId == projectId && af.Id == fileId, cancellationToken);
 
 		if (file is null or { DirectoryId: null })
 			return new ErrorResult("ProjectAssetsFileNotFound", "Project assets file does not exists", 404);
 
-		file.DirectoryId = targetDirectoryId;
+		file.DirectoryId = body.TargetDirectoryId;
 		file.LastModifiedAt = DateTime.UtcNow;
 		await dbContext.SaveChangesAsync(cancellationToken);
 

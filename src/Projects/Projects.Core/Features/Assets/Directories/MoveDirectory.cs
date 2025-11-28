@@ -35,14 +35,14 @@ internal sealed class MoveDirectoryHandler(
 {
 	public async Task<IResult> Handle(MoveDirectory request, CancellationToken cancellationToken)
 	{
-		var (projectId, directoryId, (targetDirectoryId)) = request;
+		var (projectId, directoryId, body) = request;
 
 		var directory = await dbContext.AssetsDirectories.FirstOrDefaultAsync(af => af.ProjectId == projectId && af.Id == directoryId, cancellationToken);
 
 		if (directory is null or { DirectoryId: null })
 			return new ErrorResult("ProjectAssetsDirectoryNotFound", "Project assets directory does not exist");
 
-		directory.DirectoryId = targetDirectoryId;
+		directory.DirectoryId = body.TargetDirectoryId;
 		directory.LastModifiedAt = DateTime.UtcNow;
 		await dbContext.SaveChangesAsync(cancellationToken);
 

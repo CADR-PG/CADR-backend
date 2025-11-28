@@ -33,14 +33,14 @@ internal sealed class RenameFileHandler(
 {
 	public async Task<IResult> Handle(RenameFile request, CancellationToken cancellationToken)
 	{
-		var (projectId, fileId, (name)) = request;
+		var (projectId, fileId, body) = request;
 
 		var file = await dbContext.AssetsFiles.FirstOrDefaultAsync(af => af.ProjectId == projectId && af.Id == fileId, cancellationToken);
 
 		if (file is null)
 			return new ErrorResult("ProjectAssetsFileNotFound", "Project assets file does not exists", 404);
 
-		file.Name = name;
+		file.Name = body.Name;
 		file.LastModifiedAt = DateTime.UtcNow;
 
 		await dbContext.SaveChangesAsync(cancellationToken);
