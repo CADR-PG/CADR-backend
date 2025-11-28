@@ -23,17 +23,19 @@ namespace Projects.Core.Database.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Projects.Core.Entities.Asset", b =>
+            modelBuilder.Entity("Projects.Core.Entities.AssetsDirectory", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("BlobPath")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DirectoryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("LastModifiedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Name")
@@ -41,27 +43,51 @@ namespace Projects.Core.Database.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<Guid?>("ParentId")
+                    b.Property<Guid>("ProjectId")
                         .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DirectoryId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("AssetsDirectories", "Projects");
+                });
+
+            modelBuilder.Entity("Projects.Core.Entities.AssetsFile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DirectoryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("LastModifiedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<Guid>("ProjectId")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<long>("SizeInBytes")
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DirectoryId");
+
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("Assets", "Projects");
-
-                    b.HasDiscriminator<int>("Type");
-
-                    b.UseTphMappingStrategy();
+                    b.ToTable("AssetsFiles", "Projects");
                 });
 
             modelBuilder.Entity("Projects.Core.Entities.Project", b =>
@@ -117,40 +143,37 @@ namespace Projects.Core.Database.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Projects.Core.Entities.AssetDirectory", b =>
+            modelBuilder.Entity("Projects.Core.Entities.AssetsDirectory", b =>
                 {
-                    b.HasBaseType("Projects.Core.Entities.Asset");
+                    b.HasOne("Projects.Core.Entities.AssetsDirectory", null)
+                        .WithMany()
+                        .HasForeignKey("DirectoryId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasDiscriminator().HasValue(0);
-                });
-
-            modelBuilder.Entity("Projects.Core.Entities.AssetFile", b =>
-                {
-                    b.HasBaseType("Projects.Core.Entities.Asset");
-
-                    b.Property<string>("ContentType")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Extension")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<long>("FileSize")
-                        .HasColumnType("bigint");
-
-                    b.HasDiscriminator().HasValue(1);
-                });
-
-            modelBuilder.Entity("Projects.Core.Entities.Asset", b =>
-                {
-                    b.HasOne("Projects.Core.Entities.Project", "Project")
+                    b.HasOne("Projects.Core.Entities.Project", null)
                         .WithMany()
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
 
-                    b.Navigation("Project");
+            modelBuilder.Entity("Projects.Core.Entities.AssetsFile", b =>
+                {
+                    b.HasOne("Projects.Core.Entities.AssetsDirectory", null)
+                        .WithMany("Files")
+                        .HasForeignKey("DirectoryId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Projects.Core.Entities.Project", null)
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Projects.Core.Entities.AssetsDirectory", b =>
+                {
+                    b.Navigation("Files");
                 });
 #pragma warning restore 612, 618
         }

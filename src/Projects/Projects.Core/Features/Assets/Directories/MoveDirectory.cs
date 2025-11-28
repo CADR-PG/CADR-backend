@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Projects.Core.Database;
-using Projects.Core.Features.Assets.Files;
 using Shared.Endpoints;
 using Shared.Endpoints.Results;
 using Shared.Endpoints.Validation;
@@ -22,7 +21,7 @@ internal sealed class MoveDirectoryEndpoint : IEndpoint
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
 		.MapPost<MoveDirectory, MoveDirectoryHandler>("{ProjectId}/assets/directories/{DirectoryId}/move")
 		.Produces(StatusCodes.Status204NoContent)
-		.AddValidation<MoveFile.Data>()
+		.AddValidation<MoveDirectory.Data>()
 		.RequireAuthorization()
 		.ProducesError(401, "`UnauthorizedError`")
 		.ProducesError(404, "`ProjectAssetsDirectoryNotFound`");
