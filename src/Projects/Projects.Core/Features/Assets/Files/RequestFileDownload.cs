@@ -18,7 +18,7 @@ internal sealed record RequestFileDownload([FromRoute] Guid ProjectId, [FromRout
 internal sealed class RequestFileDownloadEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
-		.MapPost<RequestFileDownload, RequestFileDownloadHandler>("{ProjectId}/assets/file/{FileId}/request-download")
+		.MapPost<RequestFileDownload, RequestFileDownloadHandler>("{ProjectId}/assets/files/{FileId}/request-download")
 		.RequireAuthorization()
 		.ProducesError(401, "`UnauthorizedError`")
 		.ProducesError(404, "`ProjectAssetsFileNotFound`");

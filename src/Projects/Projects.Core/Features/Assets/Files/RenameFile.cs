@@ -19,7 +19,7 @@ internal sealed record RenameFile([FromRoute] Guid ProjectId, [FromRoute] Guid F
 internal sealed class RenameFileEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
-		.MapPost<RenameFile, RenameFileHandler>("{ProjectId}/assets/file/{FileId}/rename")
+		.MapPost<RenameFile, RenameFileHandler>("{ProjectId}/assets/files/{FileId}/rename")
 		.Produces(StatusCodes.Status204NoContent)
 		.AddValidation<RenameFile.Data>()
 		.RequireAuthorization()

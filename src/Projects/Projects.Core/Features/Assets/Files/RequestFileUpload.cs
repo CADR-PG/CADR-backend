@@ -18,7 +18,7 @@ internal sealed record RequestFileUpload([FromRoute] Guid ProjectId, [FromRoute]
 internal sealed class RequestUploadEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
-		.MapPost<RequestFileUpload, RequestFileUploadHandler>("{ProjectId}/assets/file/{FileId}/move")
+		.MapPost<RequestFileUpload, RequestFileUploadHandler>("{ProjectId}/assets/files/{FileId}/move")
 		.Produces<AssetsFileDownloadReadModel>()
 		.RequireAuthorization()
 		.ProducesError(401, "`Unauthorized`")

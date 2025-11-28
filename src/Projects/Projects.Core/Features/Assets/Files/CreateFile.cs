@@ -59,7 +59,7 @@ internal sealed class CreateFileHandler(
 
 		var readModel = AssetsFileUploadReadModel.From(file, blobClient.GenerateSasUri(uploadSas));
 
-		return Results.Created($"projects/{projectId}/assets/file/{file.Id}", readModel);
+		return Results.Created($"projects/{projectId}/assets/files/{file.Id}", readModel);
 	}
 }
 
