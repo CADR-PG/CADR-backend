@@ -8,7 +8,8 @@ namespace Projects.Core.Database;
 internal sealed class ProjectsDbContext(DbContextOptions<ProjectsDbContext> dbContextOptions) : DbContext(dbContextOptions)
 {
 	public DbSet<Project> Projects { get; init; } = null!;
-	public DbSet<Asset> Assets { get; init; } = null!;
+	public DbSet<AssetsDirectory> AssetsDirectories { get; init; } = null!;
+	public DbSet<AssetsFile> AssetsFiles { get; init; } = null!;
 
 	protected override void OnModelCreating(ModelBuilder builder)
 	{

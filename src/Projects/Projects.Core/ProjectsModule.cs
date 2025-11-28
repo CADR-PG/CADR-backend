@@ -13,6 +13,8 @@ using Projects.Core.Database;
 using Projects.Core.Entities;
 using Projects.Core.Features;
 using Projects.Core.Features.Assets;
+using Projects.Core.Features.Assets.Directories;
+using Projects.Core.Features.Assets.Files;
 using Projects.Core.Features.Projects;
 using Shared.Endpoints;
 using Shared.Modules;
@@ -38,11 +40,13 @@ public class ProjectsModule : IModule
 		services.AddScoped<CreateDirectoryHandler>();
 		services.AddScoped<DeleteFileHandler>();
 		services.AddScoped<DeleteDirectoryHandler>();
-		services.AddScoped<MoveAssetHandler>();
+		services.AddScoped<MoveFileHandler>();
+		services.AddScoped<MoveDirectoryEndpoint>();
 		services.AddScoped<GetAssetsTreeHandler>();
-		services.AddScoped<RenameAssetHandler>();
-		services.AddScoped<ChangeAssetContentHandler>();
-		services.AddScoped<DownloadAssetHandler>();
+		services.AddScoped<RenameFileHandler>();
+		services.AddScoped<RenameDirectoryEndpoint>();
+		services.AddScoped<RequestAssetUploadHandler>();
+		services.AddScoped<RequestFileDownloadHandler>();
 		services.AddValidatorsFromAssemblyContaining<ProjectsModule>(includeInternalTypes: true);
 		services.AddAzureClients(builder =>
 		{
@@ -54,23 +58,38 @@ public class ProjectsModule : IModule
 	}
 
 	public void MapEndpoints(IEndpointRouteBuilder endpoints)
-		=> endpoints.MapGroup(Name.ToLowerInvariant())
-			.WithTags(Name)
+	{
+		var group = endpoints.MapGroup(Name.ToLowerInvariant());
+
+		var projects = group.WithTags(Name);
+		projects
 			.Map<AddProjectEndpoint>()
 			.Map<GetAllUserProjectsEndpoint>()
 			.Map<LoadSceneEndpoint>()
 			.Map<ModifyProjectEndpoint>()
 			.Map<SaveSceneEndpoint>()
-			.Map<DeleteProjectEndpoint>()
+			.Map<DeleteProjectEndpoint>();
+
+		var assets = group.WithTags("Project Assets");
+		assets
+			.Map<GetProjectAssetsEndpoint>();
+
+		var assetsFiles = group.WithTags("Projects Assets - Files");
+		assetsFiles
 			.Map<CreateFileEndpoint>()
+			.Map<DeleteFileEndpoint>()
+			.Map<MoveFileEndpoint>()
+			.Map<RenameFileEndpoint>()
+			.Map<RequestFileDownloadEndpoint>()
+			.Map<RequestUploadEndpoint>();
+
+		var assetsDirectories = group.WithTags("Projects Assets - Directories");
+		assetsDirectories
 			.Map<CreateDirectoryEndpoint>()
-			.Map<DeleteAssetEndpoint>()
 			.Map<DeleteDirectoryEndpoint>()
-			.Map<MoveAssetEndpoint>()
-			.Map<GetAssetsTreeEndpoint>()
-			.Map<RenameAssetEndpoint>()
-			.Map<ChangeAssetContentEndpoint>()
-			.Map<DownloadAssetEndpoint>();
+			.Map<MoveDirectoryEndpoint>()
+			.Map<RenameDirectoryEndpoint>();
+	}
 
 	public async ValueTask RunInDevelopmentMode(IServiceProvider services)
 	{
@@ -78,7 +97,7 @@ public class ProjectsModule : IModule
 		await dbContext.Database.MigrateAsync();
 
 		var blobServiceClient = services.GetRequiredService<BlobServiceClient>();
-		var containerClient = blobServiceClient.GetBlobContainerClient(Asset.BlobContainerName);
+		var containerClient = blobServiceClient.GetBlobContainerClient(AssetsFile.BlobContainerName);
 
 		bool exists = await containerClient.ExistsAsync();
 

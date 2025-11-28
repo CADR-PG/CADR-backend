@@ -4,8 +4,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.CodeAnalysis;
-using Microsoft.EntityFrameworkCore;
 using Projects.Core.Database;
 using Projects.Core.Entities;
 using Projects.Core.ReadModels;
@@ -14,23 +12,24 @@ using Shared.Endpoints.Requests;
 using Shared.Endpoints.Results;
 using Shared.Endpoints.Validation;
 
-namespace Projects.Core.Features.Assets;
-
+namespace Projects.Core.Features.Assets.Files;
 
 internal sealed record CreateFile([FromBody] CreateFile.Data Body, CurrentUser CurrentUser, [FromRoute] Guid ProjectId) : IHttpRequest
 {
-	internal record Data(string Name, Guid? ParentId, string ContentType, long FileSize);
+	internal record Data(string Name, Guid DirectoryId, uint SizeInBytes);
 }
 
 internal sealed class CreateFileEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
-		.MapPost<CreateFile, CreateFileHandler>("create-file/{projectId}")
+		.MapPost<CreateFile, CreateFileHandler>("{ProjectId}/assets/files")
+		.Produces<AssetsFileUploadReadModel>(201)
 		.AddValidation<CreateFile.Data>()
 		.RequireAuthorization()
 		.ProducesError(401, "`UnauthorizedError`");
 }
 
+// TODO: dodanie lepszej walidacji, np. czy istnieje projekt/folder, czy nie ma już takiego pliku o tej nazwie...
 internal sealed class CreateFileHandler(
 	ProjectsDbContext dbContext,
 	BlobServiceClient blobServiceClient
@@ -38,47 +37,29 @@ internal sealed class CreateFileHandler(
 {
 	public async Task<IResult> Handle(CreateFile request, CancellationToken cancellationToken)
 	{
-		var (name, parent, contentType, fileSize) = request.Body;
+		var (name, directoryId, sizeInBytes) = request.Body;
 		var projectId = request.ProjectId;
-		var id = Guid.NewGuid();
-		var asset = new AssetFile()
-		{
-			Id = id,
-			Name = Path.GetFileName(name),
-			Type = AssetType.File,
-			ParentId = parent,
-			BlobPath = projectId + "/" + id + Path.GetExtension(name),
-			ProjectId = projectId,
-			Extension = Path.GetExtension(name),
-			CreatedAt = DateTime.UtcNow,
-			UpdatedAt = DateTime.UtcNow,
-			ContentType = contentType,
-			FileSize = fileSize * 1024 * 1024 // byte size
-		};
 
-		await dbContext.Assets.AddAsync(asset, cancellationToken);
+		var file = AssetsFile.Create(projectId, directoryId, name, sizeInBytes);
+
+		await dbContext.AssetsFiles.AddAsync(file, cancellationToken);
 		await dbContext.SaveChangesAsync(cancellationToken);
 
-		string? uploadUrl = null;
-		var container = blobServiceClient.GetBlobContainerClient(Asset.BlobContainerName);
-		var blobClient = container.GetBlobClient(asset.BlobPath);
+		var container = blobServiceClient.GetBlobContainerClient(AssetsFile.BlobContainerName);
+		var blobClient = container.GetBlobClient(file.BlobResourceName);
 
-		var sas = new Azure.Storage.Sas.BlobSasBuilder
+		var uploadSas = new Azure.Storage.Sas.BlobSasBuilder
 		{
 			BlobContainerName = container.Name,
-			BlobName = asset.BlobPath,
+			BlobName = file.BlobResourceName,
 			Resource = "b",
 			ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(3)
 		};
-		sas.SetPermissions(Azure.Storage.Sas.BlobSasPermissions.Write | Azure.Storage.Sas.BlobSasPermissions.Create);
-		uploadUrl = blobClient.GenerateSasUri(sas).AbsoluteUri;
+		uploadSas.SetPermissions(Azure.Storage.Sas.BlobSasPermissions.Write);
 
-		return Results.Ok(new
-		{
-			AssetId = asset.Id,
-			UploadUrl = uploadUrl,
-			FIleSize = asset.FileSize
-		});
+		var readModel = AssetsFileUploadReadModel.From(file, blobClient.GenerateSasUri(uploadSas));
+
+		return Results.Created($"projects/{projectId}/assets/file/{file.Id}", readModel);
 	}
 }
 
