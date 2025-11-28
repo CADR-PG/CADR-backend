@@ -16,7 +16,7 @@ internal sealed class AssetsFilesConfiguration : IEntityTypeConfiguration<Assets
 		builder.Property(af => af.SizeInBytes).IsRequired();
 
 		builder.Property(af => af.CreatedAt).IsRequired();
-		builder.Property(af => af.LastModifiedAt).IsRequired();
+		builder.Property(af => af.LastModifiedAt).IsRequired(false);
 
 		builder.HasOne<AssetsDirectory>()
 			.WithMany(ad => ad.Files)

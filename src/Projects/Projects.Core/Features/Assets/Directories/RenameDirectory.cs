@@ -19,13 +19,14 @@ internal sealed record RenameDirectory([FromRoute] Guid ProjectId, [FromRoute] G
 internal sealed class RenameDirectoryEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
-		.MapPost<RenameDirectory, RenameDirectoryHandler>("{ProjectId}/assets/file/{DirectoryId}/rename")
+		.MapPost<RenameDirectory, RenameDirectoryHandler>("{ProjectId}/assets/directories/{DirectoryId}/rename")
 		.AddValidation<RenameDirectory.Data>()
 		.RequireAuthorization()
 		.ProducesError(401, "`UnauthorizedError`")
 		.ProducesError(404, "`ProjectAssetsDirectoryNotFound`");
 }
 
+// TODO: błąd dla roota??
 internal sealed class RenameDirectoryHandler(
 	ProjectsDbContext dbContext
 ) : IHttpRequestHandler<RenameDirectory>

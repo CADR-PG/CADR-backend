@@ -39,7 +39,7 @@ internal sealed class RequestFileDownloadHandler(
 			return new ErrorResult("ProjectAssetsFileNotFound", "Project assets file does not exists", 404);
 
 		var container = blobServiceClient.GetBlobContainerClient(AssetsFile.BlobContainerName);
-		var blobClient = container.GetBlobClient(AssetsFile.BlobContainerName);
+		var blobClient = container.GetBlobClient(file.BlobResourceName);
 
 		var expiresOn = DateTimeOffset.UtcNow.AddHours(12);
 

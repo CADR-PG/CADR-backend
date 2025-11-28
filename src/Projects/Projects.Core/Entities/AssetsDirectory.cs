@@ -2,7 +2,7 @@ namespace Projects.Core.Entities;
 
 public sealed class AssetsDirectory
 {
-	private const string RootDirectoryName = "/root";
+	private const string RootDirectoryName = "Assets";
 
 	private AssetsDirectory() { }
 
@@ -16,7 +16,7 @@ public sealed class AssetsDirectory
 	public required Guid ProjectId { get; init; }
 	public required Guid? DirectoryId { get; set; }
 
-	public bool IsRoot => DirectoryId.HasValue;
+	public bool IsRoot => !DirectoryId.HasValue;
 
 	public ICollection<AssetsFile> Files { get; init; } = [];
 

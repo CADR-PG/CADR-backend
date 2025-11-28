@@ -13,24 +13,24 @@ using Shared.Endpoints.Results;
 
 namespace Projects.Core.Features.Assets.Files;
 
-internal sealed record RequestAssetUpload([FromRoute] Guid ProjectId, [FromRoute] Guid FileId) : IHttpRequest;
+internal sealed record RequestFileUpload([FromRoute] Guid ProjectId, [FromRoute] Guid FileId) : IHttpRequest;
 
 internal sealed class RequestUploadEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
-		.MapPost<RequestAssetUpload, RequestAssetUploadHandler>("{ProjectId}/assets/file/{FileId}/move")
+		.MapPost<RequestFileUpload, RequestFileUploadHandler>("{ProjectId}/assets/file/{FileId}/move")
 		.Produces<AssetsFileDownloadReadModel>()
 		.RequireAuthorization()
 		.ProducesError(401, "`Unauthorized`")
 		.ProducesError(404, "`ProjectAssetsFileNotFound`");
 }
 
-internal sealed class RequestAssetUploadHandler(
+internal sealed class RequestFileUploadHandler(
 	ProjectsDbContext dbContext,
 	BlobServiceClient blobServiceClient
-	) : IHttpRequestHandler<RequestAssetUpload>
+	) : IHttpRequestHandler<RequestFileUpload>
 {
-	public async Task<IResult> Handle(RequestAssetUpload request, CancellationToken cancellationToken)
+	public async Task<IResult> Handle(RequestFileUpload request, CancellationToken cancellationToken)
 	{
 		var (projectId, fileId) = request;
 
@@ -40,7 +40,7 @@ internal sealed class RequestAssetUploadHandler(
 			return new ErrorResult("ProjectAssetsFileNotFound", "Project assets file does not exists", 404);
 
 		var container = blobServiceClient.GetBlobContainerClient(AssetsFile.BlobContainerName);
-		var blobClient = container.GetBlobClient(AssetsFile.BlobContainerName);
+		var blobClient = container.GetBlobClient(file.BlobResourceName);
 
 		var expiresOn = DateTimeOffset.UtcNow.AddMinutes(3);
 

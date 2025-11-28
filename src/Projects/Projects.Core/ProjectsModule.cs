@@ -41,11 +41,11 @@ public class ProjectsModule : IModule
 		services.AddScoped<DeleteFileHandler>();
 		services.AddScoped<DeleteDirectoryHandler>();
 		services.AddScoped<MoveFileHandler>();
-		services.AddScoped<MoveDirectoryEndpoint>();
 		services.AddScoped<GetAssetsTreeHandler>();
 		services.AddScoped<RenameFileHandler>();
-		services.AddScoped<RenameDirectoryEndpoint>();
-		services.AddScoped<RequestAssetUploadHandler>();
+		services.AddScoped<MoveDirectoryHandler>();
+		services.AddScoped<RenameDirectoryHandler>();
+		services.AddScoped<RequestFileUploadHandler>();
 		services.AddScoped<RequestFileDownloadHandler>();
 		services.AddValidatorsFromAssemblyContaining<ProjectsModule>(includeInternalTypes: true);
 		services.AddAzureClients(builder =>
@@ -59,9 +59,7 @@ public class ProjectsModule : IModule
 
 	public void MapEndpoints(IEndpointRouteBuilder endpoints)
 	{
-		var group = endpoints.MapGroup(Name.ToLowerInvariant());
-
-		var projects = group.WithTags(Name);
+		var projects = endpoints.MapGroup(Name.ToLowerInvariant()).WithTags(Name);
 		projects
 			.Map<AddProjectEndpoint>()
 			.Map<GetAllUserProjectsEndpoint>()
@@ -70,11 +68,11 @@ public class ProjectsModule : IModule
 			.Map<SaveSceneEndpoint>()
 			.Map<DeleteProjectEndpoint>();
 
-		var assets = group.WithTags("Project Assets");
+		var assets = endpoints.MapGroup(Name.ToLowerInvariant()).WithTags("Project Assets");
 		assets
 			.Map<GetProjectAssetsEndpoint>();
 
-		var assetsFiles = group.WithTags("Projects Assets - Files");
+		var assetsFiles = endpoints.MapGroup(Name.ToLowerInvariant()).WithTags("Projects Assets - Files");
 		assetsFiles
 			.Map<CreateFileEndpoint>()
 			.Map<DeleteFileEndpoint>()
@@ -83,7 +81,7 @@ public class ProjectsModule : IModule
 			.Map<RequestFileDownloadEndpoint>()
 			.Map<RequestUploadEndpoint>();
 
-		var assetsDirectories = group.WithTags("Projects Assets - Directories");
+		var assetsDirectories = endpoints.MapGroup(Name.ToLowerInvariant()).WithTags("Projects Assets - Directories");
 		assetsDirectories
 			.Map<CreateDirectoryEndpoint>()
 			.Map<DeleteDirectoryEndpoint>()

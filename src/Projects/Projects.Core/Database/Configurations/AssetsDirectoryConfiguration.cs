@@ -16,7 +16,7 @@ internal sealed class AssetsDirectoryConfiguration : IEntityTypeConfiguration<As
 		builder.Property(ad => ad.Name).IsRequired().HasMaxLength(200);
 
 		builder.Property(ad => ad.CreatedAt).IsRequired();
-		builder.Property(ad => ad.LastModifiedAt).IsRequired();
+		builder.Property(ad => ad.LastModifiedAt).IsRequired(false);
 
 		builder.HasOne<Project>()
 			.WithMany()

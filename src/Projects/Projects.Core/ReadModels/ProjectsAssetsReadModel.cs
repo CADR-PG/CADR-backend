@@ -2,7 +2,7 @@ namespace Projects.Core.ReadModels;
 
 public sealed class ProjectsAssetsReadModel
 {
-	public required Directory Root { get; init; }
+	public required Directory Assets { get; init; }
 
 	public sealed class Directory
 	{

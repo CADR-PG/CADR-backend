@@ -35,7 +35,7 @@ internal sealed class DeleteFileHandler(
 			.Where(x => x.ProjectId == projectId && x.DirectoryId == fileId)
 			.ExecuteUpdateAsync(stc => stc.SetProperty(af => af.DirectoryId, null as Guid?), cancellationToken);
 
-		return deletedCount == 0
+		return deletedCount == 1
 			? Results.NoContent()
 			: new ErrorResult("ProjectAssetsFileNotFound", "Project assets file does not exists", 404);
 	}

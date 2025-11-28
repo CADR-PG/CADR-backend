@@ -27,7 +27,7 @@ internal sealed class MoveDirectoryEndpoint : IEndpoint
 		.ProducesError(404, "`ProjectAssetsDirectoryNotFound`");
 }
 
-// TODO: dodanie walidacji czy folder istnieje
+// TODO: dodanie walidacji czy folder istnieje, błąd dla roota
 internal sealed class MoveDirectoryHandler(
 	ProjectsDbContext dbContext
 ) : IHttpRequestHandler<MoveDirectory>

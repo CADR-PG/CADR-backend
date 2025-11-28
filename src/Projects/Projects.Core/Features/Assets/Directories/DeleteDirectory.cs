@@ -27,6 +27,7 @@ internal sealed class DeleteDirectoryEndpoint : IEndpoint
 // worker może zbierać te z directoryId np. co 5 minut i usuwać z bloba
 // zapewni to lepszy UX bo query to jedno query do bazy a nie rekurencyjne calle do bazy
 // PS. baza sama kaskadowo usunie subdirectories dla directory
+// TODO: błąd dla roota??
 internal sealed class DeleteDirectoryHandler(
 	ProjectsDbContext dbContext
 ) : IHttpRequestHandler<DeleteDirectory>
@@ -39,7 +40,7 @@ internal sealed class DeleteDirectoryHandler(
 			.Where(x => x.ProjectId == projectId && x.Id == directoryId)
 			.ExecuteDeleteAsync(cancellationToken);
 
-		return deletedCount == 0
+		return deletedCount == 1
 			? Results.NoContent()
 			: new ErrorResult("ProjectAssetsDirectoryNotFound", "Project assets directory does not exist");
 	}

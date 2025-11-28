@@ -16,7 +16,7 @@ internal sealed record GetProjectAssets([FromRoute] Guid ProjectId) : IHttpReque
 internal sealed class GetProjectAssetsEndpoint() : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
-		.MapGet<GetProjectAssets, GetAssetsTreeHandler>("assets-tree/{projectId}")
+		.MapGet<GetProjectAssets, GetAssetsTreeHandler>("{ProjectId}/assets")
 		.RequireAuthorization()
 		.ProducesError(401, "`UnauthorizedError`");
 }
@@ -32,7 +32,7 @@ internal sealed class GetAssetsTreeHandler(
 			.Include(x => x.Files)
 			.Where(a => a.ProjectId == projectId).ToListAsync(cancellationToken);
 
-		var readModel = new ProjectsAssetsReadModel { Root = BuildDirectoryReadModel(assets.First(x => x.IsRoot)) };
+		var readModel = new ProjectsAssetsReadModel { Assets = BuildDirectoryReadModel(assets.First(x => x.IsRoot)) };
 
 		return Results.Ok(readModel);
 

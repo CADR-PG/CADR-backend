@@ -50,6 +50,9 @@ internal sealed class AddProjectHandler(
 		};
 
 		await dbContext.Projects.AddAsync(project, cancellationToken);
+		// TODO: temp
+		await dbContext.AssetsDirectories.AddAsync(AssetsDirectory.CreateRoot(project.Id), cancellationToken);
+		//temp
 		await dbContext.SaveChangesAsync(cancellationToken);
 
 		var readModel = ProjectReadModel.From(project);
