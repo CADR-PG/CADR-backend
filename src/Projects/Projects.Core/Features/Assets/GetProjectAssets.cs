@@ -8,6 +8,7 @@ using Projects.Core.Entities;
 using Projects.Core.ReadModels;
 using Shared.Endpoints;
 using Shared.Endpoints.Results;
+using System.Runtime.InteropServices.JavaScript;
 
 namespace Projects.Core.Features.Assets;
 
@@ -17,8 +18,10 @@ internal sealed class GetProjectAssetsEndpoint() : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
 		.MapGet<GetProjectAssets, GetAssetsTreeHandler>("{ProjectId}/assets")
+		.Produces<ProjectsAssetsReadModel>()
 		.RequireAuthorization()
-		.ProducesError(401, "`UnauthorizedError`");
+		.ProducesError(401, "`UnauthorizedError`")
+		.ProducesError(404, "`ProjectNotFound`");
 }
 
 internal sealed class GetAssetsTreeHandler(
@@ -28,9 +31,14 @@ internal sealed class GetAssetsTreeHandler(
 	public async Task<IResult> Handle(GetProjectAssets request, CancellationToken cancellationToken)
 	{
 		var projectId = request.ProjectId;
+
 		var assets = await dbContext.AssetsDirectories
 			.Include(x => x.Files)
-			.Where(a => a.ProjectId == projectId).ToListAsync(cancellationToken);
+			.Where(a => a.ProjectId == projectId)
+			.ToListAsync(cancellationToken);
+
+		if (assets.Count == 0)
+			return new ErrorResult("ProjectNotFound", "Project does not exist", 404);
 
 		var readModel = new ProjectsAssetsReadModel { Assets = BuildDirectoryReadModel(assets.First(x => x.IsRoot)) };
 

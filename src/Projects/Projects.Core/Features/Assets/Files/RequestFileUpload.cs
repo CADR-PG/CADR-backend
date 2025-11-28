@@ -19,7 +19,7 @@ internal sealed class RequestUploadEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
 		.MapPost<RequestFileUpload, RequestFileUploadHandler>("{ProjectId}/assets/files/{FileId}/move")
-		.Produces<AssetsFileDownloadReadModel>()
+		.Produces<AssetsFileUploadReadModel>()
 		.RequireAuthorization()
 		.ProducesError(401, "`Unauthorized`")
 		.ProducesError(404, "`ProjectAssetsFileNotFound`");

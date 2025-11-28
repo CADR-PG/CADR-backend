@@ -20,6 +20,7 @@ internal sealed class RenameDirectoryEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
 		.MapPost<RenameDirectory, RenameDirectoryHandler>("{ProjectId}/assets/directories/{DirectoryId}/rename")
+		.Produces(204)
 		.AddValidation<RenameDirectory.Data>()
 		.RequireAuthorization()
 		.ProducesError(401, "`UnauthorizedError`")
