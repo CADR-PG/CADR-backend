@@ -11,9 +11,8 @@ using Shared.Endpoints;
 using Shared.Endpoints.Requests;
 using Shared.Endpoints.Results;
 using Shared.Endpoints.Validation;
-using System.Text.Json;
 
-namespace Projects.Core.Features;
+namespace Projects.Core.Features.Projects;
 
 
 internal sealed record AddProject([FromBody] AddProject.Data Body, CurrentUser CurrentUser) : IHttpRequest
@@ -51,6 +50,9 @@ internal sealed class AddProjectHandler(
 		};
 
 		await dbContext.Projects.AddAsync(project, cancellationToken);
+		// TODO: temp
+		await dbContext.AssetsDirectories.AddAsync(AssetsDirectory.CreateRoot(project.Id), cancellationToken);
+		//temp
 		await dbContext.SaveChangesAsync(cancellationToken);
 
 		var readModel = ProjectReadModel.From(project);

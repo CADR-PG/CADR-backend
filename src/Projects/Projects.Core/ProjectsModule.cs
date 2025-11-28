@@ -1,12 +1,21 @@
+using Azure.Identity;
+using Azure.Storage.Blobs;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Projects.Core.Database;
+using Projects.Core.Entities;
 using Projects.Core.Features;
+using Projects.Core.Features.Assets;
+using Projects.Core.Features.Assets.Directories;
+using Projects.Core.Features.Assets.Files;
+using Projects.Core.Features.Projects;
 using Shared.Endpoints;
 using Shared.Modules;
 using Shared.Settings;
@@ -27,12 +36,31 @@ public class ProjectsModule : IModule
 		services.AddScoped<SaveSceneHandler>();
 		services.AddScoped<GetAllUserProjectsHandler>();
 		services.AddScoped<ModifyProjectHandler>();
+		services.AddScoped<CreateFileHandler>();
+		services.AddScoped<CreateDirectoryHandler>();
+		services.AddScoped<DeleteFileHandler>();
+		services.AddScoped<DeleteDirectoryHandler>();
+		services.AddScoped<MoveFileHandler>();
+		services.AddScoped<GetAssetsTreeHandler>();
+		services.AddScoped<RenameFileHandler>();
+		services.AddScoped<MoveDirectoryHandler>();
+		services.AddScoped<RenameDirectoryHandler>();
+		services.AddScoped<RequestFileUploadHandler>();
+		services.AddScoped<RequestFileDownloadHandler>();
 		services.AddValidatorsFromAssemblyContaining<ProjectsModule>(includeInternalTypes: true);
+		services.AddAzureClients(builder =>
+		{
+			var projectSettings = configuration.GetSection("Azure");
+			var connectionString = projectSettings["StorageAccountConnectionString"];
+
+			builder.AddBlobServiceClient(connectionString);
+		});
 	}
 
 	public void MapEndpoints(IEndpointRouteBuilder endpoints)
-		=> endpoints.MapGroup(Name.ToLowerInvariant())
-			.WithTags(Name)
+	{
+		var projects = endpoints.MapGroup(Name.ToLowerInvariant()).WithTags(Name);
+		projects
 			.Map<AddProjectEndpoint>()
 			.Map<GetAllUserProjectsEndpoint>()
 			.Map<LoadSceneEndpoint>()
@@ -40,9 +68,38 @@ public class ProjectsModule : IModule
 			.Map<SaveSceneEndpoint>()
 			.Map<DeleteProjectEndpoint>();
 
+		var assets = endpoints.MapGroup(Name.ToLowerInvariant()).WithTags("Project Assets");
+		assets
+			.Map<GetProjectAssetsEndpoint>();
+
+		var assetsFiles = endpoints.MapGroup(Name.ToLowerInvariant()).WithTags("Projects Assets - Files");
+		assetsFiles
+			.Map<CreateFileEndpoint>()
+			.Map<DeleteFileEndpoint>()
+			.Map<MoveFileEndpoint>()
+			.Map<RenameFileEndpoint>()
+			.Map<RequestFileDownloadEndpoint>()
+			.Map<RequestUploadEndpoint>();
+
+		var assetsDirectories = endpoints.MapGroup(Name.ToLowerInvariant()).WithTags("Projects Assets - Directories");
+		assetsDirectories
+			.Map<CreateDirectoryEndpoint>()
+			.Map<DeleteDirectoryEndpoint>()
+			.Map<MoveDirectoryEndpoint>()
+			.Map<RenameDirectoryEndpoint>();
+	}
+
 	public async ValueTask RunInDevelopmentMode(IServiceProvider services)
 	{
 		var dbContext = services.GetRequiredService<ProjectsDbContext>();
 		await dbContext.Database.MigrateAsync();
+
+		var blobServiceClient = services.GetRequiredService<BlobServiceClient>();
+		var containerClient = blobServiceClient.GetBlobContainerClient(AssetsFile.BlobContainerName);
+
+		bool exists = await containerClient.ExistsAsync();
+
+		if (!exists)
+			await containerClient.CreateAsync();
 	}
 }

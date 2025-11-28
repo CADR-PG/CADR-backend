@@ -7,7 +7,7 @@ using Projects.Core.Database;
 using Shared.Endpoints;
 using System.Text.Json;
 
-namespace Projects.Core.Features;
+namespace Projects.Core.Features.Projects;
 
 internal sealed record LoadScene([FromRoute] Guid ProjectId) : IHttpRequest;
 
