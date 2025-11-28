@@ -1,4 +1,4 @@
-﻿namespace Projects.Core.ReadModels;
+namespace Projects.Core.ReadModels;
 
 public sealed class ProjectsAssetsReadModel
 {

@@ -1,4 +1,4 @@
-﻿namespace Projects.Core.Entities;
+namespace Projects.Core.Entities;
 
 public sealed class AssetsDirectory
 {
@@ -29,7 +29,7 @@ public sealed class AssetsDirectory
 		DirectoryId = directoryId
 	};
 
-	public static AssetsDirectory CreateRoot(Guid projectId)=> new()
+	public static AssetsDirectory CreateRoot(Guid projectId) => new()
 	{
 		Id = Guid.NewGuid(),
 		Name = RootDirectoryName,

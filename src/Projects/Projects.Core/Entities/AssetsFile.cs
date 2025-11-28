@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis.Operations;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace Projects.Core.Entities;
 

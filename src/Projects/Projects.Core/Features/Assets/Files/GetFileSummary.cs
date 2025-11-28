@@ -1,4 +1,4 @@
-﻿namespace Projects.Core.Features.Assets.Files;
+namespace Projects.Core.Features.Assets.Files;
 
 // TODO:
 public class GetFileSummary

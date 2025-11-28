@@ -29,7 +29,7 @@ internal sealed class DeleteFileHandler(
 {
 	public async Task<IResult> Handle(DeleteFile request, CancellationToken cancellationToken)
 	{
-		var (projectId, fileId) =  request;
+		var (projectId, fileId) = request;
 
 		var deletedCount = await dbContext.AssetsFiles
 			.Where(x => x.ProjectId == projectId && x.DirectoryId == fileId)

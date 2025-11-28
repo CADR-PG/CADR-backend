@@ -1,4 +1,4 @@
-﻿namespace Projects.Core.Features.Assets.Directories;
+namespace Projects.Core.Features.Assets.Directories;
 
 // TODO
 public class GetDirectorySummary
