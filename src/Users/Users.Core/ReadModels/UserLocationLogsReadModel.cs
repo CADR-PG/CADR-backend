@@ -1,4 +1,4 @@
-﻿using Users.Core.Entities;
+using Users.Core.Entities;
 
 namespace Users.Core.ReadModels;
 

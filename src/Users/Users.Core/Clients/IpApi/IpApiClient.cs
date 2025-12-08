@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Users.Core.Clients.IpApi.Responses;

@@ -1,4 +1,4 @@
-﻿using Shared.ValueObjects;
+using Shared.ValueObjects;
 using Users.Core.Clients.IpApi.Responses;
 using Users.Core.ReadModels;
 
@@ -50,8 +50,8 @@ internal sealed class UserLocationLog
 		var toLatitude = ToRadians(to.Latitude);
 
 		var a = Math.Sin(dLatitude / 2) * Math.Sin(dLatitude / 2) +
-		           Math.Cos(fromLatitude) * Math.Cos(toLatitude) *
-		           Math.Sin(dLongitude / 2) * Math.Sin(dLongitude / 2);
+				   Math.Cos(fromLatitude) * Math.Cos(toLatitude) *
+				   Math.Sin(dLongitude / 2) * Math.Sin(dLongitude / 2);
 
 		var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
 
