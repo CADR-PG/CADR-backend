@@ -11,6 +11,7 @@ using Shared.Modules;
 using Shared.Services;
 using Shared.Settings;
 using System.Runtime.CompilerServices;
+using Users.Core.Clients.IpApi;
 using Users.Core.Database;
 using Users.Core.Features;
 using Users.Core.Services;
@@ -34,6 +35,7 @@ public class UsersModule : IModule
 		services.AddScoped<LogoutHandler>();
 		services.AddScoped<RefreshHandler>();
 		services.AddScoped<GetCurrentUserHandler>();
+		services.AddScoped<GetCurrentUserLocationLogsHandler>();
 		services.AddScoped<ChangeUserInfoHandler>();
 		services.AddScoped<ChangeEmailHandler>();
 		services.AddScoped<ChangePasswordHandler>();
@@ -45,6 +47,8 @@ public class UsersModule : IModule
 		services.AddSingleton<ITokenProvider, JwtTokenProvider>();
 		services.AddScoped<UserMailingService>();
 		services.AddValidatorsFromAssemblyContaining<UsersModule>(includeInternalTypes: true);
+
+		services.RegisterIpApiClient();
 
 		var jwtSettings = configuration.GetSettings<JwtSettings>();
 
@@ -83,7 +87,8 @@ public class UsersModule : IModule
 			.Map<ChangePasswordEndpoint>()
 			.Map<SendPasswordResetEndpoint>()
 			.Map<ResetPasswordWithTokenEndpoint>()
-			.Map<ResendEmailConfirmationEndpoint>();
+			.Map<ResendEmailConfirmationEndpoint>()
+			.Map<GetCurrentUserLocationLogsEndpoint>();
 
 	public async ValueTask RunInDevelopmentMode(IServiceProvider services)
 	{

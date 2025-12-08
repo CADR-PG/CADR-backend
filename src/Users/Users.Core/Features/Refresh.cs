@@ -6,6 +6,7 @@ using Shared.Endpoints.Results;
 using Shared.Exceptions;
 using Shared.ValueObjects;
 using System.IdentityModel.Tokens.Jwt;
+using Users.Core.Clients.IpApi;
 using Users.Core.Database;
 using Users.Core.ReadModels;
 using Users.Core.Services;
@@ -25,22 +26,26 @@ internal sealed class RefreshEndpoint : IEndpoint
 
 internal sealed class RefreshHandler(
 	UsersDbContext dbContext,
-	ITokenProvider tokenProvider
+	ITokenProvider tokenProvider,
+	IIpApiClient ipApiClient
 ) : IHttpRequestHandler<Refresh>
 {
 	public async Task<IResult> Handle(Refresh request, CancellationToken cancellationToken)
 	{
-		var refreshToken = request.HttpContext.GetRefreshToken();
+		var refreshToken = request.HttpContext.GetClientIpAddress();
 		if (await tokenProvider.GetTokenIdentifiers(refreshToken) is not { } identifiers)
 			return Errors.InvalidRefreshCredentialsError;
 
 		var user = await dbContext.Users
 			.Include(x => x.RefreshTokens)
+			.Include(x => x.UserLocationLogs)
 			.FirstAsync(x => x.Id == identifiers.UserId, cancellationToken);
 
-		var refreshedUserTokens = tokenProvider.Generate(user);
+		var ipAddress = request.HttpContext.Connection.RemoteIpAddress!.ToString();
+		var ipAddressLocation = await ipApiClient.GetIpAddressGeolocationData(ipAddress);
 
-		user.Refresh(identifiers.TokenId, refreshedUserTokens);
+		var refreshedUserTokens = tokenProvider.Generate(user);
+		user.Refresh(identifiers.TokenId, refreshedUserTokens, ipAddressLocation);
 		await dbContext.SaveChangesAsync(cancellationToken);
 
 		request.HttpContext.ClearTokenCookies();

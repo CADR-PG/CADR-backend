@@ -1,4 +1,5 @@
 using Shared.ValueObjects;
+using Users.Core.Clients.IpApi.Responses;
 using Users.Core.ValueObjects;
 
 namespace Users.Core.Entities;
@@ -17,6 +18,7 @@ internal class User
 	public DateTime? PasswordResetExpiresAt { get; set; }
 	public required DateTime LastLoggedInAt { get; set; }
 	public List<RefreshToken> RefreshTokens { get; set; } = [];
+	public List<UserLocationLog> UserLocationLogs { get; init; } = [];
 
 	public void SetupEmailConfirmation(string email)
 	{
@@ -42,7 +44,7 @@ internal class User
 		return true;
 	}
 
-	public void Login(UserTokens userTokens)
+	public void Login(UserTokens userTokens, IpAddressLocationReadModel ipAddressLocation)
 	{
 		var (tokenId, _, expiresAt) = userTokens.RefreshToken;
 
@@ -56,9 +58,12 @@ internal class User
 
 		LastLoggedInAt = userTokens.CreatedAt;
 		CleanRefreshTokens();
+
+		var locationLog = UserLocationLog.From(this, ipAddressLocation, AuthenticationType.Login);
+		UserLocationLogs.Add(locationLog);
 	}
 
-	public void Refresh(TokenId refreshTokenId, UserTokens refreshedUserTokens)
+	public void Refresh(TokenId refreshTokenId, UserTokens refreshedUserTokens, IpAddressLocationReadModel ipAddressLocation)
 	{
 		var (tokenId, _, expiresAt) = refreshedUserTokens.RefreshToken;
 
@@ -70,7 +75,11 @@ internal class User
 			UserId = Id
 		});
 
+		LastLoggedInAt = refreshedUserTokens.CreatedAt;
 		CleanRefreshTokens(refreshTokenId);
+
+		var locationLog = UserLocationLog.From(this, ipAddressLocation, AuthenticationType.Refresh);
+		UserLocationLogs.Add(locationLog);
 	}
 
 	public void Logout(TokenId? refreshTokenId)
