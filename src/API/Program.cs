@@ -2,7 +2,7 @@ using API.Documentation;
 using API.Exceptions;
 using Azure.Identity;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
-using Microsoft.AspNetCore.Http.Json;
+using Microsoft.AspNetCore.HttpOverrides;
 using Projects.Core;
 using Shared;
 using Shared.Modules;
@@ -29,8 +29,11 @@ builder.RegisterModules(applicationContext);
 builder.Services.AddDocumentation();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
-builder.Services.Configure<JsonOptions>(options =>
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
+	options.ForwardedHeaders =
+		ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
 });
 
 const string CorsPolicyName = "CADR";
@@ -47,6 +50,8 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+app.UseForwardedHeaders();
 
 if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Docker"))
 {

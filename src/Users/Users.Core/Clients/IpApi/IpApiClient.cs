@@ -29,7 +29,7 @@ internal static class IpApiClientExtensions
 		services.AddHttpClient<IIpApiClient, IpApiClient>(client =>
 		{
 			client.BaseAddress = new Uri("https://ipapi.co/", UriKind.Absolute);
-			client.DefaultRequestHeaders.UserAgent.ParseAdd("dupdupa");
+			client.DefaultRequestHeaders.UserAgent.ParseAdd("api.cadr.studio");
 		});
 	}
 }
