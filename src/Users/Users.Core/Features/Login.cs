@@ -6,7 +6,9 @@ using Microsoft.EntityFrameworkCore;
 using Shared.Endpoints;
 using Shared.Endpoints.Results;
 using Shared.Endpoints.Validation;
+using Users.Core.Clients.IpApi;
 using Users.Core.Database;
+using Users.Core.Entities;
 using Users.Core.ReadModels;
 using Users.Core.Services;
 
@@ -30,7 +32,8 @@ internal sealed class LoginEndpoint : IEndpoint
 
 internal sealed class LoginHandler(
 	UsersDbContext dbContext,
-	ITokenProvider tokenProvider
+	ITokenProvider tokenProvider,
+	IIpApiClient ipApiClient
 ) : IHttpRequestHandler<Login>
 {
 	public async Task<IResult> Handle(Login request, CancellationToken cancellationToken)
@@ -39,20 +42,22 @@ internal sealed class LoginHandler(
 
 		var user = await dbContext.Users
 			.Include(x => x.RefreshTokens)
+			.Include(x => x.UserLocationLogs)
 			.FirstOrDefaultAsync(x => x.Email == email, cancellationToken);
 		if (user is null || !HashingService.IsValid(password, user.HashedPassword))
 			return Errors.InvalidLoginCredentialsError;
 
-		var tokens = tokenProvider.Generate(user);
+		var ipAddress = request.HttpContext.GetClientIpAddress();
+		var ipAddressLocation = await ipApiClient.GetIpAddressGeolocationData(ipAddress);
 
+		var tokens = tokenProvider.Generate(user);
 		var refreshToken = request.HttpContext.GetRefreshToken();
 		if (await tokenProvider.GetTokenIdentifiers(refreshToken) is { } tokenIdentifiers)
-			user.Refresh(tokenIdentifiers.TokenId, tokens);
+			user.Refresh(tokenIdentifiers.TokenId, tokens, ipAddressLocation);
 		else
-			user.Login(tokens);
+			user.Login(tokens, ipAddressLocation);
 
 		await dbContext.SaveChangesAsync(cancellationToken);
-
 		request.HttpContext.SetTokenCookies(tokens);
 
 		var readModel = UserReadModel.From(user);

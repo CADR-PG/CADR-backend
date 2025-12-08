@@ -9,6 +9,7 @@ internal sealed class UsersDbContext(DbContextOptions<UsersDbContext> dbContextO
 {
 	public DbSet<User> Users { get; init; } = null!;
 	public DbSet<RefreshToken> RefreshTokens { get; init; } = null!;
+	public DbSet<UserLocationLog> UserLocationLogs { get; init; } = null!;
 
 	protected override void OnModelCreating(ModelBuilder builder)
 	{
