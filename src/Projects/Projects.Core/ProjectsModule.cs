@@ -97,9 +97,6 @@ public class ProjectsModule : IModule
 		var blobServiceClient = services.GetRequiredService<BlobServiceClient>();
 		var containerClient = blobServiceClient.GetBlobContainerClient(AssetsFile.BlobContainerName);
 
-		bool exists = await containerClient.ExistsAsync();
-
-		if (!exists)
-			await containerClient.CreateAsync();
+		await containerClient.CreateIfNotExistsAsync();
 	}
 }
