@@ -53,7 +53,8 @@ public class ProjectsModule : IModule
 			var projectSettings = configuration.GetSection("Azure");
 			var connectionString = projectSettings["StorageAccountConnectionString"];
 
-			builder.AddBlobServiceClient(connectionString);
+			builder.AddBlobServiceClient(connectionString)
+				.WithVersion(BlobClientOptions.ServiceVersion.V2025_07_05);
 		});
 	}
 
@@ -97,6 +98,9 @@ public class ProjectsModule : IModule
 		var blobServiceClient = services.GetRequiredService<BlobServiceClient>();
 		var containerClient = blobServiceClient.GetBlobContainerClient(AssetsFile.BlobContainerName);
 
-		await containerClient.CreateIfNotExistsAsync();
+		bool exists = await containerClient.ExistsAsync();
+
+		if (!exists)
+			await containerClient.CreateAsync();
 	}
 }
