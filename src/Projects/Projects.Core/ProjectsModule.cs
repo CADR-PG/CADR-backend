@@ -53,7 +53,8 @@ public class ProjectsModule : IModule
 			var projectSettings = configuration.GetSection("Azure");
 			var connectionString = projectSettings["StorageAccountConnectionString"];
 
-			builder.AddBlobServiceClient(connectionString);
+			builder.AddBlobServiceClient(connectionString)
+				.WithVersion(BlobClientOptions.ServiceVersion.V2025_07_05);
 		});
 	}
 

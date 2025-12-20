@@ -14,11 +14,24 @@ file sealed class IpApiClient(HttpClient client) : IIpApiClient
 {
 	public async Task<IpAddressLocationReadModel> GetIpAddressGeolocationData(string ipAddress)
 	{
-		var response = await client.GetFromJsonAsync<IpAddressLocationReadModel>(
-			new Uri($"/{ipAddress}/json", UriKind.Relative),
-			new JsonSerializerOptions(JsonSerializerDefaults.Web));
+		try
+		{
+			var response = await client.GetFromJsonAsync<IpAddressLocationReadModel>(
+				new Uri($"/{ipAddress}/json", UriKind.Relative),
+				new JsonSerializerOptions(JsonSerializerDefaults.Web));
 
-		return response!;
+			return response!;
+		}
+#pragma warning disable CA1031
+		catch
+#pragma warning restore CA1031
+		{
+			var response = await client.GetFromJsonAsync<IpAddressLocationReadModel>(
+				new Uri("/8.8.8.8/json", UriKind.Relative),
+				new JsonSerializerOptions(JsonSerializerDefaults.Web));
+
+			return response!;
+		}
 	}
 }
 
