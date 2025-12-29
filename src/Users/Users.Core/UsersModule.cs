@@ -16,6 +16,7 @@ using Users.Core.Database;
 using Users.Core.Features;
 using Users.Core.Services;
 using Users.Core.Settings;
+using Extensions = Shared.Modules.Extensions;
 
 [assembly: InternalsVisibleTo("Users.Tests")]
 namespace Users.Core;
@@ -51,8 +52,17 @@ public class UsersModule : IModule
 		services.RegisterIpApiClient();
 
 		var jwtSettings = configuration.GetSettings<JwtSettings>();
-
-		services.AddAuthentication().AddJwtBearer(options =>
+		var githubClientSettings = configuration.GetSettings<GitHubClientSettings>();
+		var googleClientSettings = configuration.GetSettings<GoogleClientSettings>();
+		services.AddAuthentication().AddGoogle(options =>
+		{
+			options.ClientId = googleClientSettings.ClientId;
+			options.ClientSecret = googleClientSettings.ClientSecret;
+		}).AddGitHub(options =>
+		{
+			options.ClientId = githubClientSettings.ClientId;
+			options.ClientSecret = githubClientSettings.ClientSecret;
+		}).AddJwtBearer(options =>
 		{
 			options.MapInboundClaims = false;
 			options.TokenValidationParameters = JwtTokenProvider.GetAccessTokenValidationParameters(jwtSettings);
