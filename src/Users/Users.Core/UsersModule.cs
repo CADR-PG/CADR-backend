@@ -1,4 +1,6 @@
 using FluentValidation;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -47,6 +49,8 @@ public class UsersModule : IModule
 		services.AddScoped<SendPasswordResetHandler>();
 		services.AddSingleton<ITokenProvider, JwtTokenProvider>();
 		services.AddScoped<UserMailingService>();
+		services.AddScoped<GoogleLoginHandler>();
+		services.AddScoped<GoogleCallbackHandler>();
 		services.AddValidatorsFromAssemblyContaining<UsersModule>(includeInternalTypes: true);
 
 		services.RegisterIpApiClient();
@@ -54,10 +58,14 @@ public class UsersModule : IModule
 		var jwtSettings = configuration.GetSettings<JwtSettings>();
 		var githubClientSettings = configuration.GetSettings<GitHubClientSettings>();
 		var googleClientSettings = configuration.GetSettings<GoogleClientSettings>();
-		services.AddAuthentication().AddGoogle(options =>
+		services.AddAuthentication(options =>
+		{
+			options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+		}).AddCookie(CookieAuthenticationDefaults.AuthenticationScheme).AddGoogle(options =>
 		{
 			options.ClientId = googleClientSettings.ClientId;
 			options.ClientSecret = googleClientSettings.ClientSecret;
+			options.CallbackPath = new PathString("/users/google-callback");
 		}).AddGitHub(options =>
 		{
 			options.ClientId = githubClientSettings.ClientId;
@@ -98,7 +106,9 @@ public class UsersModule : IModule
 			.Map<SendPasswordResetEndpoint>()
 			.Map<ResetPasswordWithTokenEndpoint>()
 			.Map<ResendEmailConfirmationEndpoint>()
-			.Map<GetCurrentUserLocationLogsEndpoint>();
+			.Map<GetCurrentUserLocationLogsEndpoint>()
+			.Map<GoogleLoginEndpoint>()
+			.Map<GoogleCallbackEndpoint>();
 
 	public async ValueTask RunInDevelopmentMode(IServiceProvider services)
 	{
