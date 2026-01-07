@@ -1,5 +1,5 @@
 using FluentValidation;
-using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -56,21 +56,7 @@ public class UsersModule : IModule
 		services.RegisterIpApiClient();
 
 		var jwtSettings = configuration.GetSettings<JwtSettings>();
-		var githubClientSettings = configuration.GetSettings<GitHubClientSettings>();
-		var googleClientSettings = configuration.GetSettings<GoogleClientSettings>();
-		services.AddAuthentication(options =>
-		{
-			options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-		}).AddCookie(CookieAuthenticationDefaults.AuthenticationScheme).AddGoogle(options =>
-		{
-			options.ClientId = googleClientSettings.ClientId;
-			options.ClientSecret = googleClientSettings.ClientSecret;
-			options.CallbackPath = new PathString("/users/google-callback");
-		}).AddGitHub(options =>
-		{
-			options.ClientId = githubClientSettings.ClientId;
-			options.ClientSecret = githubClientSettings.ClientSecret;
-		}).AddJwtBearer(options =>
+		services.AddAuthentication().AddJwtBearer(options =>
 		{
 			options.MapInboundClaims = false;
 			options.TokenValidationParameters = JwtTokenProvider.GetAccessTokenValidationParameters(jwtSettings);

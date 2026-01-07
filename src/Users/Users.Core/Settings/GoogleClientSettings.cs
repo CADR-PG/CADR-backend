@@ -10,4 +10,6 @@ public class GoogleClientSettings : ISettings
 	[Required]
 	public required string ClientId { get; set; }
 	public required string ClientSecret { get; set; }
+
+	public required Uri RedirectUri { get; set; }
 }
