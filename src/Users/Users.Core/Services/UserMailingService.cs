@@ -137,13 +137,11 @@ internal sealed class UserMailingService(IMailingService mailingService)
 					     <strong style="color:#ffffff;">{lastLocations[0].City}, {lastLocations[0].Country}</strong>
 					     using IP address
 					     <strong style="color:#ffffff;">{lastLocations[0].IpAddress}</strong>.
-					     {
-						     (lastLocations.Count == 1 ? string.Empty : $"""
+					     {(lastLocations.Count == 1 ? string.Empty : $"""
 						                                                 <br /><br />
 						                                                 The straight-line distance from your previous login location is
 						                                                 <strong style="color:#ffffff;">{UserLocationLog.CalculateDistanceKm(lastLocations[0], lastLocations[1]):F2}km</strong>.
-						                                                 """)
-					     }
+						                                                 """)}
 					    </td>
 					 </tr>
 
@@ -181,8 +179,7 @@ internal sealed class UserMailingService(IMailingService mailingService)
 		                </td>
 		              </tr>
 
-		        {
-			        (tag is not null ? $"""
+		        {(tag is not null ? $"""
 
 			                            <tr>
 			                              <td style="padding-bottom:20px;">
@@ -192,8 +189,7 @@ internal sealed class UserMailingService(IMailingService mailingService)
 			                              </td>
 			                            </tr>
 
-			                            """ : string.Empty)
-		        }
+			                            """ : string.Empty)}
 
 
 		        {content}
