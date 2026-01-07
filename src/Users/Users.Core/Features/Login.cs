@@ -33,7 +33,8 @@ internal sealed class LoginEndpoint : IEndpoint
 internal sealed class LoginHandler(
 	UsersDbContext dbContext,
 	ITokenProvider tokenProvider,
-	IIpApiClient ipApiClient
+	IIpApiClient ipApiClient,
+	UserMailingService userMailingService
 ) : IHttpRequestHandler<Login>
 {
 	public async Task<IResult> Handle(Login request, CancellationToken cancellationToken)
@@ -59,6 +60,17 @@ internal sealed class LoginHandler(
 
 		await dbContext.SaveChangesAsync(cancellationToken);
 		request.HttpContext.SetTokenCookies(tokens);
+
+		try
+		{
+			await userMailingService.SendUserLoggedIn(user);
+		}
+#pragma warning disable CA1031
+		catch
+#pragma warning restore CA1031
+		{
+			// ignored
+		}
 
 		var readModel = UserReadModel.From(user);
 		return Results.Ok(readModel);
