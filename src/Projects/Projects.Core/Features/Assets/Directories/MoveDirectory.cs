@@ -24,10 +24,9 @@ internal sealed class MoveDirectoryEndpoint : IEndpoint
 		.AddValidation<MoveDirectory.Data>()
 		.RequireAuthorization()
 		.ProducesError(401, "`UnauthorizedError`")
-		.ProducesError(404, "`ProjectAssetsDirectoryNotFound`");
+		.ProducesError(404, "`DirectoryNotFound`, `ProjectAssetsDirectoryNotFound`, `InvalidTargetDictionary`");
 }
 
-// TODO: dodanie walidacji czy folder istnieje, błąd dla roota
 internal sealed class MoveDirectoryHandler(
 	ProjectsDbContext dbContext
 ) : IHttpRequestHandler<MoveDirectory>
@@ -36,10 +35,18 @@ internal sealed class MoveDirectoryHandler(
 	{
 		var (projectId, directoryId, body) = request;
 
+		if (await dbContext.AssetsDirectories.AnyAsync(x => x.ProjectId != projectId && x.DirectoryId == body.TargetDirectoryId, cancellationToken))
+			return new ErrorResult("DirectoryNotFound", "The target directory does not exist.");
+
 		var directory = await dbContext.AssetsDirectories.FirstOrDefaultAsync(af => af.ProjectId == projectId && af.Id == directoryId, cancellationToken);
 
 		if (directory is null or { DirectoryId: null })
-			return new ErrorResult("ProjectAssetsDirectoryNotFound", "Project assets directory does not exist");
+			return new ErrorResult("ProjectAssetsDirectoryNotFound", "The directory to be moved does not exist.");
+
+		if (directory.IsRoot)
+			return new ErrorResult("InvalidTargetDictionary", "The root dictionary cannot be moved.");
+
+		// TODO: disallow move dictionary to their subdictionaries !IMPORTANT
 
 		directory.DirectoryId = body.TargetDirectoryId;
 		directory.LastModifiedAt = DateTime.UtcNow;

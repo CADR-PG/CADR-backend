@@ -28,7 +28,8 @@ internal sealed class CreateDirectoryEndpoint : IEndpoint
 		.RequireAuthorization()
 		.ProducesError(401, "`UnauthorizedError`")
 		.ProducesError(400, "`ProjectNotFound`")
-		.ProducesError(404, "`ProjectAssetsDirectoryNotFound`");
+		.ProducesError(404, "`ProjectAssetsDirectoryNotFound`")
+		.ProducesError(409, "`DictionaryNameConflict`");
 }
 
 internal sealed class CreateDirectoryHandler(
@@ -44,6 +45,9 @@ internal sealed class CreateDirectoryHandler(
 
 		if (!await dbContext.AssetsDirectories.AnyAsync(x => x.Id == parentDirectoryId, cancellationToken))
 			return new ErrorResult("ProjectAssetsDirectoryNotFound", "Project assets directory does not exist");
+
+		if (await dbContext.AssetsFiles.AnyAsync(x => x.ProjectId == request.ProjectId && x.DirectoryId == parentDirectoryId && x.Name == name, cancellationToken))
+			return new ErrorResult("DictionaryNameConflict", "Dictionary with the same name already exists.", 409);
 
 		var directory = AssetsDirectory.Create(request.ProjectId, name, parentDirectoryId);
 
