@@ -1,6 +1,6 @@
 using FluentValidation;
-using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -50,7 +50,6 @@ public class UsersModule : IModule
 		services.AddSingleton<ITokenProvider, JwtTokenProvider>();
 		services.AddScoped<UserMailingService>();
 		services.AddScoped<GoogleLoginHandler>();
-		services.AddScoped<GoogleCallbackHandler>();
 		services.AddValidatorsFromAssemblyContaining<UsersModule>(includeInternalTypes: true);
 
 		services.RegisterIpApiClient();
@@ -93,8 +92,7 @@ public class UsersModule : IModule
 			.Map<ResetPasswordWithTokenEndpoint>()
 			.Map<ResendEmailConfirmationEndpoint>()
 			.Map<GetCurrentUserLocationLogsEndpoint>()
-			.Map<GoogleLoginEndpoint>()
-			.Map<GoogleCallbackEndpoint>();
+			.Map<GoogleLoginEndpoint>();
 
 	public async ValueTask RunInDevelopmentMode(IServiceProvider services)
 	{
