@@ -1,4 +1,8 @@
 using FluentValidation;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Auth.OAuth2.Flows;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -16,6 +20,7 @@ using Users.Core.Database;
 using Users.Core.Features;
 using Users.Core.Services;
 using Users.Core.Settings;
+using Extensions = Shared.Modules.Extensions;
 
 [assembly: InternalsVisibleTo("Users.Tests")]
 namespace Users.Core;
@@ -46,12 +51,23 @@ public class UsersModule : IModule
 		services.AddScoped<SendPasswordResetHandler>();
 		services.AddSingleton<ITokenProvider, JwtTokenProvider>();
 		services.AddScoped<UserMailingService>();
+		services.AddScoped<GoogleLoginHandler>();
 		services.AddValidatorsFromAssemblyContaining<UsersModule>(includeInternalTypes: true);
 
 		services.RegisterIpApiClient();
 
-		var jwtSettings = configuration.GetSettings<JwtSettings>();
+		var googleSettings = configuration.GetSettings<GoogleClientSettings>();
+		services.AddSingleton<GoogleAuthorizationCodeFlow.Initializer>(sp =>
+			new GoogleAuthorizationCodeFlow.Initializer
+			{
+				ClientSecrets = new ClientSecrets
+				{
+					ClientId = googleSettings.ClientId,
+					ClientSecret = googleSettings.ClientSecret
+				}
+			});
 
+		var jwtSettings = configuration.GetSettings<JwtSettings>();
 		services.AddAuthentication().AddJwtBearer(options =>
 		{
 			options.MapInboundClaims = false;
@@ -88,7 +104,8 @@ public class UsersModule : IModule
 			.Map<SendPasswordResetEndpoint>()
 			.Map<ResetPasswordWithTokenEndpoint>()
 			.Map<ResendEmailConfirmationEndpoint>()
-			.Map<GetCurrentUserLocationLogsEndpoint>();
+			.Map<GetCurrentUserLocationLogsEndpoint>()
+			.Map<GoogleLoginEndpoint>();
 
 	public async ValueTask RunInDevelopmentMode(IServiceProvider services)
 	{
