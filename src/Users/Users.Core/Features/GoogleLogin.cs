@@ -1,5 +1,6 @@
 using FluentValidation;
 using Google.Apis.Auth;
+using Google.Apis.Auth.OAuth2.Flows;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Http;
@@ -24,7 +25,7 @@ namespace Users.Core.Features;
 
 internal record GoogleLogin([FromBody] GoogleLogin.Credentials Body, HttpContext HttpContext) : IHttpRequest
 {
-	internal record Credentials(string code);
+	internal record Credentials(string Code);
 }
 
 internal sealed class GoogleLoginEndpoint : IEndpoint
@@ -39,28 +40,20 @@ internal sealed class GoogleLoginEndpoint : IEndpoint
 
 internal sealed class GoogleLoginHandler(
 	UsersDbContext dbContext,
-	IConfiguration configuration,
 	ITokenProvider tokenProvider,
-	IIpApiClient ipApiClient
+	IIpApiClient ipApiClient,
+	GoogleAuthorizationCodeFlow.Initializer FlowInitializer
 	) : IHttpRequestHandler<GoogleLogin>
 {
 	public async Task<IResult> Handle(GoogleLogin request, CancellationToken cancellationToken)
 	{
-		var googleSettings = configuration.GetSettings<GoogleClientSettings>();
-		var requestBody = new Dictionary<string, string>
-		{
-			{ "code", request.Body.code },
-			{ "client_id", googleSettings.ClientId },
-			{ "client_secret", googleSettings.ClientSecret },
-			{ "redirect_uri", "postmessage" },
-			{ "grant_type", "authorization_code"},
-		};
-		using var httpClient = new HttpClient();
-		using var content = new FormUrlEncodedContent(requestBody);
-		var response = await httpClient.PostAsync(new Uri("https://oauth2.googleapis.com/token"), content, cancellationToken);
-
-		var json = await response.Content.ReadAsStringAsync(cancellationToken);
-		var token = JsonSerializer.Deserialize<GoogleTokensReadModel>(json);
+		using var flow = new GoogleAuthorizationCodeFlow(FlowInitializer);
+		var token = await flow.ExchangeCodeForTokenAsync(
+			userId: null,
+			code: request.Body.Code,
+			redirectUri: "postmessage",
+			CancellationToken.None
+		);
 
 		var payload = await GoogleJsonWebSignature.ValidateAsync(token!.IdToken);
 		var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Email == payload.Email, cancellationToken);
@@ -100,6 +93,6 @@ internal sealed class GoogleLoginValidator : AbstractValidator<GoogleLogin.Crede
 {
 	public GoogleLoginValidator()
 	{
-		RuleFor(x => x.code).NotEmpty();
+		RuleFor(x => x.Code).NotEmpty();
 	}
 }

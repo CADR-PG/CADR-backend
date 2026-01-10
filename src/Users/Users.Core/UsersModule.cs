@@ -1,4 +1,6 @@
 using FluentValidation;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Auth.OAuth2.Flows;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -53,6 +55,17 @@ public class UsersModule : IModule
 		services.AddValidatorsFromAssemblyContaining<UsersModule>(includeInternalTypes: true);
 
 		services.RegisterIpApiClient();
+
+		var googleSettings = configuration.GetSettings<GoogleClientSettings>();
+		services.AddSingleton<GoogleAuthorizationCodeFlow.Initializer>(sp =>
+			new GoogleAuthorizationCodeFlow.Initializer
+			{
+				ClientSecrets = new ClientSecrets
+				{
+					ClientId = googleSettings.ClientId,
+					ClientSecret = googleSettings.ClientSecret
+				}
+			});
 
 		var jwtSettings = configuration.GetSettings<JwtSettings>();
 		services.AddAuthentication().AddJwtBearer(options =>

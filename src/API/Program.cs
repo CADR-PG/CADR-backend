@@ -63,11 +63,6 @@ if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Docker"))
 	}
 }
 
-app.UseCookiePolicy(new CookiePolicyOptions()
-{
-	MinimumSameSitePolicy = SameSiteMode.Lax
-});
-
 app.UseExceptionHandler();
 
 app.UseHttpsRedirection();
