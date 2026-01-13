@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Users.Core.Settings;
 
-public class GitHubClientSettings : ISettings
+public class GithubOAuthClientSettings : ISettings
 {
 	public static string SectionName => "Users:OAuthProviders:GitHub";
 
