@@ -1,8 +1,6 @@
 using FluentValidation;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Auth.OAuth2.Flows;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -15,12 +13,12 @@ using Shared.Modules;
 using Shared.Services;
 using Shared.Settings;
 using System.Runtime.CompilerServices;
+using Users.Core.Clients.Github;
 using Users.Core.Clients.IpApi;
 using Users.Core.Database;
 using Users.Core.Features;
 using Users.Core.Services;
 using Users.Core.Settings;
-using Extensions = Shared.Modules.Extensions;
 
 [assembly: InternalsVisibleTo("Users.Tests")]
 namespace Users.Core;
@@ -52,9 +50,12 @@ public class UsersModule : IModule
 		services.AddSingleton<ITokenProvider, JwtTokenProvider>();
 		services.AddScoped<UserMailingService>();
 		services.AddScoped<GoogleLoginHandler>();
+		services.AddScoped<GithubLoginHandler>();
 		services.AddValidatorsFromAssemblyContaining<UsersModule>(includeInternalTypes: true);
 
 		services.RegisterIpApiClient();
+		services.RegisterGithubOAuthClient(configuration);
+		services.RegisterGithubClient();
 
 		var googleSettings = configuration.GetSettings<GoogleClientSettings>();
 		services.AddSingleton<GoogleAuthorizationCodeFlow.Initializer>(sp =>
@@ -105,7 +106,8 @@ public class UsersModule : IModule
 			.Map<ResetPasswordWithTokenEndpoint>()
 			.Map<ResendEmailConfirmationEndpoint>()
 			.Map<GetCurrentUserLocationLogsEndpoint>()
-			.Map<GoogleLoginEndpoint>();
+			.Map<GoogleLoginEndpoint>()
+			.Map<GithubLoginEndpoint>();
 
 	public async ValueTask RunInDevelopmentMode(IServiceProvider services)
 	{

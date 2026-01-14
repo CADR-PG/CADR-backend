@@ -42,12 +42,12 @@ internal sealed class GoogleLoginHandler(
 	UsersDbContext dbContext,
 	ITokenProvider tokenProvider,
 	IIpApiClient ipApiClient,
-	GoogleAuthorizationCodeFlow.Initializer FlowInitializer
+	GoogleAuthorizationCodeFlow.Initializer flowInitializer
 	) : IHttpRequestHandler<GoogleLogin>
 {
 	public async Task<IResult> Handle(GoogleLogin request, CancellationToken cancellationToken)
 	{
-		using var flow = new GoogleAuthorizationCodeFlow(FlowInitializer);
+		using var flow = new GoogleAuthorizationCodeFlow(flowInitializer);
 		var token = await flow.ExchangeCodeForTokenAsync(
 			userId: null,
 			code: request.Body.Code,
