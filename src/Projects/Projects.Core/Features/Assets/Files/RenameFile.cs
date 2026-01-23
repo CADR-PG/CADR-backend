@@ -24,7 +24,8 @@ internal sealed class RenameFileEndpoint : IEndpoint
 		.AddValidation<RenameFile.Data>()
 		.RequireAuthorization()
 		.ProducesError(401, "`Unauthorize`")
-		.ProducesError(404, "`ProjectAssetsFileNotFound`");
+		.ProducesError(404, "`ProjectAssetsFileNotFound`")
+		.ProducesError(409, "`AssetNameConflict`");
 }
 
 internal sealed class RenameFileHandler(
@@ -36,9 +37,11 @@ internal sealed class RenameFileHandler(
 		var (projectId, fileId, body) = request;
 
 		var file = await dbContext.AssetsFiles.FirstOrDefaultAsync(af => af.ProjectId == projectId && af.Id == fileId, cancellationToken);
-
 		if (file is null)
 			return new ErrorResult("ProjectAssetsFileNotFound", "Project assets file does not exists", 404);
+
+		if (await dbContext.AssetsFiles.AnyAsync(x => x.Id != fileId && x.ProjectId == projectId && x.DirectoryId == file.Id && x.Name == body.Name, cancellationToken))
+			return new ErrorResult("AssetNameConflict", "Asset with the same name already exists.", 409);
 
 		file.Name = body.Name;
 		file.LastModifiedAt = DateTime.UtcNow;

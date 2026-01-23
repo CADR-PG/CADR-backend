@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.EntityFrameworkCore;
 using Projects.Core.Database;
 using Projects.Core.Entities;
 using Projects.Core.ReadModels;
@@ -26,10 +27,11 @@ internal sealed class CreateFileEndpoint : IEndpoint
 		.Produces<AssetsFileUploadReadModel>(201)
 		.AddValidation<CreateFile.Data>()
 		.RequireAuthorization()
-		.ProducesError(401, "`UnauthorizedError`");
+		.ProducesError(401, "`UnauthorizedError`")
+		.ProducesError(400, "`DirectoryNotFound`")
+		.ProducesError(409, "`AssetNameConflict`");
 }
 
-// TODO: dodanie lepszej walidacji, np. czy istnieje projekt/folder, czy nie ma już takiego pliku o tej nazwie...
 internal sealed class CreateFileHandler(
 	ProjectsDbContext dbContext,
 	BlobServiceClient blobServiceClient
@@ -37,10 +39,16 @@ internal sealed class CreateFileHandler(
 {
 	public async Task<IResult> Handle(CreateFile request, CancellationToken cancellationToken)
 	{
-		var (name, directoryId, sizeInBytes) = request.Body;
+		var (assetName, directoryId, sizeInBytes) = request.Body;
 		var projectId = request.ProjectId;
 
-		var file = AssetsFile.Create(projectId, directoryId, name, sizeInBytes);
+		if (await dbContext.AssetsDirectories.AnyAsync(x => x.ProjectId != projectId && x.DirectoryId == directoryId, cancellationToken))
+			return new ErrorResult("DirectoryNotFound", "Target directory does not exist.");
+
+		if (await dbContext.AssetsFiles.AnyAsync(x => x.ProjectId != projectId && x.DirectoryId != directoryId && x.Name == assetName, cancellationToken))
+			return new ErrorResult("AssetNameConflict", "Asset with the same name already exists.", 409);
+
+		var file = AssetsFile.Create(projectId, directoryId, assetName, sizeInBytes);
 
 		await dbContext.AssetsFiles.AddAsync(file, cancellationToken);
 		await dbContext.SaveChangesAsync(cancellationToken);
