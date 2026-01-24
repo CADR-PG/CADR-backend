@@ -1,6 +1,5 @@
-﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Testcontainers.PostgreSql;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -9,8 +8,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestPlatform.TestHost;
 using NSubstitute;
-using Shared.Endpoints.Requests;
-using Shared.ValueObjects;
 using Projects.Core.Database;
 using Projects.Core.Entities;
 using Projects.Core.Features;
@@ -18,8 +15,11 @@ using Projects.Core.Features.Assets.Files;
 using Projects.Core.Features.Projects;
 using Projects.Core.ReadModels;
 using Projects.Core.Services;
+using Shared.Endpoints.Requests;
+using Shared.ValueObjects;
 using System.Net;
 using System.Net.Http.Json;
+using Testcontainers.PostgreSql;
 
 namespace Projects.Tests;
 
