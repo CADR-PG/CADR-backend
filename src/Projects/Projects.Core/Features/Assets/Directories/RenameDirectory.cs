@@ -24,10 +24,10 @@ internal sealed class RenameDirectoryEndpoint : IEndpoint
 		.AddValidation<RenameDirectory.Data>()
 		.RequireAuthorization()
 		.ProducesError(401, "`UnauthorizedError`")
-		.ProducesError(404, "`ProjectAssetsDirectoryNotFound`");
+		.ProducesError(404, "`ProjectAssetsDirectoryNotFound`")
+		.ProducesError(409, "`DictionaryNameConflict`");
 }
 
-// TODO: błąd dla roota??
 internal sealed class RenameDirectoryHandler(
 	ProjectsDbContext dbContext
 ) : IHttpRequestHandler<RenameDirectory>
@@ -40,6 +40,9 @@ internal sealed class RenameDirectoryHandler(
 
 		if (directory is null)
 			return new ErrorResult("ProjectAssetsDirectoryNotFound", "Project assets directory not found", 404);
+
+		if (await dbContext.AssetsFiles.AnyAsync(x => x.Id != directoryId && x.ProjectId == projectId && x.DirectoryId == directory.DirectoryId && x.Name == body.Name, cancellationToken))
+			return new ErrorResult("DictionaryNameConflict", "Dictionary with the same name already exists.", 409);
 
 		directory.Name = body.Name;
 		directory.LastModifiedAt = DateTime.UtcNow;

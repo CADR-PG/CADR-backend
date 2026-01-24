@@ -24,7 +24,8 @@ internal sealed class MoveFileEndpoint : IEndpoint
 		.AddValidation<MoveFile.Data>()
 		.RequireAuthorization()
 		.ProducesError(401, "`UnauthorizedError`")
-		.ProducesError(404, "`ProjectAssetsFileNotFound`");
+		.ProducesError(404, "`ProjectAssetsFileNotFound`")
+		.ProducesError(400, "`DirectoryNotFound`");
 }
 
 // TODO: dodanie walidacji czy folder istnieje
@@ -35,6 +36,9 @@ internal sealed class MoveFileHandler(
 	public async Task<IResult> Handle(MoveFile request, CancellationToken cancellationToken)
 	{
 		var (projectId, fileId, body) = request;
+
+		if (await dbContext.AssetsDirectories.AnyAsync(x => x.ProjectId != projectId && x.DirectoryId == body.TargetDirectoryId, cancellationToken))
+			return new ErrorResult("DirectoryNotFound", "Target directory does not exist.");
 
 		var file = await dbContext.AssetsFiles.FirstOrDefaultAsync(af => af.ProjectId == projectId && af.Id == fileId, cancellationToken);
 
