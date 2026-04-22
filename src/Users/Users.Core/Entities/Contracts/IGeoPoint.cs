@@ -1,4 +1,4 @@
-﻿namespace Users.Core.Entities.Contracts;
+namespace Users.Core.Entities.Contracts;
 
 internal interface IGeoPoint
 {

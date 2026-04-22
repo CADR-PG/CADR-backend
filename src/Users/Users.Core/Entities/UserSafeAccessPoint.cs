@@ -1,4 +1,4 @@
-﻿using Shared.ValueObjects;
+using Shared.ValueObjects;
 using Users.Core.Entities.Contracts;
 
 namespace Users.Core.Entities;

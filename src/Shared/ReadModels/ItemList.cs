@@ -1,4 +1,4 @@
-﻿namespace Shared.ReadModels;
+namespace Shared.ReadModels;
 
 public sealed class ItemList<T>
 {
