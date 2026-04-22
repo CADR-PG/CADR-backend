@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Shared.Endpoints;
 using Shared.Endpoints.Requests;
-using Shared.Endpoints.Results;
 using Users.Core.Database;
 using Users.Core.Entities;
 using Users.Core.ReadModels;
@@ -16,7 +15,7 @@ internal record struct GetCurrentUserLocationLogs(CurrentUser CurrentUser) : IHt
 internal sealed class GetCurrentUserLocationLogsEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints)
-		=> endpoints.MapPost<GetCurrentUserLocationLogs, GetCurrentUserLocationLogsHandler>("location-logs")
+		=> endpoints.MapGet<GetCurrentUserLocationLogs, GetCurrentUserLocationLogsHandler>("location-logs")
 			.Produces<UserLocationLogsReadModel>()
 			.RequireAuthorization()
 			.WithDescription($"Returns user login locations. Returns `{nameof(UserLocationLogsReadModel)}` on success.");

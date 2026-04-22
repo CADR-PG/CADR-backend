@@ -52,6 +52,14 @@ public class UsersModule : IModule
 		services.AddScoped<UserMailingService>();
 		services.AddScoped<GoogleLoginHandler>();
 		services.AddScoped<GithubLoginHandler>();
+
+		services.AddScoped<GetCurrentUserSafeAccessPointHandler>();
+		services.AddScoped<GetCurrentUserLocationLogsHandler>();
+		services.AddScoped<GetAllCurrentUserSafeAccessPointsHandler>();
+		services.AddScoped<DeleteCurrentUserSafeAccessPointHandler>();
+		services.AddScoped<CreateCurrentUserSafeAccessPointHandler>();
+		services.AddScoped<ChangeCurrentUserSafeAccessPointHandler>();
+
 		services.AddValidatorsFromAssemblyContaining<UsersModule>(includeInternalTypes: true);
 
 		services.RegisterIpApiClient();
@@ -112,7 +120,12 @@ public class UsersModule : IModule
 
 		endpoints.MapGroup(Name.ToLowerInvariant())
 			.WithTags("User login locations")
-			.Map<GetCurrentUserLocationLogsEndpoint>();
+			.Map<GetCurrentUserSafeAccessPointEndpoint>()
+			.Map<GetCurrentUserLocationLogsEndpoint>()
+			.Map<GetAllCurrentUserSafeAccessPointsEndpoint>()
+			.Map<DeleteCurrentUserSafeAccessPointEndpoint>()
+			.Map<CreateCurrentUserSafeAccessPointEndpoint>()
+			.Map<ChangeCurrentUserSafeAccessPointEndpoint>();
 
 	}
 

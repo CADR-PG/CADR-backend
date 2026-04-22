@@ -7,7 +7,6 @@ using Shared.Endpoints;
 using Shared.Endpoints.Requests;
 using Shared.Endpoints.Results;
 using Users.Core.Database;
-using Users.Core.Entities;
 using Users.Core.ReadModels;
 
 namespace Users.Core.Features.LoginLocations;

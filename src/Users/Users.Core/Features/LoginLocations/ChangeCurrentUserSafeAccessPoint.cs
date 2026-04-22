@@ -27,7 +27,7 @@ internal record struct ChangeCurrentUserSafeAccessPoint(CurrentUser CurrentUser,
 internal sealed class ChangeCurrentUserSafeAccessPointEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints)
-		=> endpoints.MapDelete<ChangeCurrentUserSafeAccessPoint, ChangeCurrentUserSafeAccessPointHandler>("safe-access-points/{pointId}")
+		=> endpoints.MapPut<ChangeCurrentUserSafeAccessPoint, ChangeCurrentUserSafeAccessPointHandler>("safe-access-points/{pointId}")
 			.Produces<UserSafeAccessPointReadModel>()
 			.RequireAuthorization()
 			.WithDescription("Changes and returns the user safe access point for given ID.");

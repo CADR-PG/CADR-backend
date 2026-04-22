@@ -29,7 +29,7 @@ internal sealed class CreateCurrentUserSafeAccessPointEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints)
 		=> endpoints.MapPost<CreateCurrentUserSafeAccessPoint, CreateCurrentUserSafeAccessPointHandler>("safe-access-points")
-			.Produces<UserSafeAccessPointReadModel>()
+			.Produces<UserSafeAccessPointReadModel>(201)
 			.ProducesError(400, $"`SafeAccessPointsLimitReached` (max. 5)")
 			.ProducesError(409, $"`SafeAccessPointAlreadyExists`")
 			.RequireAuthorization()
@@ -72,6 +72,6 @@ internal sealed class CreateCurrentUserSafeAccessPointHandler(
 
 		dbContext.UserSafeAccessPoints.Add(safeAccessPoints);
 		await dbContext.SaveChangesAsync(cancellationToken);
-		return Results.Ok(UserSafeAccessPointReadModel.From(safeAccessPoints));
+		return Results.Created($"safe-access-points/{safeAccessPoints.Id}", UserSafeAccessPointReadModel.From(safeAccessPoints));
 	}
 }
