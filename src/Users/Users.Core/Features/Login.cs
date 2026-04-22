@@ -63,7 +63,14 @@ internal sealed class LoginHandler(
 
 		try
 		{
-			await userMailingService.SendUserLoggedIn(user);
+			var lastUserLoginLocation = user.UserLocationLogs.MaxBy(x => x.OccuredAt);
+
+			var userSafeAccessPoints = await dbContext.UserSafeAccessPoints
+				.Where(x => x.UserId == user.Id)
+				.ToListAsync(cancellationToken);
+
+			if (lastUserLoginLocation is null || userSafeAccessPoints.All(x => UserLocationLog.CalculateDistanceKm(x, lastUserLoginLocation) > x.Radius))
+				await userMailingService.SendUserLoggedIn(user);
 		}
 #pragma warning disable CA1031
 		catch
