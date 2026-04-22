@@ -19,6 +19,7 @@ internal class User
 	public required DateTime LastLoggedInAt { get; set; }
 	public List<RefreshToken> RefreshTokens { get; set; } = [];
 	public List<UserLocationLog> UserLocationLogs { get; init; } = [];
+	public List<UserSafeAccessPoint> UserSafeAccessPoints { get; init; } = [];
 
 	public void SetupEmailConfirmation(string email)
 	{

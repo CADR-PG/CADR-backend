@@ -17,6 +17,7 @@ using Users.Core.Clients.Github;
 using Users.Core.Clients.IpApi;
 using Users.Core.Database;
 using Users.Core.Features;
+using Users.Core.Features.LoginLocations;
 using Users.Core.Services;
 using Users.Core.Settings;
 
@@ -91,7 +92,8 @@ public class UsersModule : IModule
 	}
 
 	public void MapEndpoints(IEndpointRouteBuilder endpoints)
-		=> endpoints.MapGroup(Name.ToLowerInvariant())
+	{
+		endpoints.MapGroup(Name.ToLowerInvariant())
 			.WithTags(Name)
 			.Map<LoginEndpoint>()
 			.Map<RegisterEndpoint>()
@@ -105,9 +107,15 @@ public class UsersModule : IModule
 			.Map<SendPasswordResetEndpoint>()
 			.Map<ResetPasswordWithTokenEndpoint>()
 			.Map<ResendEmailConfirmationEndpoint>()
-			.Map<GetCurrentUserLocationLogsEndpoint>()
 			.Map<GoogleLoginEndpoint>()
 			.Map<GithubLoginEndpoint>();
+
+		endpoints.MapGroup(Name.ToLowerInvariant())
+			.WithTags("User login locations")
+			.Map<GetCurrentUserLocationLogsEndpoint>();
+
+	}
+
 
 	public async ValueTask RunInDevelopmentMode(IServiceProvider services)
 	{
