@@ -83,7 +83,8 @@ public class UsersModule : IModule
 			{
 				ClientSecrets = new ClientSecrets
 				{
-					ClientId = googleSettings.ClientId, ClientSecret = googleSettings.ClientSecret
+					ClientId = googleSettings.ClientId,
+					ClientSecret = googleSettings.ClientSecret
 				}
 			});
 
