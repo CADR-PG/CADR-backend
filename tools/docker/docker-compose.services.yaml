@@ -1,4 +1,13 @@
-﻿services:
+﻿name: cadr.services
+networks:
+  cadr.network:
+    name: cadr.network
+volumes:
+  cadr.postgres:
+  cadr.mailpit:
+  cadr.azurite:
+
+services:
   cadr.postgres:
     image: postgres:latest
     container_name: cadr.postgres
@@ -7,7 +16,7 @@
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     volumes:
-      - ./.containers/cadr.database:/var/lib/postgresql/18/data
+      - cadr.postgres:/var/lib/postgresql
     ports:
       - "5432:5432"
     healthcheck:
@@ -16,7 +25,8 @@
       timeout: 5s
       retries: 5
     networks:
-      - cadr
+      - cadr.network
+
   cadr.mailpit:
     image: axllent/mailpit
     container_name: cadr.mailpit
@@ -26,12 +36,13 @@
       - MP_DATABASE=/data/mailpit.db
       - TZ=Europe/Warsaw
     volumes:
-      - ./.containers/cadr.mailpit:/data
+      - cadr.mailpit:/data
     ports:
       - "8025:8025"
       - "1025:1025"
     networks:
-      - cadr
+      - cadr.network
+
   cadr.azurite:
     image: mcr.microsoft.com/azure-storage/azurite
     container_name: cadr.azurite
@@ -40,12 +51,8 @@
       - "10001:10001"
       - "10002:10002"
     volumes:
-      - ./.containers/cadr.azurite:/data
+      - cadr.azurite:/data
     command: azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0  --skipApiVersionCheck --disableProductStyleUrl
     restart: always
     networks:
-      - cadr
-
-networks:
-  cadr:
-    name: cadr.network
+      - cadr.network
