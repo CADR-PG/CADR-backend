@@ -3,7 +3,7 @@ using Users.Core.ValueObjects;
 
 namespace Users.Core.Services;
 
-internal class CookieTokenStorage(bool secure)
+internal class CookieTokenStorage(bool secure, SameSiteMode sameSiteMode)
 {
 	public const string AccessTokenCookieKey = "cadr_access_token";
 	public const string RefreshTokenCookieKey = "cadr_refresh_token";
@@ -16,7 +16,7 @@ internal class CookieTokenStorage(bool secure)
 		{
 			HttpOnly = true,
 			Secure = secure,
-			SameSite = SameSiteMode.Strict,
+			SameSite = sameSiteMode,
 			Expires = accessToken.ExpiresAt,
 		};
 
@@ -24,7 +24,7 @@ internal class CookieTokenStorage(bool secure)
 		{
 			HttpOnly = true,
 			Secure = true,
-			SameSite = SameSiteMode.Strict,
+			SameSite = sameSiteMode,
 			Expires = refreshToken.ExpiresAt,
 		};
 
