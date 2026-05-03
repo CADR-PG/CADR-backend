@@ -11,13 +11,12 @@ services:
       cadr.azurite:
         condition: service_healthy
     build:
-      context: ./../../
-      dockerfile: tools/docker/api.Dockerfile
+      context: ./
+      dockerfile: api.Dockerfile
     environment:
       ASPNETCORE_URLS: http://+:8080
       ASPNETCORE_ENVIRONMENT: Docker
     ports:
       - "8080:8080"
-      - "8081:8081"
     networks:
       - cadr.network
