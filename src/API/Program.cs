@@ -25,6 +25,7 @@ if (builder.Environment.IsProduction())
 	builder.Services.AddOpenTelemetry().UseAzureMonitor();
 }
 
+
 builder.RegisterModules(applicationContext);
 builder.Services.AddDocumentation();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -65,7 +66,10 @@ if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Docker"))
 
 app.UseExceptionHandler();
 
-app.UseHttpsRedirection();
+if (app.Environment.IsProduction())
+{
+	app.UseHttpsRedirection();
+}
 
 app.MapDocumentation();
 

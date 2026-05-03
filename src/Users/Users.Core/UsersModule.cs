@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Shared.Endpoints;
 using Shared.Modules;
 using Shared.Services;
@@ -28,8 +29,12 @@ public class UsersModule : IModule
 {
 	public static string Name => "Users";
 
-	public void Register(IServiceCollection services, IConfiguration configuration)
+	public void Register(IHostApplicationBuilder builder)
 	{
+		var services = builder.Services;
+		var configuration = builder.Configuration;
+		var isProduction = builder.Environment.IsProduction();
+
 		var postgreSqlSettings = configuration.GetSettings<PostgreSqlSettings>();
 		services.AddDbContext<UsersDbContext>(options => options.UseNpgsql(postgreSqlSettings.ConnectionString, x => x.MigrationsHistoryTable("__EFMigrationsHistory", Name)));
 		services.AddSettingsWithOptions<JwtSettings>(configuration);
@@ -59,6 +64,7 @@ public class UsersModule : IModule
 		services.AddScoped<DeleteCurrentUserSafeAccessPointHandler>();
 		services.AddScoped<CreateCurrentUserSafeAccessPointHandler>();
 		services.AddScoped<ChangeCurrentUserSafeAccessPointHandler>();
+		services.AddSingleton(new CookieTokenStorage(secure: isProduction));
 
 		services.AddValidatorsFromAssemblyContaining<UsersModule>(includeInternalTypes: true);
 

@@ -1,0 +1,86 @@
+name: cadr-backend
+
+networks:
+  cadr.network:
+    name: cadr-network
+
+volumes:
+  cadr.postgres:
+  cadr.mailpit:
+  cadr.azurite:
+
+services:
+
+  cadr.postgres:
+    image: postgres:latest
+    container_name: cadr-postgres
+    environment:
+      - POSTGRES_DB=cadr
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - cadr.postgres:/var/lib/postgresql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cadr.network
+
+  cadr.azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    container_name: cadr-azurite
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+    volumes:
+      - cadr.azurite:/data
+    command: azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0 --skipApiVersionCheck --disableProductStyleUrl
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 10000 || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - cadr.network
+
+  cadr.mailpit:
+    image: axllent/mailpit
+    container_name: cadr-mailpit
+    environment:
+      - MP_SMTP_AUTH=cadr.studio@gmail.com:cadr
+      - MP_SMTP_AUTH_ALLOW_INSECURE=true
+      - MP_DATABASE=/data/mailpit.db
+      - TZ=Europe/Warsaw
+    volumes:
+      - cadr.mailpit:/data
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    networks:
+      - cadr.network
+
+  cadr.api:
+    container_name: cadr-api
+    image: cadr.api
+    build:
+      context: .
+      dockerfile: api.Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+    ports:
+      - "8080:8080"
+    networks:
+      - cadr.network
+    depends_on:
+      cadr.postgres:
+        condition: service_healthy
+      cadr.mailpit:
+        condition: service_healthy
+      cadr.azurite:
+        condition: service_healthy

@@ -35,7 +35,8 @@ internal sealed class GithubLoginHandler(
 	ITokenProvider tokenProvider,
 	IIpApiClient ipApiClient,
 	IGithubOAuthClient githubOAuthClient,
-	IGithubClient githubClient
+	IGithubClient githubClient,
+	CookieTokenStorage cookieTokenStorage
 	) : IHttpRequestHandler<GithubLogin>
 {
 	public async Task<IResult> Handle(GithubLogin request, CancellationToken cancellationToken)
@@ -62,14 +63,14 @@ internal sealed class GithubLoginHandler(
 		var ipAddressLocation = await ipApiClient.GetIpAddressGeolocationData(ipAddress);
 
 		var tokens = tokenProvider.Generate(user);
-		var refreshToken = request.HttpContext.GetRefreshToken();
+		var refreshToken = CookieTokenStorage.GetRefreshToken(request.HttpContext);
 		if (await tokenProvider.GetTokenIdentifiers(refreshToken) is { } tokenIdentifiers)
 			user.Refresh(tokenIdentifiers.TokenId, tokens, ipAddressLocation);
 		else
 			user.Login(tokens, ipAddressLocation);
 
 		await dbContext.SaveChangesAsync(cancellationToken);
-		request.HttpContext.SetTokenCookies(tokens);
+		cookieTokenStorage.SetTokenCookies(request.HttpContext, tokens);
 
 		var readModel = UserReadModel.From(user);
 		return Results.Ok(readModel);

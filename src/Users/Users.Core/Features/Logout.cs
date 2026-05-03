@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Shared.Endpoints;
-using Shared.Endpoints.Requests;
 using Users.Core.Database;
 using Users.Core.Services;
 
@@ -25,7 +24,7 @@ internal sealed class LogoutHandler(
 {
 	public async Task<IResult> Handle(Logout logout, CancellationToken cancellationToken)
 	{
-		var refreshToken = logout.HttpContext.GetRefreshToken();
+		var refreshToken = CookieTokenStorage.GetRefreshToken(logout.HttpContext);
 
 		if (refreshToken is not null && await tokenProvider.GetTokenIdentifiers(refreshToken) is { } identifiers)
 		{
@@ -36,7 +35,7 @@ internal sealed class LogoutHandler(
 			user.Logout(identifiers.TokenId);
 		}
 
-		logout.HttpContext.ClearTokenCookies();
+		CookieTokenStorage.ClearTokenCookies(logout.HttpContext);
 
 		return Results.NoContent();
 	}

@@ -42,7 +42,8 @@ internal sealed class GoogleLoginHandler(
 	UsersDbContext dbContext,
 	ITokenProvider tokenProvider,
 	IIpApiClient ipApiClient,
-	GoogleAuthorizationCodeFlow.Initializer flowInitializer
+	GoogleAuthorizationCodeFlow.Initializer flowInitializer,
+	CookieTokenStorage cookieTokenStorage
 	) : IHttpRequestHandler<GoogleLogin>
 {
 	public async Task<IResult> Handle(GoogleLogin request, CancellationToken cancellationToken)
@@ -75,14 +76,14 @@ internal sealed class GoogleLoginHandler(
 		var ipAddressLocation = await ipApiClient.GetIpAddressGeolocationData(ipAddress);
 
 		var tokens = tokenProvider.Generate(user);
-		var refreshToken = request.HttpContext.GetRefreshToken();
+		var refreshToken = CookieTokenStorage.GetRefreshToken(request.HttpContext);
 		if (await tokenProvider.GetTokenIdentifiers(refreshToken) is { } tokenIdentifiers)
 			user.Refresh(tokenIdentifiers.TokenId, tokens, ipAddressLocation);
 		else
 			user.Login(tokens, ipAddressLocation);
 
 		await dbContext.SaveChangesAsync(cancellationToken);
-		request.HttpContext.SetTokenCookies(tokens);
+		cookieTokenStorage.SetTokenCookies(request.HttpContext, tokens);
 
 		var readModel = UserReadModel.From(user);
 		return Results.Ok(readModel);
