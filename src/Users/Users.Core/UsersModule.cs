@@ -33,6 +33,7 @@ public class UsersModule : IModule
 	{
 		var services = builder.Services;
 		var configuration = builder.Configuration;
+		var isProduction = builder.Environment.IsProduction();
 
 		var postgreSqlSettings = configuration.GetSettings<PostgreSqlSettings>();
 		services.AddDbContext<UsersDbContext>(options => options.UseNpgsql(postgreSqlSettings.ConnectionString, x => x.MigrationsHistoryTable("__EFMigrationsHistory", Name)));
@@ -63,6 +64,7 @@ public class UsersModule : IModule
 		services.AddScoped<DeleteCurrentUserSafeAccessPointHandler>();
 		services.AddScoped<CreateCurrentUserSafeAccessPointHandler>();
 		services.AddScoped<ChangeCurrentUserSafeAccessPointHandler>();
+		services.AddSingleton(new CookieTokenStorage(secure: isProduction));
 
 		services.AddValidatorsFromAssemblyContaining<UsersModule>(includeInternalTypes: true);
 
