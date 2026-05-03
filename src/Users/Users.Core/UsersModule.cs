@@ -23,6 +23,7 @@ using Users.Core.Services;
 using Users.Core.Settings;
 
 [assembly: InternalsVisibleTo("Users.Tests")]
+
 namespace Users.Core;
 
 public class UsersModule : IModule
@@ -36,7 +37,8 @@ public class UsersModule : IModule
 		var isProduction = builder.Environment.IsProduction();
 
 		var postgreSqlSettings = configuration.GetSettings<PostgreSqlSettings>();
-		services.AddDbContext<UsersDbContext>(options => options.UseNpgsql(postgreSqlSettings.ConnectionString, x => x.MigrationsHistoryTable("__EFMigrationsHistory", Name)));
+		services.AddDbContext<UsersDbContext>(options => options.UseNpgsql(postgreSqlSettings.ConnectionString,
+			x => x.MigrationsHistoryTable("__EFMigrationsHistory", Name)));
 		services.AddSettingsWithOptions<JwtSettings>(configuration);
 		services.AddMailingService(configuration);
 		services.AddScoped<LoginHandler>();
@@ -64,7 +66,10 @@ public class UsersModule : IModule
 		services.AddScoped<DeleteCurrentUserSafeAccessPointHandler>();
 		services.AddScoped<CreateCurrentUserSafeAccessPointHandler>();
 		services.AddScoped<ChangeCurrentUserSafeAccessPointHandler>();
-		services.AddSingleton(new CookieTokenStorage(secure: isProduction));
+		services.AddSingleton(new CookieTokenStorage(
+			secure: isProduction,
+			sameSiteMode: isProduction ? SameSiteMode.Lax : SameSiteMode.None
+		));
 
 		services.AddValidatorsFromAssemblyContaining<UsersModule>(includeInternalTypes: true);
 
@@ -132,7 +137,6 @@ public class UsersModule : IModule
 			.Map<DeleteCurrentUserSafeAccessPointEndpoint>()
 			.Map<CreateCurrentUserSafeAccessPointEndpoint>()
 			.Map<ChangeCurrentUserSafeAccessPointEndpoint>();
-
 	}
 
 
