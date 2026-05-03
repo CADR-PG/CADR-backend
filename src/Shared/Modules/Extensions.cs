@@ -8,7 +8,7 @@ public static class Extensions
 	public static void RegisterModules(this IHostApplicationBuilder builder, ApplicationContext applicationContext)
 	{
 		foreach (var module in applicationContext.Modules)
-			module.Register(builder.Services, builder.Configuration);
+			module.Register(builder);
 	}
 
 	public static void MapEndpoints(this IEndpointRouteBuilder endpoints, ApplicationContext applicationContext)

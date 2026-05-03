@@ -34,7 +34,8 @@ internal sealed class LoginHandler(
 	UsersDbContext dbContext,
 	ITokenProvider tokenProvider,
 	IIpApiClient ipApiClient,
-	UserMailingService userMailingService
+	UserMailingService userMailingService,
+	CookieTokenStorage cookieTokenStorage
 ) : IHttpRequestHandler<Login>
 {
 	public async Task<IResult> Handle(Login request, CancellationToken cancellationToken)
@@ -52,14 +53,15 @@ internal sealed class LoginHandler(
 		var ipAddressLocation = await ipApiClient.GetIpAddressGeolocationData(ipAddress);
 
 		var tokens = tokenProvider.Generate(user);
-		var refreshToken = request.HttpContext.GetRefreshToken();
+		var refreshToken = CookieTokenStorage.GetRefreshToken(request.HttpContext);
 		if (await tokenProvider.GetTokenIdentifiers(refreshToken) is { } tokenIdentifiers)
 			user.Refresh(tokenIdentifiers.TokenId, tokens, ipAddressLocation);
 		else
 			user.Login(tokens, ipAddressLocation);
 
 		await dbContext.SaveChangesAsync(cancellationToken);
-		request.HttpContext.SetTokenCookies(tokens);
+
+		cookieTokenStorage.SetTokenCookies(request.HttpContext, tokens);
 
 		try
 		{

@@ -48,7 +48,7 @@ internal sealed class RefreshHandler(
 		user.Refresh(identifiers.TokenId, refreshedUserTokens, ipAddressLocation);
 		await dbContext.SaveChangesAsync(cancellationToken);
 
-		request.HttpContext.ClearTokenCookies();
+		CookieTokenStorage.ClearTokenCookies(request.HttpContext);
 
 		var readModel = UserReadModel.From(user);
 		return Results.Ok(readModel);
