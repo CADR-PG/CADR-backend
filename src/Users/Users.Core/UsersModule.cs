@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Shared.Endpoints;
 using Shared.Modules;
 using Shared.Services;
@@ -17,21 +18,28 @@ using Users.Core.Clients.Github;
 using Users.Core.Clients.IpApi;
 using Users.Core.Database;
 using Users.Core.Features;
+using Users.Core.Features.LoginLocations;
 using Users.Core.Services;
 using Users.Core.Settings;
 using Extensions = Shared.Modules.Extensions;
 
 [assembly: InternalsVisibleTo("Users.Tests")]
+
 namespace Users.Core;
 
 public class UsersModule : IModule
 {
 	public static string Name => "Users";
 
-	public void Register(IServiceCollection services, IConfiguration configuration)
+	public void Register(IHostApplicationBuilder builder)
 	{
+		var services = builder.Services;
+		var configuration = builder.Configuration;
+		var isProduction = builder.Environment.IsProduction();
+
 		var postgreSqlSettings = configuration.GetSettings<PostgreSqlSettings>();
-		services.AddDbContext<UsersDbContext>(options => options.UseNpgsql(postgreSqlSettings.ConnectionString, x => x.MigrationsHistoryTable("__EFMigrationsHistory", Name)));
+		services.AddDbContext<UsersDbContext>(options => options.UseNpgsql(postgreSqlSettings.ConnectionString,
+			x => x.MigrationsHistoryTable("__EFMigrationsHistory", Name)));
 		services.AddSettingsWithOptions<JwtSettings>(configuration);
 		services.AddMailingService(configuration);
 		services.AddScoped<LoginHandler>();
@@ -52,6 +60,18 @@ public class UsersModule : IModule
 		services.AddScoped<UserMailingService>();
 		services.AddScoped<GoogleLoginHandler>();
 		services.AddScoped<GithubLoginHandler>();
+
+		services.AddScoped<GetCurrentUserSafeAccessPointHandler>();
+		services.AddScoped<GetCurrentUserLocationLogsHandler>();
+		services.AddScoped<GetAllCurrentUserSafeAccessPointsHandler>();
+		services.AddScoped<DeleteCurrentUserSafeAccessPointHandler>();
+		services.AddScoped<CreateCurrentUserSafeAccessPointHandler>();
+		services.AddScoped<ChangeCurrentUserSafeAccessPointHandler>();
+		services.AddSingleton(new CookieTokenStorage(
+			secure: isProduction,
+			sameSiteMode: isProduction ? SameSiteMode.Lax : SameSiteMode.None
+		));
+
 		services.AddValidatorsFromAssemblyContaining<UsersModule>(includeInternalTypes: true);
 
 		services.RegisterIpApiClient();
@@ -92,7 +112,8 @@ public class UsersModule : IModule
 	}
 
 	public void MapEndpoints(IEndpointRouteBuilder endpoints)
-		=> endpoints.MapGroup(Name.ToLowerInvariant())
+	{
+		endpoints.MapGroup(Name.ToLowerInvariant())
 			.WithTags(Name)
 			.Map<LoginEndpoint>()
 			.Map<RegisterEndpoint>()
@@ -106,9 +127,19 @@ public class UsersModule : IModule
 			.Map<SendPasswordResetEndpoint>()
 			.Map<ResetPasswordWithTokenEndpoint>()
 			.Map<ResendEmailConfirmationEndpoint>()
-			.Map<GetCurrentUserLocationLogsEndpoint>()
 			.Map<GoogleLoginEndpoint>()
 			.Map<GithubLoginEndpoint>();
+
+		endpoints.MapGroup(Name.ToLowerInvariant())
+			.WithTags("User login locations")
+			.Map<GetCurrentUserSafeAccessPointEndpoint>()
+			.Map<GetCurrentUserLocationLogsEndpoint>()
+			.Map<GetAllCurrentUserSafeAccessPointsEndpoint>()
+			.Map<DeleteCurrentUserSafeAccessPointEndpoint>()
+			.Map<CreateCurrentUserSafeAccessPointEndpoint>()
+			.Map<ChangeCurrentUserSafeAccessPointEndpoint>();
+	}
+
 
 	public async ValueTask RunInDevelopmentMode(IServiceProvider services)
 	{

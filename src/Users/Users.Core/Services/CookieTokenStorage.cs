@@ -3,20 +3,20 @@ using Users.Core.ValueObjects;
 
 namespace Users.Core.Services;
 
-internal static class CookieTokenStorage
+internal class CookieTokenStorage(bool secure, SameSiteMode sameSiteMode)
 {
 	public const string AccessTokenCookieKey = "cadr_access_token";
 	public const string RefreshTokenCookieKey = "cadr_refresh_token";
 
-	public static void SetTokenCookies(this HttpContext httpContext, UserTokens tokens)
+	public void SetTokenCookies(HttpContext httpContext, UserTokens tokens)
 	{
 		var (accessToken, refreshToken, _) = tokens;
 
 		var accessTokenCookieOptions = new CookieOptions
 		{
 			HttpOnly = true,
-			Secure = true,
-			SameSite = SameSiteMode.Strict,
+			Secure = secure,
+			SameSite = sameSiteMode,
 			Expires = accessToken.ExpiresAt,
 		};
 
@@ -24,7 +24,7 @@ internal static class CookieTokenStorage
 		{
 			HttpOnly = true,
 			Secure = true,
-			SameSite = SameSiteMode.Strict,
+			SameSite = sameSiteMode,
 			Expires = refreshToken.ExpiresAt,
 		};
 
@@ -32,15 +32,15 @@ internal static class CookieTokenStorage
 		httpContext.Response.Cookies.Append(RefreshTokenCookieKey, refreshToken.Value, refreshTokenCookieOptions);
 	}
 
-	public static void ClearTokenCookies(this HttpContext httpContext)
+	public static void ClearTokenCookies(HttpContext httpContext)
 	{
 		httpContext.Response.Cookies.Delete(AccessTokenCookieKey);
 		httpContext.Response.Cookies.Delete(RefreshTokenCookieKey);
 	}
 
-	public static string? GetAccessToken(this HttpContext httpContext)
+	public static string? GetAccessToken(HttpContext httpContext)
 		=> httpContext.Request.Cookies[AccessTokenCookieKey];
 
-	public static string? GetRefreshToken(this HttpContext httpContext)
+	public static string? GetRefreshToken(HttpContext httpContext)
 		=> httpContext.Request.Cookies[RefreshTokenCookieKey];
 }

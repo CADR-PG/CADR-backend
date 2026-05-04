@@ -11,6 +11,7 @@ internal sealed class UsersDbContext
 	public DbSet<User> Users { get; init; } = null!;
 	public DbSet<RefreshToken> RefreshTokens { get; init; } = null!;
 	public DbSet<UserLocationLog> UserLocationLogs { get; init; } = null!;
+	public DbSet<UserSafeAccessPoint> UserSafeAccessPoints { get; init; } = null!;
 
 	protected override void OnModelCreating(ModelBuilder builder)
 	{

@@ -4,24 +4,21 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Shared.Endpoints;
 using Shared.Endpoints.Requests;
-using Shared.Endpoints.Results;
 using Users.Core.Database;
 using Users.Core.Entities;
 using Users.Core.ReadModels;
 
-namespace Users.Core.Features;
-
+namespace Users.Core.Features.LoginLocations;
 
 internal record struct GetCurrentUserLocationLogs(CurrentUser CurrentUser) : IHttpRequest;
 
 internal sealed class GetCurrentUserLocationLogsEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints)
-		=> endpoints.MapPost<GetCurrentUserLocationLogs, GetCurrentUserLocationLogsHandler>("location-logs")
+		=> endpoints.MapGet<GetCurrentUserLocationLogs, GetCurrentUserLocationLogsHandler>("location-logs")
 			.Produces<UserLocationLogsReadModel>()
 			.RequireAuthorization()
-			.ProducesError(400, $"`{nameof(Errors.InvalidRefreshCredentialsError)}`")
-			.WithDescription($"Returns last 10 user locations. Returns `{nameof(UserLocationLogsReadModel)}` on success.");
+			.WithDescription($"Returns user login locations. Returns `{nameof(UserLocationLogsReadModel)}` on success.");
 }
 
 internal sealed class GetCurrentUserLocationLogsHandler(

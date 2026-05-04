@@ -1,5 +1,6 @@
 using Shared.ValueObjects;
 using Users.Core.Clients.IpApi.Responses;
+using Users.Core.Entities.Contracts;
 using Users.Core.ReadModels;
 
 namespace Users.Core.Entities;
@@ -10,7 +11,7 @@ internal enum AuthenticationType
 	Refresh = 1,
 }
 
-internal sealed class UserLocationLog
+internal sealed class UserLocationLog : IGeoPoint
 {
 	public required Guid Id { get; init; }
 	public required UserId UserId { get; init; }
@@ -39,12 +40,12 @@ internal sealed class UserLocationLog
 		City = ipAddressLocation.City
 	};
 
-	public static double CalculateDistanceKm(UserLocationLog from, UserLocationLog to)
+	public static double CalculateDistanceKm(IGeoPoint from, IGeoPoint to)
 	{
 		const double earthRadius = 6_371;
 
 		var dLatitude = ToRadians(to.Latitude - from.Latitude);
-		var dLongitude = ToRadians(to.Longitude - to.Longitude);
+		var dLongitude = ToRadians(to.Longitude - from.Longitude);
 
 		var fromLatitude = ToRadians(from.Latitude);
 		var toLatitude = ToRadians(to.Latitude);

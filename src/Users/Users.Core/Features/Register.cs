@@ -12,7 +12,6 @@ using Users.Core.Services;
 
 namespace Users.Core.Features;
 
-
 internal sealed record Register([FromBody] Register.Credentials Body) : IHttpRequest
 {
 	internal sealed record Credentials(string FirstName, string LastName, string Email, string Password);

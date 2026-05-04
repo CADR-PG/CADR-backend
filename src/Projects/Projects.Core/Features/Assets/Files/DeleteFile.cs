@@ -32,7 +32,7 @@ internal sealed class DeleteFileHandler(
 		var (projectId, fileId) = request;
 
 		var deletedCount = await dbContext.AssetsFiles
-			.Where(x => x.ProjectId == projectId && x.DirectoryId == fileId)
+			.Where(x => x.ProjectId == projectId && x.Id == fileId)
 			.ExecuteUpdateAsync(stc => stc.SetProperty(af => af.DirectoryId, null as Guid?), cancellationToken);
 
 		return deletedCount == 1
