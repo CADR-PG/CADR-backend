@@ -13,8 +13,7 @@ namespace Users.Tests;
 
 public sealed class HandlersTest : IAsyncLifetime, IDisposable
 {
-	private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder()
-		.WithImage("postgres:15-alpine")
+	private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder("postgres:15-alpine")
 		.Build();
 
 	private UsersDbContext _dbContext = null!;

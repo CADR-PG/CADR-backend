@@ -19,7 +19,9 @@ using Projects.Core.Features.Projects;
 using Shared.Endpoints;
 using Shared.Modules;
 using Shared.Settings;
+using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("Projects.Tests")]
 namespace Projects.Core;
 
 public class ProjectsModule : IModule

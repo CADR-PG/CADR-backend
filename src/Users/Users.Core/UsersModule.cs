@@ -21,6 +21,7 @@ using Users.Core.Features;
 using Users.Core.Features.LoginLocations;
 using Users.Core.Services;
 using Users.Core.Settings;
+using Extensions = Shared.Modules.Extensions;
 
 [assembly: InternalsVisibleTo("Users.Tests")]
 
