@@ -18,8 +18,8 @@ using Shared.Endpoints.Requests;
 using Shared.ValueObjects;
 using System.Net;
 using System.Net.Http.Json;
-using Testcontainers.PostgreSql;
 using Testcontainers.Azurite;
+using Testcontainers.PostgreSql;
 
 namespace Projects.Tests;
 
@@ -29,7 +29,7 @@ public sealed class HandlerTests : IAsyncLifetime, IDisposable
 		.Build();
 
 	private ProjectsDbContext _dbContext = null!;
-	
+
 	private readonly AzuriteContainer _azurite = new AzuriteBuilder("mcr.microsoft.com/azure-storage/azurite")
 		.Build();
 	public async Task InitializeAsync()
