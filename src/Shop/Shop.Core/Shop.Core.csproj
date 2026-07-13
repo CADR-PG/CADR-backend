@@ -23,7 +23,6 @@
       <Folder Include="Database\Migrations\" />
       <Folder Include="Features\" />
       <Folder Include="ReadModels\" />
-      <Folder Include="Services\" />
     </ItemGroup>
 
     <ItemGroup>

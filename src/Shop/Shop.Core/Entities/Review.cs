@@ -4,8 +4,12 @@ namespace Shop.Core.Entities;
 
 public class Review
 {
-	public Guid Id { get; init; }
-	public string? Text { get; init; }
-	public int Rating { get; init; }
-	public UserId AuthorId { get; init; }
+	public Guid Id { get; set; }
+	public Guid UserId { get; set; }
+	public Guid GameId { get; set; }
+	public int Rating { get; set; }
+	public string Content { get; set; } = "";
+	public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+	public DateTimeOffset? UpdatedAt { get; set; }
+
 }
