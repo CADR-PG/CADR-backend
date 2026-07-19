@@ -19,7 +19,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Database\Configurations\" />
       <Folder Include="Database\Migrations\" />
       <Folder Include="Features\" />
       <Folder Include="ReadModels\" />

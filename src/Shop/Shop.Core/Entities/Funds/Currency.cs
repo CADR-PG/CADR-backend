@@ -6,6 +6,6 @@ public class Currency
 	public required string Name { get; init; }
 	public required string Symbol { get; init; }
 
-	public int DecimalPlaces { get; init; }
+	public required int DecimalPlaces { get; init; }
 	public bool IsEnabled { get; init; }
 }

@@ -6,10 +6,10 @@ public class Discount
 {
 	public Guid Id { get; init; }
 	public int DiscountPercent { get; init; }
-	public DateTimeOffset ValidFrom { get; init; }
-	public DateTimeOffset ValidTo { get; init; }
+	public DateTime ValidFrom { get; init; }
+	public DateTime ValidTo { get; init; }
 
 	public ICollection<Game> Games { get; } = [];
 
-	public bool IsActive(DateTimeOffset now) => now >= ValidFrom && now <= ValidTo;
+	public bool IsActive(DateTime now) => now >= ValidFrom && now <= ValidTo;
 }

@@ -9,7 +9,7 @@ public class Review
 	public Guid GameId { get; set; }
 	public int Rating { get; set; }
 	public string Content { get; set; } = "";
-	public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
-	public DateTimeOffset? UpdatedAt { get; set; }
+	public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+	public DateTime? UpdatedAt { get; set; }
 
 }

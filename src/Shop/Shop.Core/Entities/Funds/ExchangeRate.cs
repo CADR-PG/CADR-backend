@@ -7,5 +7,5 @@ public class ExchangeRate
 	public required string TargetCurrency { get; init; }
 	public required decimal Rate { get; init; }
 	public required string Provider { get; init; }
-	public DateTimeOffset ValidFrom { get; init; }
+	public DateTime ValidFrom { get; init; }
 }
