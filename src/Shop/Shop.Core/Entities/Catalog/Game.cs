@@ -14,6 +14,7 @@ public class Game
 	public DateTime CreatedAt { get; init; }
 	public DateTime? UpdatedAt { get; init; }
 	public bool IsPublished { get; init; }
+	public string? StripeProductId { get; set; }
 
 	public ICollection<Discount> Discounts { get; } = [];
 	public ICollection<Genre> Genres { get; } = [];

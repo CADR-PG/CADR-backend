@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Shared.ValueObjects;
 using Shop.Core.Entities.Catalog;
 using Shop.Core.Entities.Funds;
+using Shop.Core.Entities.Library;
 using Users.Contracts.Database.References;
 
 namespace Shop.Core.Database;
@@ -14,6 +15,7 @@ internal sealed class ShopDbContext(DbContextOptions<ShopDbContext> dbContextOpt
 	public DbSet<Genre> Genres { get; init; } = null!;
 
 	public DbSet<Price> Prices { get; init; } = null!;
+	public DbSet<LibraryEntry> LibraryEntries { get; init; } = null!;
 
 	protected override void OnModelCreating(ModelBuilder builder)
 	{

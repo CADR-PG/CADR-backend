@@ -13,7 +13,6 @@ internal sealed class GameConfiguration : IEntityTypeConfiguration<Game>
 
 		builder.Property(game => game.Title).IsRequired();
 		builder.Property(game => game.Description).IsRequired();
-		builder.Property(game => game.Price).IsRequired();
 
 		builder.Property(game => game.CreatedAt).IsRequired();
 		builder.Property(game => game.UpdatedAt).IsRequired(false);

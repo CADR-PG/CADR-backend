@@ -25,6 +25,8 @@ public class ShopModule : IModule
 		var configuration = builder.Configuration;
 
 		var postgreSqlSettings = configuration.GetSettings<PostgreSqlSettings>();
+		services.AddDbContext<ShopDbContext>(options => options.UseNpgsql(postgreSqlSettings.ConnectionString,
+			x => x.MigrationsHistoryTable("__EFMigrationsHistory", Name)));
 		services.AddAzureClients(builder =>
 		{
 			var projectSettings = configuration.GetSection("Azure");
