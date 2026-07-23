@@ -1,6 +1,6 @@
 namespace Shop.Core.Entities.Payments;
 
-public class Payment
+public class StripePayment
 {
 
 }

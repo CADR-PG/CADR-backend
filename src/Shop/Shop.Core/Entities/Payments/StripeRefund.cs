@@ -1,6 +1,6 @@
 namespace Shop.Core.Entities.Payments;
 
-public class Refund
+public class StripeRefund
 {
 
 }
