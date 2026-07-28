@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Shop.Core.Database;
@@ -11,9 +12,11 @@ using Shop.Core.Database;
 namespace Shop.Core.Database.Migrations
 {
     [DbContext(typeof(ShopDbContext))]
-    partial class ShopDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260727162150_Shop_v2")]
+    partial class Shop_v2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -75,6 +78,9 @@ namespace Shop.Core.Database.Migrations
                     b.Property<int>("State")
                         .HasColumnType("integer");
 
+                    b.Property<string>("StripeProductId")
+                        .HasColumnType("text");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("text");
@@ -93,27 +99,14 @@ namespace Shop.Core.Database.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("GameId")
+                    b.Property<Guid?>("GameId")
                         .HasColumnType("uuid");
-
-                    b.Property<Guid>("ProjectId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Version")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
                     b.HasIndex("GameId");
 
-                    b.ToTable("GameVersions", "Shop");
+                    b.ToTable("GameVersion", "Shop");
                 });
 
             modelBuilder.Entity("Shop.Core.Entities.Catalog.Genre", b =>
@@ -316,13 +309,9 @@ namespace Shop.Core.Database.Migrations
 
             modelBuilder.Entity("Shop.Core.Entities.Catalog.GameVersion", b =>
                 {
-                    b.HasOne("Shop.Core.Entities.Catalog.Game", "Game")
+                    b.HasOne("Shop.Core.Entities.Catalog.Game", null)
                         .WithMany("Versions")
-                        .HasForeignKey("GameId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Game");
+                        .HasForeignKey("GameId");
                 });
 
             modelBuilder.Entity("Shop.Core.Entities.Funds.Price", b =>

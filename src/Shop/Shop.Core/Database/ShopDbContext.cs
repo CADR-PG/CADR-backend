@@ -16,6 +16,7 @@ internal sealed class ShopDbContext(DbContextOptions<ShopDbContext> dbContextOpt
 
 	public DbSet<Price> Prices { get; init; } = null!;
 	public DbSet<LibraryEntry> LibraryEntries { get; init; } = null!;
+	public DbSet<GameVersion> GameVersions { get; init; } = null!;
 
 	protected override void OnModelCreating(ModelBuilder builder)
 	{
