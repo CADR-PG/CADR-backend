@@ -15,7 +15,7 @@ internal sealed class GameVersionConfiguration : IEntityTypeConfiguration<GameVe
 		builder.Property(version => version.Version).IsRequired();
 		builder.Property(version => version.CreatedAt).IsRequired();
 
-		builder.HasOne(version => version.Game)
+		builder.HasOne<Game>()
 			.WithMany(game => game.Versions)
 			.HasForeignKey(version => version.GameId);
 	}

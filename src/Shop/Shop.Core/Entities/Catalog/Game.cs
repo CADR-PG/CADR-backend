@@ -21,16 +21,28 @@ public class Game
 	public ICollection<Review> Reviews { get; } = [];
 	public ICollection<GameVersion> Versions { get; } = []; // opisy tego co sie zmienilo i odniesienia do poszczegolnych wersji gry
 
-	public static Game Create(string title, string description, Price price, int ageRestriction, GameStates state, UserId authorId) => new()
+	public static Game Create(string title, string description, decimal amount, string currnecy, int ageRestriction, GameStates state, UserId authorId)
 	{
-		Id = Guid.NewGuid(),
-		Title = title,
-		Description = description,
-		Price = price,
-		CreatedAt = DateTime.UtcNow,
-		UpdatedAt = DateTime.UtcNow,
-		AgeRestriction = ageRestriction,
-		State = state,
-		AuthorId = authorId
-	};
+		var id = Guid.NewGuid();
+		var game = new Game
+		{
+			Id = id,
+			Title = title,
+			Description = description,
+			Price = new Price()
+			{
+				Amount = amount,
+				Currency = currnecy,
+				GameId = id,
+				ValidFrom = DateTime.UtcNow,
+			},
+			CreatedAt = DateTime.UtcNow,
+			UpdatedAt = DateTime.UtcNow,
+			AgeRestriction = ageRestriction,
+			State = state,
+			AuthorId = authorId
+		};
+		return game;
+	}
+
 }

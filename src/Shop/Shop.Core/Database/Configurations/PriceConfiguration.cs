@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Shop.Core.Entities.Catalog;
 using Shop.Core.Entities.Funds;
 
 namespace Shop.Core.Database.Configurations;
@@ -10,7 +11,7 @@ internal sealed class PriceConfiguration : IEntityTypeConfiguration<Price>
 	{
 		builder.HasKey(price => price.GameId);
 
-		builder.HasOne(price => price.Game)
+		builder.HasOne<Game>()
 			.WithOne(game => game.Price)
 			.HasForeignKey<Price>(price => price.GameId);
 

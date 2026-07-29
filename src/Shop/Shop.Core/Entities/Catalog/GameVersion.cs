@@ -4,7 +4,6 @@ public class GameVersion
 {
 	public required Guid Id { get; init; }
 	public required Guid GameId { get; init; }
-	public Game Game { get; init; } = null!;
 
 	public required Guid ProjectId { get; init; }
 	public required string Version { get; init; } = null!;
