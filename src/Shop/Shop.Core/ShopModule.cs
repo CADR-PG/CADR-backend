@@ -14,6 +14,7 @@ using Shared.Settings;
 using Shop.Core.Database;
 using Shop.Core.Entities.Catalog;
 using Shop.Core.Features;
+using Shop.Core.Services;
 using System.Runtime.CompilerServices;
 
 namespace Shop.Core;
@@ -31,6 +32,7 @@ public class ShopModule : IModule
 		services.AddDbContext<ShopDbContext>(options => options.UseNpgsql(postgreSqlSettings.ConnectionString,
 			x => x.MigrationsHistoryTable("__EFMigrationsHistory", Name)));
 		services.AddScoped<AddGameToStoreHandler>();
+		services.AddSingleton<FilesContainerClient>();
 		services.AddAzureClients(builder =>
 		{
 			var projectSettings = configuration.GetSection("Azure");
