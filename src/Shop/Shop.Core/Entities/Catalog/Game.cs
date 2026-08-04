@@ -14,7 +14,8 @@ public class Game
 	public DateTime CreatedAt { get; init; }
 	public DateTime? UpdatedAt { get; init; }
 	public int AgeRestriction { get; init; }
-	public GameStates State { get; init; }
+	public GameStates State { get; set; }
+	public Guid? ActiveVersionId { get; set; }
 
 	public ICollection<Discount> Discounts { get; } = [];
 	public ICollection<Genre> Genres { get; } = [];

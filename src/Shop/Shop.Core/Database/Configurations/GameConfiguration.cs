@@ -19,6 +19,7 @@ internal sealed class GameConfiguration : IEntityTypeConfiguration<Game>
 
 		builder.Property(game => game.State).IsRequired();
 		builder.Property(game => game.AuthorId).IsRequired();
+		builder.Property(game => game.ActiveVersionId).IsRequired(false);
 
 	}
 }

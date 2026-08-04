@@ -32,6 +32,9 @@ public class ShopModule : IModule
 		services.AddDbContext<ShopDbContext>(options => options.UseNpgsql(postgreSqlSettings.ConnectionString,
 			x => x.MigrationsHistoryTable("__EFMigrationsHistory", Name)));
 		services.AddScoped<AddGameToStoreHandler>();
+		services.AddScoped<CreateSnapshotHandler>();
+		services.AddScoped<PublishVersionHandler>();
+		services.AddScoped<GameSnapshotService>();
 		services.AddSingleton<FilesContainerClient>();
 		services.AddAzureClients(builder =>
 		{
@@ -46,6 +49,8 @@ public class ShopModule : IModule
 	{
 		var shop = endpoints.MapGroup(Name.ToLowerInvariant()).WithTags(Name);
 		shop.Map<AddGameToStoreEndpoint>();
+		shop.Map<CreateSnapshotEndpoint>();
+		shop.Map<PublishVersionEndpoint>();
 	}
 
 	public async ValueTask RunInDevelopmentMode(IServiceProvider services)

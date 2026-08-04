@@ -5,6 +5,7 @@ using Projects.Core.Database;
 using Projects.Core.Services;
 using Shared.Endpoints;
 using Shared.Endpoints.Requests;
+using Shared.Services;
 
 namespace Projects.Core.Features.Projects;
 
