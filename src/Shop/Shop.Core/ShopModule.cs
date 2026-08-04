@@ -35,6 +35,7 @@ public class ShopModule : IModule
 		services.AddScoped<CreateSnapshotHandler>();
 		services.AddScoped<PublishVersionHandler>();
 		services.AddScoped<GameSnapshotService>();
+		services.AddScoped<GetListOfGamesHandler>();
 		services.AddSingleton<FilesContainerClient>();
 		services.AddAzureClients(builder =>
 		{
@@ -51,13 +52,13 @@ public class ShopModule : IModule
 		shop.Map<AddGameToStoreEndpoint>();
 		shop.Map<CreateSnapshotEndpoint>();
 		shop.Map<PublishVersionEndpoint>();
+		shop.Map<GetListOfGamesEndpoint>();
 	}
 
 	public async ValueTask RunInDevelopmentMode(IServiceProvider services)
 	{
 		var dbContext = services.GetRequiredService<ShopDbContext>();
 		await dbContext.Database.MigrateAsync();
-
 
 		var blobServiceClient = services.GetRequiredService<BlobServiceClient>();
 		var containerClient = blobServiceClient.GetBlobContainerClient(GameVersion.BlobContainerName);
