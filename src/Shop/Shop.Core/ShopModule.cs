@@ -36,6 +36,8 @@ public class ShopModule : IModule
 		services.AddScoped<PublishVersionHandler>();
 		services.AddScoped<GameSnapshotService>();
 		services.AddScoped<GetListOfGamesHandler>();
+		services.AddScoped<BuyGameHandler>();
+		services.AddScoped<LibraryService>();
 		services.AddSingleton<FilesContainerClient>();
 		services.AddAzureClients(builder =>
 		{
@@ -53,6 +55,7 @@ public class ShopModule : IModule
 		shop.Map<CreateSnapshotEndpoint>();
 		shop.Map<PublishVersionEndpoint>();
 		shop.Map<GetListOfGamesEndpoint>();
+		shop.Map<BuyGameEndpoint>();
 	}
 
 	public async ValueTask RunInDevelopmentMode(IServiceProvider services)
