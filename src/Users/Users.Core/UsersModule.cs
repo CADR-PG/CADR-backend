@@ -68,7 +68,6 @@ public class UsersModule : IModule
 		services.AddScoped<CreateCurrentUserSafeAccessPointHandler>();
 		services.AddScoped<ChangeCurrentUserSafeAccessPointHandler>();
 		services.AddSingleton(new CookieTokenStorage(
-			secure: isProduction,
 			sameSiteMode: isProduction ? SameSiteMode.Lax : SameSiteMode.None
 		));
 

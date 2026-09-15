@@ -14,7 +14,7 @@ public class AssetsFile
 	public required Guid ProjectId { get; init; }
 	public required Guid? DirectoryId { get; set; }
 
-	public string BlobResourceName => $"{ProjectId}/{DirectoryId}";
+	public string BlobResourceName => $"{ProjectId}/{DirectoryId}/{Id}";
 
 	public const string BlobContainerName = "project-assets-files";
 
