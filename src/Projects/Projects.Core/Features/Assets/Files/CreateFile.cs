@@ -45,8 +45,8 @@ internal sealed class CreateFileHandler(
 		if (await dbContext.AssetsDirectories.AnyAsync(x => x.ProjectId != projectId && x.DirectoryId == directoryId, cancellationToken))
 			return new ErrorResult("DirectoryNotFound", "Target directory does not exist.");
 
-		if (await dbContext.AssetsFiles.AnyAsync(x => x.ProjectId != projectId && x.DirectoryId != directoryId && x.Name == assetName, cancellationToken))
-			return new ErrorResult("AssetNameConflict", "Asset with the same name already exists.", 409);
+		if (await dbContext.AssetsFiles.AnyAsync(x => x.ProjectId == projectId && x.DirectoryId == directoryId && x.Name == assetName, cancellationToken))
+			return new ErrorResult("AssetNameConflict", "Asset with the same name already exists in directory.", 409);
 
 		var file = AssetsFile.Create(projectId, directoryId, assetName, sizeInBytes);
 
@@ -61,7 +61,7 @@ internal sealed class CreateFileHandler(
 			BlobContainerName = container.Name,
 			BlobName = file.BlobResourceName,
 			Resource = "b",
-			ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(3)
+			ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(3),
 		};
 		uploadSas.SetPermissions(Azure.Storage.Sas.BlobSasPermissions.Write);
 
