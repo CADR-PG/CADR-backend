@@ -37,15 +37,25 @@ internal sealed class BuyGameHandler(
 
 		var game = await dbContext.Games.Include(g => g.Price).FirstAsync(g => g.Id == gameId, cancellationToken);
 		var isGameInLibrary = await dbContext.LibraryEntries.AnyAsync(l => l.GameId == gameId && l.UserId == userId, cancellationToken);
+		var order = new Order { Id = Guid.NewGuid() };
 		if (isGameInLibrary)
 			return Results.Problem("Game already in library");
 		if (game.Price.IsFree)
 		{
-			var order = new Order { Id = Guid.NewGuid() };
 			await dbContext.Orders.AddAsync(order, cancellationToken);
 			await libraryService.GrantAccessToGame(userId, gameId, order.Id, cancellationToken);
 		}
 
-		return Results.Ok();
+		var wallet = await dbContext.Wallets.FirstOrDefaultAsync(u => u.UserId == request.CurrentUser.Id, cancellationToken);
+		if (wallet!.Ballance - game.Price.Amount < 0)
+			return Results.Problem("You don't have enough funds to buy this game");
+
+		wallet.Ballance -= Decimal.ToInt64(game.Price.Amount) * 100;
+		await dbContext.SaveChangesAsync(cancellationToken);
+
+		await dbContext.Orders.AddAsync(order, cancellationToken);
+		await libraryService.GrantAccessToGame(userId, gameId, order.Id, cancellationToken);
+
+		return Results.Ok(new { funds = wallet.Ballance / 100 + " PLN" });
 	}
 }

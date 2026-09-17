@@ -5,6 +5,7 @@ using Shared.Endpoints;
 using Shared.Services;
 using Shop.Core.Database;
 using Shop.Core.Entities.Catalog;
+using Shop.Core.ReadModels;
 
 namespace Shop.Core.Features;
 
@@ -22,7 +23,9 @@ internal sealed class GetListOfGamesHandler(
 {
 	public async Task<IResult> Handle(GetListOfGames request, CancellationToken cancellationToken)
 	{
-		var gamesList = dbContext.Games.Where(x => x.State == GameStates.Published);
+		var gamesList = dbContext.Games
+			.Where(x => x.State == GameStates.Published)
+			.Select(GameReadModel.Projection);
 		var paginatedListOfGames = await Paginated.Create(gamesList);
 		return Results.Ok(paginatedListOfGames);
 	}

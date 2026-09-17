@@ -1,4 +1,5 @@
 using Shop.Core.Entities.Catalog;
+using System.Linq.Expressions;
 
 namespace Shop.Core.ReadModels;
 
@@ -13,7 +14,7 @@ internal sealed class GameReadModel
 	public required GameStates State { get; init; }
 	public required Guid? ActiveVersionId { get; init; }
 
-	public static GameReadModel From(Game game) => new()
+	public static Expression<Func<Game, GameReadModel>> Projection => game => new()
 	{
 		Id = game.Id,
 		Title = game.Title,
@@ -24,4 +25,6 @@ internal sealed class GameReadModel
 		State = game.State,
 		ActiveVersionId = game.ActiveVersionId
 	};
+
+	public static GameReadModel From(Game game) => Projection.Compile()(game);
 }
