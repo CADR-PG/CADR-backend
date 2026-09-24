@@ -22,6 +22,7 @@ internal sealed class ShopDbContext(DbContextOptions<ShopDbContext> dbContextOpt
 	public DbSet<Order> Orders { get; init; } = null!;
 	public DbSet<ShopUser> ShopUsers { get; init; } = null!;
 	public DbSet<Wallets> Wallets { get; init; } = null!;
+	public DbSet<GamePlays> GamePlays { get; init; } = null!;
 
 	protected override void OnModelCreating(ModelBuilder builder)
 	{

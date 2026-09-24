@@ -44,6 +44,7 @@ internal sealed class BuyGameHandler(
 		{
 			await dbContext.Orders.AddAsync(order, cancellationToken);
 			await libraryService.GrantAccessToGame(userId, gameId, order.Id, cancellationToken);
+			return Results.Ok();
 		}
 
 		var wallet = await dbContext.Wallets.FirstOrDefaultAsync(u => u.UserId == request.CurrentUser.Id, cancellationToken);
@@ -56,6 +57,6 @@ internal sealed class BuyGameHandler(
 		await dbContext.Orders.AddAsync(order, cancellationToken);
 		await libraryService.GrantAccessToGame(userId, gameId, order.Id, cancellationToken);
 
-		return Results.Ok(new { funds = wallet.Ballance / 100 + " PLN" });
+		return Results.Ok(new { funds = $"{wallet.Ballance / 100m:0.00} PLN" });
 	}
 }

@@ -41,6 +41,7 @@ public class ShopModule : IModule
 		services.AddScoped<LibraryService>();
 		services.AddScoped<ShopUserService>();
 		services.AddScoped<GetWalletBalanceHandler>();
+		services.AddScoped<PlayGameHandler>();
 		services.AddSingleton<FilesContainerClient>();
 		services.AddAzureClients(builder =>
 		{
@@ -61,6 +62,7 @@ public class ShopModule : IModule
 		shop.Map<BuyGameEndpoint>();
 		shop.Map<GetUsersGamesLibraryEndpoint>();
 		shop.Map<GetWalletBalanceEndpoint>();
+		shop.Map<PlayGameEndpoint>();
 	}
 
 	public async ValueTask RunInDevelopmentMode(IServiceProvider services)
