@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Shared.Endpoints;
+using Shared.Endpoints.Results;
 using Shared.Services;
 using Shop.Core.Database;
 using Shop.Core.Entities.Catalog;
@@ -15,7 +16,10 @@ internal record struct GetMostPopularGames() : IHttpRequest;
 internal sealed class GetMostPopularGamesEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) =>
-		endpoints.MapGet<GetMostPopularGames, GetMostPopularGamesHandler>("get-most-popular-games").RequireAuthorization();
+		endpoints.MapGet<GetMostPopularGames, GetMostPopularGamesHandler>("get-most-popular-games")
+			.RequireAuthorization()
+			.Produces<Paginated<GameShopCardReadModel>>( 200)
+			.ProducesError(401, "`UnauthorizedError`");
 }
 
 internal sealed class GetMostPopularGamesHandler(ShopDbContext dbContext) : IHttpRequestHandler<GetMostPopularGames>

@@ -18,8 +18,7 @@ internal sealed class GetWalletBalanceEndpoint : IEndpoint
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
 		.MapPost<GetWalletBalance, GetWalletBalanceHandler>("wallet-balance")
 		.RequireAuthorization()
-		.ProducesError(401, "`UnauthorizedError`")
-		.ProducesError(404, "`GameVersionNotFound`");
+		.ProducesError(401, "`UnauthorizedError`");
 }
 
 internal sealed class GetWalletBalanceHandler(

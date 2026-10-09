@@ -24,6 +24,7 @@ internal sealed class PublishVersionEndpoint : IEndpoint
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
 		.MapPost<PublishVersion, PublishVersionHandler>("{GameId}/publish-version")
 		.RequireAuthorization()
+		.Produces(200)
 		.ProducesError(401, "`UnauthorizedError`")
 		.ProducesError(404, "`GameVersionNotFound`");
 }

@@ -25,7 +25,7 @@ internal sealed class AddGameToStoreEndpoint : IEndpoint
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
 		.MapPost<AddGameToStore, AddGameToStoreHandler>("{ProjectId}/add-game-to-store")
 		.RequireAuthorization()
-		.Produces<GameReadModel>()
+		.Produces<GameReadModel>(201)
 		.ProducesError(401, "`UnauthorizedError`");
 
 }

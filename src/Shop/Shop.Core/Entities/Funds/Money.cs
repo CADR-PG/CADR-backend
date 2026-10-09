@@ -1,11 +1,11 @@
+using Shop.Core.Enums;
+
 namespace Shop.Core.Entities.Funds;
 
 public sealed class Money
 {
+	// TODO: money docelowo ma byc encja która utworzy wirtualny nominał, to znaczy kwota plus waluta,
+	//		taki banknot w obrebie systemu
 	public decimal Amount { get; init; }
-	public required string Currency { get; init; }
-
-	public static Money Of(decimal amount, string currency) =>
-		new() { Amount = amount, Currency = currency.ToUpperInvariant() };
-
+	public required Currency Currency { get; init; }
 }

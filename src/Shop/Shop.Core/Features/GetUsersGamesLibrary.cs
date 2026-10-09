@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Shared.Endpoints;
 using Shared.Endpoints.Requests;
+using Shared.Endpoints.Results;
 using Shared.Services;
 using Shop.Core.Database;
 using Shop.Core.Entities.Catalog;
@@ -14,7 +15,10 @@ internal record struct GetUsersGamesLibrary(CurrentUser CurrentUser) : IHttpRequ
 internal sealed class GetUsersGamesLibraryEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) =>
-		endpoints.MapGet<GetUsersGamesLibrary, GetUsersGamesLibraryHandler>("my-library").RequireAuthorization();
+		endpoints.MapGet<GetUsersGamesLibrary, GetUsersGamesLibraryHandler>("my-library")
+			.RequireAuthorization()
+			.Produces<Paginated<Game>>(200)
+			.ProducesError(401,  "`UnauthorizedError`");
 }
 
 internal sealed class GetUsersGamesLibraryHandler(

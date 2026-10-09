@@ -28,7 +28,8 @@ internal sealed class PlayGameEndpoint : IEndpoint
 		.Produces<PlayGameReadModel>()
 		.RequireAuthorization()
 		.ProducesError(401, "`UnauthorizedError`")
-		.ProducesError(404, "`GameVersionNotFound`");
+		.ProducesError(404, "`GameVersionNotFound`")
+		.ProducesError(403, "ForbiddenError");
 }
 
 internal sealed class PlayGameHandler(

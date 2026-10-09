@@ -24,6 +24,7 @@ internal sealed class CreateSnapshotEndpoint : IEndpoint
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
 		.MapPost<CreateSnapshot, CreateSnapshotHandler>("{ProjectId}/create-snapshot")
 		.RequireAuthorization()
+		.Produces<Uri>(201)
 		.Produces<GameVersionReadModel>(201)
 		.ProducesError(401, "`UnauthorizedError`");
 }
