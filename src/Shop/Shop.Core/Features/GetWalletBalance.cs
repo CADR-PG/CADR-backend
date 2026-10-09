@@ -27,7 +27,8 @@ internal sealed class GetWalletBalanceHandler(
 {
 	public async Task<IResult> Handle(GetWalletBalance request, CancellationToken cancellationToken)
 	{
-		var balance = await dbContext.Wallets.FirstOrDefaultAsync(x => x.UserId == request.CurrentUser.Id, cancellationToken);
-		return Results.Ok((balance!.Ballance / 100) + "PLN");
+		var wallet = await dbContext.Wallets.FirstOrDefaultAsync(x => x.UserId == request.CurrentUser.Id, cancellationToken);
+		var balance = wallet?.Ballance ?? 0;
+		return Results.Ok($"{balance / 100m:0.00} PLN");
 	}
 }
