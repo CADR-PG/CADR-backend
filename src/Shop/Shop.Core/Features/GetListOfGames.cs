@@ -17,7 +17,7 @@ internal sealed class GetListOfGamesEndpoint : IEndpoint
 	public static void Register(IEndpointRouteBuilder endpoints) =>
 		endpoints.MapGet<GetListOfGames, GetListOfGamesHandler>("games-list")
 			.RequireAuthorization()
-			.ProducesError(401,"UnauthorizedError");
+			.ProducesError(401, "UnauthorizedError");
 }
 
 internal sealed class GetListOfGamesHandler(

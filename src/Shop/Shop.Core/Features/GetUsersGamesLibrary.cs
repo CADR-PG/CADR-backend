@@ -18,7 +18,7 @@ internal sealed class GetUsersGamesLibraryEndpoint : IEndpoint
 		endpoints.MapGet<GetUsersGamesLibrary, GetUsersGamesLibraryHandler>("my-library")
 			.RequireAuthorization()
 			.Produces<Paginated<Game>>(200)
-			.ProducesError(401,  "`UnauthorizedError`");
+			.ProducesError(401, "`UnauthorizedError`");
 }
 
 internal sealed class GetUsersGamesLibraryHandler(

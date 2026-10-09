@@ -18,7 +18,7 @@ internal sealed class GetMostPopularGamesEndpoint : IEndpoint
 	public static void Register(IEndpointRouteBuilder endpoints) =>
 		endpoints.MapGet<GetMostPopularGames, GetMostPopularGamesHandler>("get-most-popular-games")
 			.RequireAuthorization()
-			.Produces<Paginated<GameShopCardReadModel>>( 200)
+			.Produces<Paginated<GameShopCardReadModel>>(200)
 			.ProducesError(401, "`UnauthorizedError`");
 }
 
