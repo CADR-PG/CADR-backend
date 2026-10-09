@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Projects.Core;
 using Shared;
 using Shared.Modules;
+using Shop.Core;
 using Users.Core;
 
 
@@ -13,7 +14,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 var applicationContext = new ApplicationContext([
 	new UsersModule(),
-	new ProjectsModule()
+	new ProjectsModule(),
+	new ShopModule()
 ]);
 
 if (builder.Environment.IsProduction())

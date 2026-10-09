@@ -13,7 +13,6 @@ using Projects.Core.Features;
 using Projects.Core.Features.Assets.Files;
 using Projects.Core.Features.Projects;
 using Projects.Core.ReadModels;
-using Projects.Core.Services;
 using Shared.Endpoints.Requests;
 using Shared.ValueObjects;
 using System.Net;
