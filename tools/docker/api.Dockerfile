@@ -1,26 +1,12 @@
-﻿FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
+﻿FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /
+COPY . .
+RUN dotnet restore "src/API/API.csproj"
+WORKDIR "/src/API"
+RUN dotnet publish "./API.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 WORKDIR /app
 EXPOSE 8080
-
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
-ARG BUILD_CONFIGURATION=Release
-WORKDIR /src
-COPY ["src/API/API.csproj", "src/API/"]
-COPY ["src/Shared/Shared.csproj", "src/Shared/"]
-COPY ["src/Users/Users.Core/Users.Core.csproj", "src/Users/Users.Core/"]
-COPY ["src/Users/Users.Contracts/Users.Contracts.csproj", "src/Users/Users.Contracts/"]
-COPY ["src/Projects/Projects.Core/Projects.Core.csproj", "src/Projects/Projects.Core/"]
-COPY ["src/Projects/Projects.Contracts/Projects.Contracts.csproj", "src/Projects/Projects.Contracts/"]
-RUN dotnet restore "src/API/API.csproj"
-COPY . .
-WORKDIR "/src/src/API"
-RUN dotnet build "./API.csproj" -c $BUILD_CONFIGURATION -o /app/build
-
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./API.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
-
-FROM base AS final
-WORKDIR /app
-COPY --from=publish /app/publish .
+COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "API.dll"]
