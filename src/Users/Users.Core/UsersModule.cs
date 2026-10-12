@@ -21,7 +21,6 @@ using Users.Core.Features;
 using Users.Core.Features.LoginLocations;
 using Users.Core.Services;
 using Users.Core.Settings;
-using Extensions = Shared.Modules.Extensions;
 
 [assembly: InternalsVisibleTo("Users.Tests")]
 
@@ -68,9 +67,8 @@ public class UsersModule : IModule
 		services.AddScoped<CreateCurrentUserSafeAccessPointHandler>();
 		services.AddScoped<ChangeCurrentUserSafeAccessPointHandler>();
 		services.AddSingleton(new CookieTokenStorage(
-			sameSiteMode: SameSiteMode.Lax
+			sameSiteMode: isProduction ? SameSiteMode.Lax : SameSiteMode.None
 		));
-
 
 		services.AddValidatorsFromAssemblyContaining<UsersModule>(includeInternalTypes: true);
 
