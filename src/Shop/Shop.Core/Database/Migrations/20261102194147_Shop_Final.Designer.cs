@@ -12,8 +12,8 @@ using Shop.Core.Database;
 namespace Shop.Core.Database.Migrations
 {
     [DbContext(typeof(ShopDbContext))]
-    [Migration("20260806170350_Shop_v7")]
-    partial class Shop_v7
+    [Migration("20261102194147_Shop_Final")]
+    partial class Shop_Final
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -91,6 +91,32 @@ namespace Shop.Core.Database.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Games", "Shop");
+                });
+
+            modelBuilder.Entity("Shop.Core.Entities.Catalog.GamePlays", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("FirstPlayedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("GameId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("LastPlayedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("GamePlays", "Shop");
                 });
 
             modelBuilder.Entity("Shop.Core.Entities.Catalog.GameVersion", b =>
@@ -179,6 +205,26 @@ namespace Shop.Core.Database.Migrations
                     b.HasKey("GameId");
 
                     b.ToTable("Prices", "Shop");
+                });
+
+            modelBuilder.Entity("Shop.Core.Entities.Funds.Wallets", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<long?>("Ballance")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("Wallets", "Shop");
                 });
 
             modelBuilder.Entity("Shop.Core.Entities.Library.LibraryEntry", b =>
@@ -320,6 +366,15 @@ namespace Shop.Core.Database.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Shop.Core.Entities.Catalog.GamePlays", b =>
+                {
+                    b.HasOne("Shop.Core.Entities.Catalog.Game", null)
+                        .WithMany()
+                        .HasForeignKey("GameId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Shop.Core.Entities.Catalog.GameVersion", b =>
                 {
                     b.HasOne("Shop.Core.Entities.Catalog.Game", null)
@@ -334,6 +389,15 @@ namespace Shop.Core.Database.Migrations
                     b.HasOne("Shop.Core.Entities.Catalog.Game", null)
                         .WithOne("Price")
                         .HasForeignKey("Shop.Core.Entities.Funds.Price", "GameId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Shop.Core.Entities.Funds.Wallets", b =>
+                {
+                    b.HasOne("Shop.Core.Entities.Users.ShopUser", null)
+                        .WithOne()
+                        .HasForeignKey("Shop.Core.Entities.Funds.Wallets", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

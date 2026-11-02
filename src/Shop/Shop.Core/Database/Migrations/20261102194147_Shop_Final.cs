@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Shop.Core.Database.Migrations
 {
     /// <inheritdoc />
-    public partial class Shop_v1 : Migration
+    public partial class Shop_Final : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -38,11 +38,11 @@ namespace Shop.Core.Database.Migrations
                     Title = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
                     AuthorId = table.Column<Guid>(type: "uuid", nullable: false),
-                    GameId = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    IsPublished = table.Column<bool>(type: "boolean", nullable: false),
-                    StripeProductId = table.Column<string>(type: "text", nullable: true)
+                    AgeRestriction = table.Column<int>(type: "integer", nullable: false),
+                    State = table.Column<int>(type: "integer", nullable: false),
+                    ActiveVersionId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -63,7 +63,7 @@ namespace Shop.Core.Database.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Order",
+                name: "Orders",
                 schema: "Shop",
                 columns: table => new
                 {
@@ -71,7 +71,19 @@ namespace Shop.Core.Database.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Order", x => x.Id);
+                    table.PrimaryKey("PK_Orders", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ShopUsers",
+                schema: "Shop",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ShopUsers", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -95,6 +107,53 @@ namespace Shop.Core.Database.Migrations
                     table.ForeignKey(
                         name: "FK_DiscountGame_Games_GamesId",
                         column: x => x.GamesId,
+                        principalSchema: "Shop",
+                        principalTable: "Games",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "GamePlays",
+                schema: "Shop",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    GameId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    FirstPlayedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    LastPlayedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_GamePlays", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_GamePlays_Games_GameId",
+                        column: x => x.GameId,
+                        principalSchema: "Shop",
+                        principalTable: "Games",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "GameVersions",
+                schema: "Shop",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    GameId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProjectId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Version = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_GameVersions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_GameVersions_Games_GameId",
+                        column: x => x.GameId,
                         principalSchema: "Shop",
                         principalTable: "Games",
                         principalColumn: "Id",
@@ -198,10 +257,38 @@ namespace Shop.Core.Database.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_LibraryEntries_Order_OrderId",
+                        name: "FK_LibraryEntries_Orders_OrderId",
                         column: x => x.OrderId,
                         principalSchema: "Shop",
-                        principalTable: "Order",
+                        principalTable: "Orders",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_LibraryEntries_ShopUsers_UserId",
+                        column: x => x.UserId,
+                        principalSchema: "Shop",
+                        principalTable: "ShopUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Wallets",
+                schema: "Shop",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Ballance = table.Column<long>(type: "bigint", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Wallets", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Wallets_ShopUsers_UserId",
+                        column: x => x.UserId,
+                        principalSchema: "Shop",
+                        principalTable: "ShopUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -217,6 +304,19 @@ namespace Shop.Core.Database.Migrations
                 schema: "Shop",
                 table: "GameGenre",
                 column: "GenresId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GamePlays_GameId_UserId",
+                schema: "Shop",
+                table: "GamePlays",
+                columns: new[] { "GameId", "UserId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GameVersions_GameId",
+                schema: "Shop",
+                table: "GameVersions",
+                column: "GameId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_LibraryEntries_GameId",
@@ -242,6 +342,13 @@ namespace Shop.Core.Database.Migrations
                 schema: "Shop",
                 table: "Review",
                 column: "GameId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Wallets_UserId",
+                schema: "Shop",
+                table: "Wallets",
+                column: "UserId",
+                unique: true);
         }
 
         /// <inheritdoc />
@@ -253,6 +360,14 @@ namespace Shop.Core.Database.Migrations
 
             migrationBuilder.DropTable(
                 name: "GameGenre",
+                schema: "Shop");
+
+            migrationBuilder.DropTable(
+                name: "GamePlays",
+                schema: "Shop");
+
+            migrationBuilder.DropTable(
+                name: "GameVersions",
                 schema: "Shop");
 
             migrationBuilder.DropTable(
@@ -268,6 +383,10 @@ namespace Shop.Core.Database.Migrations
                 schema: "Shop");
 
             migrationBuilder.DropTable(
+                name: "Wallets",
+                schema: "Shop");
+
+            migrationBuilder.DropTable(
                 name: "Discount",
                 schema: "Shop");
 
@@ -276,11 +395,15 @@ namespace Shop.Core.Database.Migrations
                 schema: "Shop");
 
             migrationBuilder.DropTable(
-                name: "Order",
+                name: "Orders",
                 schema: "Shop");
 
             migrationBuilder.DropTable(
                 name: "Games",
+                schema: "Shop");
+
+            migrationBuilder.DropTable(
+                name: "ShopUsers",
                 schema: "Shop");
         }
     }
