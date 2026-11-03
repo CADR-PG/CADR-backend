@@ -10,29 +10,29 @@ using Shared.Endpoints.Validation;
 
 namespace Projects.Core.Features.Projects;
 
-internal sealed record SaveScene([FromRoute] Guid ProjectId, [FromBody] object Scene) : IHttpRequest
+internal sealed record SetEditorMetaData([FromRoute] Guid ProjectId, [FromBody] object Scene) : IHttpRequest
 {
 
 }
 
-internal sealed class SaveSceneEndpoint : IEndpoint
+internal sealed class SetEditorMetaDataEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) =>
-		endpoints.MapPost<SaveScene, SaveSceneHandler>("save-scene/{ProjectId}").RequireAuthorization().AddValidation<SaveScene>();
+		endpoints.MapPost<SetEditorMetaData, SetEditorMetaDataHandler>("save-scene/{ProjectId}").RequireAuthorization().AddValidation<SetEditorMetaData>();
 }
 
-internal sealed class SaveSceneHandler(ProjectsDbContext dbContext) : IHttpRequestHandler<SaveScene>
+internal sealed class SetEditorMetaDataHandler(ProjectsDbContext dbContext) : IHttpRequestHandler<SetEditorMetaData>
 {
-	public async Task<IResult> Handle(SaveScene request, CancellationToken cancellationToken)
+	public async Task<IResult> Handle(SetEditorMetaData request, CancellationToken cancellationToken)
 	{
 		var project = await dbContext.Projects.Where(p => p.Id == request.ProjectId).FirstOrDefaultAsync(cancellationToken);
 
 		if (project == null)
 			return Results.NotFound();
 
-		var serializedJson = request.Scene.ToString();
+		var scene = request.Scene;
 
-		project.JsonDocument = serializedJson;
+		project.EditorMetaData = scene.ToString();
 		project.LastUpdate = DateTime.UtcNow;
 
 		await dbContext.SaveChangesAsync(cancellationToken);
@@ -41,9 +41,9 @@ internal sealed class SaveSceneHandler(ProjectsDbContext dbContext) : IHttpReque
 	}
 }
 
-internal sealed class SaveSceneValidator : AbstractValidator<SaveScene>
+internal sealed class SetEditorMetaDataValidator : AbstractValidator<SetEditorMetaData>
 {
-	public SaveSceneValidator()
+	public SetEditorMetaDataValidator()
 	{
 		RuleFor(p => p.ProjectId).NotEmpty();
 		RuleFor(p => p.Scene).NotEmpty();

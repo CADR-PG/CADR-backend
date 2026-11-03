@@ -9,23 +9,24 @@ using System.Text.Json;
 
 namespace Projects.Core.Features.Projects;
 
-internal sealed record LoadScene([FromRoute] Guid ProjectId) : IHttpRequest;
+internal sealed record LoadProject([FromRoute] Guid ProjectId) : IHttpRequest;
 
 internal sealed class LoadSceneEndpoint : IEndpoint
 {
-	public static void Register(IEndpointRouteBuilder endpoints) => endpoints.MapGet<LoadScene, LoadSceneHandler>("load-scene/{ProjectId}")
+	public static void Register(IEndpointRouteBuilder endpoints) => endpoints.MapGet<LoadProject, LoadSceneHandler>("load-scene/{ProjectId}")
 		.RequireAuthorization();
 }
 
 internal sealed class LoadSceneHandler(
 	ProjectsDbContext dbContext
-) : IHttpRequestHandler<LoadScene>
+) : IHttpRequestHandler<LoadProject>
 {
-	public async Task<IResult> Handle(LoadScene request, CancellationToken cancellationToken)
+	public async Task<IResult> Handle(LoadProject request, CancellationToken cancellationToken)
 	{
+		// TODO: ma załadowywać jednocześnie scene z Bloba z Metadanymi z bazy danych
 		var projectId = request.ProjectId;
 		var project = await dbContext.Projects.Where(p => p.Id == projectId).FirstAsync(cancellationToken);
-		var sceneString = project.JsonDocument;
+		var sceneString = project.EditorMetaData;
 
 		if (string.IsNullOrEmpty(sceneString))
 			return Results.BadRequest();

@@ -10,7 +10,9 @@ public class Project
 	public required string? Description { get; set; }
 
 	public required DateTime LastUpdate { get; set; }
-	public string? JsonDocument { get; set; }
+
+	public string? EditorMetaData{ get; set; }
+	public required Guid MainSceneFileId { get; init; }
 
 	public UserId UserId { get; init; }
 }

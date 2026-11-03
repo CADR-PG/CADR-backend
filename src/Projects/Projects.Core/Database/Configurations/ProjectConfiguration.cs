@@ -13,6 +13,6 @@ internal sealed class ProjectConfiguration : IEntityTypeConfiguration<Project>
 		builder.Property(p => p.UserId).IsRequired();
 		builder.Property(p => p.Name).IsRequired();
 		builder.Property(p => p.Description).IsRequired();
-		builder.Property(p => p.JsonDocument);
+		builder.Property(p => p.EditorMetaData);
 	}
 }

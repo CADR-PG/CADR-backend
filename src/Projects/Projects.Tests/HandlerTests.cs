@@ -74,9 +74,10 @@ public sealed class HandlerTests : IAsyncLifetime, IDisposable
 		var project = new Project()
 		{
 			Id = Guid.NewGuid(),
-			JsonDocument = "{}",
+			EditorMetaData = "{}",
 			LastUpdate = DateTime.UtcNow,
 			UserId = userId,
+			MainSceneFileId = Guid.NewGuid(),
 			Description = "TestProject",
 			Name = "TestProject"
 		};

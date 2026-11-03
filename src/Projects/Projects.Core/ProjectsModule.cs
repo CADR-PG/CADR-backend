@@ -38,7 +38,7 @@ public class ProjectsModule : IModule
 		services.AddScoped<AddProjectHandler>();
 		services.AddScoped<DeleteProjectHandler>();
 		services.AddScoped<LoadSceneHandler>();
-		services.AddScoped<SaveSceneHandler>();
+		services.AddScoped<SetEditorMetaDataHandler>();
 		services.AddScoped<GetAllUserProjectsHandler>();
 		services.AddScoped<ModifyProjectHandler>();
 		services.AddScoped<CreateFileHandler>();
@@ -71,7 +71,7 @@ public class ProjectsModule : IModule
 			.Map<GetAllUserProjectsEndpoint>()
 			.Map<LoadSceneEndpoint>()
 			.Map<ModifyProjectEndpoint>()
-			.Map<SaveSceneEndpoint>()
+			.Map<SetEditorMetaDataEndpoint>()
 			.Map<DeleteProjectEndpoint>();
 
 		var assets = endpoints.MapGroup(Name.ToLowerInvariant()).WithTags("Project Assets");
