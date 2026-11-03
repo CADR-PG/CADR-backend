@@ -42,6 +42,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Payments\Payments.Stripe\Payments.Stripe.csproj" />
     <ProjectReference Include="..\Projects\Projects.Contracts\Projects.Contracts.csproj" />
     <ProjectReference Include="..\Projects\Projects.Core\Projects.Core.csproj" />
     <ProjectReference Include="..\Shared\Shared.csproj" />
