@@ -37,7 +37,7 @@ public class ProjectsModule : IModule
 		services.AddDbContext<ProjectsDbContext>(options => options.UseNpgsql(postgreSqlSettings.ConnectionString, x => x.MigrationsHistoryTable("__EFMigrationsHistory", Name)));
 		services.AddScoped<AddProjectHandler>();
 		services.AddScoped<DeleteProjectHandler>();
-		services.AddScoped<LoadSceneHandler>();
+		services.AddScoped<LoadProjectHandler>();
 		services.AddScoped<SetEditorMetaDataHandler>();
 		services.AddScoped<GetAllUserProjectsHandler>();
 		services.AddScoped<ModifyProjectHandler>();
@@ -69,7 +69,7 @@ public class ProjectsModule : IModule
 		projects
 			.Map<AddProjectEndpoint>()
 			.Map<GetAllUserProjectsEndpoint>()
-			.Map<LoadSceneEndpoint>()
+			.Map<LoadProjectEndpoint>()
 			.Map<ModifyProjectEndpoint>()
 			.Map<SetEditorMetaDataEndpoint>()
 			.Map<DeleteProjectEndpoint>();

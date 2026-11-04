@@ -12,13 +12,13 @@ namespace Projects.Core.Features.Projects;
 
 internal sealed record LoadProject([FromRoute] Guid ProjectId) : IHttpRequest;
 
-internal sealed class LoadSceneEndpoint : IEndpoint
+internal sealed class LoadProjectEndpoint : IEndpoint
 {
-	public static void Register(IEndpointRouteBuilder endpoints) => endpoints.MapGet<LoadProject, LoadSceneHandler>("load-scene/{ProjectId}")
+	public static void Register(IEndpointRouteBuilder endpoints) => endpoints.MapGet<LoadProject, LoadProjectHandler>("load-project/{ProjectId}")
 		.RequireAuthorization();
 }
 
-internal sealed class LoadSceneHandler(
+internal sealed class LoadProjectHandler(
 	ProjectsDbContext dbContext
 ) : IHttpRequestHandler<LoadProject>
 {
