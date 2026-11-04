@@ -12,7 +12,7 @@ public class Project
 	public required DateTime LastUpdate { get; set; }
 
 	public string? EditorMetaData{ get; set; }
-	public required Guid MainSceneFileId { get; init; }
+	public Guid? MainSceneFileId { get; set; }
 
 	public UserId UserId { get; init; }
 }

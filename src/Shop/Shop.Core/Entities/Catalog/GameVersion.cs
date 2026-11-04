@@ -8,6 +8,7 @@ public class GameVersion
 	public required Guid ProjectId { get; init; }
 	public required string Version { get; init; } = null!;
 	public string? Description { get; init; }
+	public Guid? MainSceneFileId { get; init; }
 	public required DateTime CreatedAt { get; init; }
 
 	public string BlobResourceName => $"{GameId}/{Id}";

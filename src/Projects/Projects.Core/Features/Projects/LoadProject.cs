@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Projects.Core.Database;
+using Projects.Core.ReadModels;
 using Shared.Endpoints;
 using System.Text.Json;
 
@@ -23,7 +24,6 @@ internal sealed class LoadSceneHandler(
 {
 	public async Task<IResult> Handle(LoadProject request, CancellationToken cancellationToken)
 	{
-		// TODO: ma załadowywać jednocześnie scene z Bloba z Metadanymi z bazy danych
 		var projectId = request.ProjectId;
 		var project = await dbContext.Projects.Where(p => p.Id == projectId).FirstAsync(cancellationToken);
 		var sceneString = project.EditorMetaData;
@@ -31,8 +31,10 @@ internal sealed class LoadSceneHandler(
 		if (string.IsNullOrEmpty(sceneString))
 			return Results.BadRequest();
 
-		var sceneJson = JsonSerializer.Deserialize<JsonDocument>(sceneString);
+		// PRM zawiera project.Id, project.Name, project.Description, project.MainSceneFileId,
+		//		project.EditorMetaData, project.LastUpdate
+		var projectReadModel = ProjectReadModel.From(project);
 
-		return Results.Ok(sceneJson);
+		return Results.Ok(projectReadModel);
 	}
 }

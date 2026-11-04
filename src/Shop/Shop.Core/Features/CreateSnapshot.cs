@@ -16,7 +16,7 @@ internal sealed record CreateSnapshot(
 	CurrentUser CurrentUser,
 	[FromRoute] Guid ProjectId) : IHttpRequest
 {
-	internal record Data(Guid GameId, string Version);
+	internal record Data(Guid GameId, string Version, Guid MainSceneFileId);
 };
 
 internal sealed class CreateSnapshotEndpoint : IEndpoint
@@ -36,10 +36,10 @@ internal sealed class CreateSnapshotHandler(
 {
 	public async Task<IResult> Handle(CreateSnapshot request, CancellationToken cancellationToken)
 	{
-		var (gameId, version) = request.Body;
+		var (gameId, version, mainSceneFileId) = request.Body;
 		var projectId = request.ProjectId;
 
-		var gameVersion = await snapshotService.CreateSnapshot(gameId, projectId, version, cancellationToken);
+		var gameVersion = await snapshotService.CreateSnapshot(gameId, projectId, version, mainSceneFileId,cancellationToken);
 
 		await dbContext.SaveChangesAsync(cancellationToken);
 

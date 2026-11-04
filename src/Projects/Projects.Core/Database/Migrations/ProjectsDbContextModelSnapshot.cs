@@ -100,11 +100,14 @@ namespace Projects.Core.Database.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("JsonDocument")
+                    b.Property<string>("EditorMetaData")
                         .HasColumnType("text");
 
                     b.Property<DateTime>("LastUpdate")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("MainSceneFileId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Name")
                         .IsRequired()

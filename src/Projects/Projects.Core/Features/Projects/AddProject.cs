@@ -45,7 +45,6 @@ internal sealed class AddProjectHandler(
 			Id = Guid.NewGuid(),
 			Name = name,
 			Description = description,
-			MainSceneFileId = Guid.NewGuid(),
 			LastUpdate = DateTime.UtcNow,
 			UserId = currentUser.Id,
 		};
