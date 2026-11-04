@@ -39,7 +39,7 @@ internal sealed class SetEditorMetaDataHandler(ProjectsDbContext dbContext) : IH
 
 		var mainSceneId = request.Body.MainSceneFileId;
 
-		if (project.MainSceneFileId is null || project.MainSceneFileId == Guid.Empty &&  mainSceneId != Guid.Empty)
+		if (project.MainSceneFileId is null || project.MainSceneFileId == Guid.Empty && mainSceneId != Guid.Empty)
 			project.MainSceneFileId = mainSceneId;
 
 		await dbContext.SaveChangesAsync(cancellationToken);

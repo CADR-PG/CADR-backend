@@ -39,7 +39,7 @@ internal sealed class CreateSnapshotHandler(
 		var (gameId, version, mainSceneFileId) = request.Body;
 		var projectId = request.ProjectId;
 
-		var gameVersion = await snapshotService.CreateSnapshot(gameId, projectId, version, mainSceneFileId,cancellationToken);
+		var gameVersion = await snapshotService.CreateSnapshot(gameId, projectId, version, mainSceneFileId, cancellationToken);
 
 		await dbContext.SaveChangesAsync(cancellationToken);
 

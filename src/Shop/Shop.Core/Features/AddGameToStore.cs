@@ -44,7 +44,7 @@ internal sealed class AddGameToStoreHandler(
 		var game = Game.Create(title, description, amount, "PLN", ageRestriction, state, user.Id);
 		await dbContext.Games.AddAsync(game, cancellationToken);
 
-		var gameVersion = await snapshotService.CreateSnapshot(game.Id, projectId, version, mainSceneFileId,cancellationToken);
+		var gameVersion = await snapshotService.CreateSnapshot(game.Id, projectId, version, mainSceneFileId, cancellationToken);
 		game.ActiveVersionId = gameVersion.Id;
 
 		await dbContext.SaveChangesAsync(cancellationToken);
