@@ -17,7 +17,7 @@ internal sealed class GetUsersGamesLibraryEndpoint : IEndpoint
 	public static void Register(IEndpointRouteBuilder endpoints) =>
 		endpoints.MapGet<GetUsersGamesLibrary, GetUsersGamesLibraryHandler>("my-library")
 			.RequireAuthorization()
-			.Produces<Paginated<Game>>(200)
+			.Produces<OffsetPaginated<Game>>(200)
 			.ProducesError(401, "`UnauthorizedError`");
 }
 
@@ -32,7 +32,7 @@ internal sealed class GetUsersGamesLibraryHandler(
 			.Where(entry => entry.UserId == userId)
 			.Select(entry => entry.Game);
 
-		var paginatedListOfGames = await Paginated.Create(usersLibraryQuery);
+		var paginatedListOfGames = await OffsetPaginated.Create(usersLibraryQuery);
 		return Results.Ok(paginatedListOfGames);
 	}
 }

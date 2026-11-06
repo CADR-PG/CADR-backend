@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Shared.Endpoints;
 using Shared.Endpoints.Requests;
 using Shared.Endpoints.Results;
-using Shared.ReadModels;
+using Shared.Services;
 using Users.Core.Database;
 using Users.Core.ReadModels;
 
@@ -17,7 +17,7 @@ internal sealed class GetAllCurrentUserSafeAccessPointsEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints)
 		=> endpoints.MapGet<GetAllCurrentUserSafeAccessPoints, GetAllCurrentUserSafeAccessPointsHandler>("safe-access-points")
-			.Produces<ItemList<UserSafeAccessPointReadModel>>()
+			.Produces<Listed<UserSafeAccessPointReadModel>>()
 			.RequireAuthorization()
 			.ProducesError(400, $"`{nameof(Errors.InvalidRefreshCredentialsError)}`")
 			.WithDescription($"Returns all user safe access points (max. 10).");
@@ -36,6 +36,6 @@ internal sealed class GetAllCurrentUserSafeAccessPointsHandler(
 			.OrderByDescending(x => x.CreatedAt)
 			.ToListAsync(cancellationToken);
 
-		return Results.Ok(ItemList.From(safeAccessPoints));
+		return Results.Ok(Listed.From(safeAccessPoints));
 	}
 }

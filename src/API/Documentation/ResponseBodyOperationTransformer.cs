@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.OpenApi;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Shared.Endpoints.Results;
 
 namespace API.Documentation;
@@ -15,18 +15,18 @@ internal sealed class ResponseBodyOperationTransformer : IOpenApiOperationTransf
 			.OfType<ResponseDescriptionMetadata>()
 			.ToList();
 
-		operation.Responses.ToList().ForEach(response =>
+		operation.Responses?.ToList().ForEach(response =>
 		{
 			var content = response.Value.Content;
-			if (content.Count == 0) return;
-			var schemaName = content.First().Value.Schema.Annotations["x-schema-id"].ToString();
+			if (content is not {Count: 0}) return;
+			var schemaName = content.First().Value.Schema?.Id;
 			response.Value.Description = schemaName;
 		});
 
 		metadata.ForEach(descriptionMetadata =>
 		{
-			var response = operation.Responses[$"{descriptionMetadata.StatusCode}"];
-			response.Description = $"{response.Description}:  {descriptionMetadata.Description}";
+			var response = operation.Responses?[$"{descriptionMetadata.StatusCode}"];
+			response?.Description = $"{response.Description}:  {descriptionMetadata.Description}";
 		});
 
 		return Task.CompletedTask;

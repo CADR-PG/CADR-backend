@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http.HttpResults;
 using Shared.ValueObjects;
 using Shop.Core.Entities.Funds;
 

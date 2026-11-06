@@ -22,15 +22,8 @@ internal static class Extensions
 		app.MapScalarApiReference("/docs", options => options
 			.WithTitle("CADR API")
 			.WithTheme(ScalarTheme.Default)
-			.WithDarkMode(true)
 			.WithDefaultHttpClient(ScalarTarget.JavaScript, ScalarClient.Axios)
-			.WithSidebar(true)
-			.WithDownloadButton(true)
-			.WithDarkModeToggle(true)
-			.WithDotNetFlag(true)
-			.WithTestRequestButton(true)
-			.WithModels(true)
-			.WithDefaultOpenAllTags(false));
+			.WithDotNetFlag());
 	}
 
 }

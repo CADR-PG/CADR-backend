@@ -24,7 +24,7 @@ internal sealed class GetAllUserProjectsHandler(
 	public async Task<IResult> Handle(GetAllUserProjects request, CancellationToken cancellationToken)
 	{
 		var projects = dbContext.Projects.Where(p => p.UserId == request.CurrentUser.Id);
-		var paginatedProjects = await Paginated.Create(projects);
+		var paginatedProjects = await OffsetPaginated.Create(projects);
 		return Results.Ok(paginatedProjects);
 	}
 }
