@@ -62,12 +62,19 @@ internal sealed class PlayGameHandler(
 		var prefix = $"{version.BlobResourceName}/{version.ProjectId}/";
 		var expiresOn = DateTimeOffset.UtcNow.AddHours(2);
 
+		var mainScenePath = version.MainSceneFileId?.ToString();
+
 		var assets = new List<GameAssetsReadModel>();
 		await foreach (var blob in container.GetBlobsAsync(prefix: prefix, cancellationToken: cancellationToken))
 		{
 			var blobClient = container.GetBlobClient(blob.Name);
 			var url = blobClient.GenerateSasUri(BlobSasPermissions.Read, expiresOn);
-			assets.Add(new GameAssetsReadModel { Path = blob.Name[prefix.Length..], Url = url });
+			var asset = new GameAssetsReadModel { Path = blob.Name[prefix.Length..], Url = url };
+
+			if (mainScenePath is not null && asset.Path == mainScenePath)
+				assets.Insert(0, asset);
+			else
+				assets.Add(asset);
 		}
 
 		return Results.Ok(new PlayGameReadModel

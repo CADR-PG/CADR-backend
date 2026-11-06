@@ -9,7 +9,7 @@ internal sealed class GameSnapshotService(
 	BlobServiceClient blobServiceClient,
 	FilesContainerClient filesContainerClient)
 {
-	public async Task<GameVersion> CreateSnapshot(Guid gameId, Guid projectId, string version, CancellationToken cancellationToken)
+	public async Task<GameVersion> CreateSnapshot(Guid gameId, Guid projectId, string version, Guid? mainSceneFileId, CancellationToken cancellationToken)
 	{
 		var gameVersion = new GameVersion
 		{
@@ -17,6 +17,7 @@ internal sealed class GameSnapshotService(
 			GameId = gameId,
 			ProjectId = projectId,
 			Version = version,
+			MainSceneFileId = mainSceneFileId,
 			CreatedAt = DateTime.UtcNow,
 		};
 		await dbContext.GameVersions.AddAsync(gameVersion, cancellationToken);

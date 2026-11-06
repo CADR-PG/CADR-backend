@@ -17,7 +17,7 @@ internal sealed record AddGameToStore(
 	CurrentUser CurrentUser,
 	[FromRoute] Guid ProjectId) : IHttpRequest
 {
-	internal record Data(string Title, string Description, string Version, decimal Amount, int AgeRestriction, GameStates State);
+	internal record Data(string Title, string Description, string Version, decimal Amount, int AgeRestriction, GameStates State, Guid MainSceneFileId);
 };
 
 internal sealed class AddGameToStoreEndpoint : IEndpoint
@@ -37,14 +37,14 @@ internal sealed class AddGameToStoreHandler(
 {
 	public async Task<IResult> Handle(AddGameToStore request, CancellationToken cancellationToken)
 	{
-		var (title, description, version, amount, ageRestriction, state) = request.Body;
+		var (title, description, version, amount, ageRestriction, state, mainSceneFileId) = request.Body;
 		var projectId = request.ProjectId;
 		var user = request.CurrentUser;
 
 		var game = Game.Create(title, description, amount, "PLN", ageRestriction, state, user.Id);
 		await dbContext.Games.AddAsync(game, cancellationToken);
 
-		var gameVersion = await snapshotService.CreateSnapshot(game.Id, projectId, version, cancellationToken);
+		var gameVersion = await snapshotService.CreateSnapshot(game.Id, projectId, version, mainSceneFileId, cancellationToken);
 		game.ActiveVersionId = gameVersion.Id;
 
 		await dbContext.SaveChangesAsync(cancellationToken);
