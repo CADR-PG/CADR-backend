@@ -1,6 +1,7 @@
 ﻿using Community.Core.Database;
 using Community.Core.Database.Extensions;
 using Community.Core.Models.Chats;
+using Community.Core.Models.Profiles;
 using Community.Core.ValueObjects;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -19,16 +20,22 @@ internal record struct GetChatMessages(
 	CurrentUser CurrentUser,
 	[FromRoute] ChatId ChatId,
 	[FromQuery] string? SearchPhrase,
-	[FromQuery] ChatMessageId? BeforeMessageId,
-	[FromQuery] ChatMessageId? AfterMessageId,
-	[FromQuery] int? PageSize = 50
+	[FromQuery] ChatMessageId? Around,
+	[FromQuery] ChatMessageId? Before,
+	[FromQuery] ChatMessageId? After,
+	[FromQuery] int? Limit = 50
 ) : IHttpRequest;
+
+internal sealed record GetChatMessagesResponse(
+	IReadOnlyList<ChatMessageReadModel> Messages,
+	IReadOnlyList<UserProfileSummaryReadModel> Senders
+);
 
 internal sealed class GetChatMessagesEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
 		.MapGet<GetChatMessages, GetChatMessagesHandler>("chats/{chatId}/messages")
-		.Produces<OffsetPaginated<ChatReadModel>>()
+		.Produces<GetChatMessagesResponse>()
 		.RequireAuthorization()
 		.ProducesError(401, "`UnauthorizedError`");
 }
@@ -37,16 +44,20 @@ internal sealed class GetChatMessagesHandler(
 	CommunityDbContext dbContext
 ) : IHttpRequestHandler<GetChatMessages>
 {
-	private const int DefaultPageSize = 50;
-	private const int MaxPageSize = 100;
+	private const int DefaultLimit = 50;
+	private const int MaxLimit = 100;
 
 	public async Task<IResult> Handle(GetChatMessages request, CancellationToken cancellationToken)
 	{
-		var (currentUser, chatId, searchPhrase, beforeMessageId, afterMessageId, pageSizeParam) = request;
-		var pageSize = Math.Clamp(pageSizeParam ?? DefaultPageSize, 1, MaxPageSize);
+		var (currentUser, chatId, searchPhrase, around, before, after, limitParam) = request;
+		var limit = Math.Clamp(limitParam ?? DefaultLimit, 1, MaxLimit);
 
-		if (beforeMessageId is not null && afterMessageId is not null)
-			return new ErrorResult("Messages.InvalidCursor", "Use only one of: before, after.");
+		var cursorsCount = (around is not null ? 1 : 0)
+			+ (before is not null ? 1 : 0)
+			+ (after is not null ? 1 : 0);
+
+		if (cursorsCount > 1)
+			return new ErrorResult("Messages.InvalidCursor", "Use only one of: around, before, after.");
 
 		var isActiveParticipant = await dbContext.ChatParticipants
 			.Where(ChatParticipantsQueries.IsActive(chatId, currentUser.Id))
@@ -61,26 +72,74 @@ internal sealed class GetChatMessagesHandler(
 
 		if (!string.IsNullOrWhiteSpace(searchPhrase))
 		{
-			baseDbQuery = baseDbQuery.Where(m => EF.Functions.ILike(m.Content!, searchPhrase, "\\"));
+			var pattern = $"%{EscapeLike(searchPhrase.Trim())}%";
+			baseDbQuery = baseDbQuery.Where(m => EF.Functions.ILike(m.Content!, pattern, "\\"));
 		}
 
-		var isAscending = afterMessageId is not null;
+		List<ChatMessageReadModel> messages;
 
-		if (afterMessageId is { } afterId)
-			baseDbQuery = baseDbQuery.Where(chatMessage => chatMessage.Id > afterId).OrderBy(m => m.Id);
+		if (around is { } aroundId)
+		{
+			var newerCount = limit / 2;
+			var olderCount = limit - newerCount;
+
+			var older = await baseDbQuery
+				.Where(m => m.Id < aroundId)
+				.OrderByDescending(m => m.Id)
+				.Take(olderCount)
+				.Select(ChatMessageReadModel.MappingExpression)
+				.ToListAsync(cancellationToken);
+
+			var newer = await baseDbQuery
+				.Where(m => m.Id > aroundId)
+				.OrderBy(m => m.Id)
+				.Take(newerCount)
+				.Select(ChatMessageReadModel.MappingExpression)
+				.ToListAsync(cancellationToken);
+
+			newer.Reverse();
+			messages = [.. newer, .. older];
+		}
+		else if (after is { } afterId)
+		{
+			messages = await baseDbQuery
+				.Where(m => m.Id > afterId)
+				.OrderBy(m => m.Id)
+				.Take(limit)
+				.Select(ChatMessageReadModel.MappingExpression)
+				.ToListAsync(cancellationToken);
+
+			messages.Reverse();
+		}
 		else
 		{
-			if (beforeMessageId is { } beforeId)
-				baseDbQuery = baseDbQuery.Where(chatMessage => chatMessage.Id < beforeId);
+			if (before is { } beforeId)
+				baseDbQuery = baseDbQuery.Where(m => m.Id < beforeId);
 
-			baseDbQuery = baseDbQuery.OrderByDescending(m => m.Id);
+			messages = await baseDbQuery
+				.OrderByDescending(m => m.Id)
+				.Take(limit)
+				.Select(ChatMessageReadModel.MappingExpression)
+				.ToListAsync(cancellationToken);
 		}
 
-		var finalQuery = baseDbQuery
-			.Select(ChatMessageReadModel.MappingExpression);
+		var senderIds = messages
+			.Select(m => m.SenderId)
+			.Distinct()
+			.ToList();
 
-		var response = CursorPaginated.Create(finalQuery, pageSize, reverse: isAscending);
+		var senders = senderIds.Count > 0
+			? await dbContext.UserProfiles
+				.Where(u => senderIds.Contains(u.UserId))
+				.Select(UserProfileSummaryReadModel.MappingExpression)
+				.ToListAsync(cancellationToken)
+			: [];
 
-		return Results.Ok(response);
+		return Results.Ok(new GetChatMessagesResponse(messages, senders));
 	}
+
+	private static string EscapeLike(string value) => value
+		.Replace("\\", "\\\\")
+		.Replace("%", "\\%")
+		.Replace("_", "\\_");
 }
