@@ -12,4 +12,9 @@ public static class Extensions
 		services.AddSettingsWithOptions<MailingSettings>(configuration);
 		services.TryAddScoped<IMailingService, MailingService>();
 	}
+
+	public static void AddSnowflakeIdProvider(this IServiceCollection services)
+	{
+		services.TryAddSingleton<ISnowflakeIdProvider, SnowflakeIdProvider>();
+	}
 }

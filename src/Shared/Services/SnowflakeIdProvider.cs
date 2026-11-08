@@ -1,4 +1,5 @@
 using Shared.ValueObjects;
+using Shared.ValueObjects.SnowflakeIds;
 
 namespace Shared.Services;
 

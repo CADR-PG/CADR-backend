@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Projects.Core.Entities;
+using Projects.Core.Entities.Teams;
 
 namespace Projects.Core.Database.Configurations;
 
@@ -14,5 +15,9 @@ internal sealed class ProjectConfiguration : IEntityTypeConfiguration<Project>
 		builder.Property(p => p.Name).IsRequired();
 		builder.Property(p => p.Description).IsRequired();
 		builder.Property(p => p.JsonDocument);
+
+		builder.HasOne<Team>()
+			.WithMany()
+			.OnDelete(DeleteBehavior.SetNull);
 	}
 }

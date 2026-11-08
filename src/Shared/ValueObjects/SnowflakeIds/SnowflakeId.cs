@@ -1,4 +1,4 @@
-namespace Shared.ValueObjects;
+namespace Shared.ValueObjects.SnowflakeIds;
 
 public interface ISnowflakeId<T> where T : struct
 {

@@ -12,7 +12,6 @@ using Shared.Endpoints;
 using Shared.Endpoints.Requests;
 using Shared.Endpoints.Results;
 using Shared.Extensions;
-using Shared.Services;
 
 namespace Community.Core.Features.ChatMessages;
 
