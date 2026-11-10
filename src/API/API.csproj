@@ -6,6 +6,7 @@
     <OpenApiGenerateDocuments>true</OpenApiGenerateDocuments>
     <OpenApiGenerateDocumentsOnBuild>false</OpenApiGenerateDocumentsOnBuild>
     <PreserveCompilationContext>true</PreserveCompilationContext>
+    <UserSecretsId>7ad83088-e863-4d4c-a53f-9fd1d238e0fa</UserSecretsId>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(GenerateOpenAPI)' == 'true'">
@@ -42,6 +43,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Payments\Payments.Stripe\Payments.Stripe.csproj" />
     <ProjectReference Include="..\Projects\Projects.Contracts\Projects.Contracts.csproj" />
     <ProjectReference Include="..\Projects\Projects.Core\Projects.Core.csproj" />
     <ProjectReference Include="..\Shared\Shared.csproj" />
