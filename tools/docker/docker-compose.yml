@@ -8,6 +8,7 @@ volumes:
   cadr.postgres:
   cadr.mailpit:
   cadr.azurite:
+  cadr.stripe:
 
 services:
 
@@ -65,12 +66,27 @@ services:
     networks:
       - cadr.network
 
+  cadr.stripe:
+    image: stripe/stripe-cli:latest
+    container_name: cadr-stripe
+    command: listen --skip-verify --events checkout.session.completed,checkout.session.expired,checkout.session.async_payment_succeeded,checkout.session.async_payment_failed,charge.refunded --forward-to ${STRIPE_WEBHOOK_FORWARD_URL:-http://host.docker.internal:8080/payments/stripe/webhook}
+    environment:
+      - STRIPE_API_KEY=${Payments__Stripe__SecretApiKey:-}
+      - STRIPE_DEVICE_NAME=cadr-docker
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - cadr.network
+
   cadr.api:
     container_name: cadr-api
     image: cadr.api
     build:
       context: ../..
       dockerfile: tools/docker/api.Dockerfile
+    env_file:
+      - path: .env
+        required: false
     environment:
       ASPNETCORE_ENVIRONMENT: Docker
     ports:
@@ -84,3 +100,5 @@ services:
         condition: service_healthy
       cadr.azurite:
         condition: service_healthy
+      cadr.stripe:
+        condition: service_started
