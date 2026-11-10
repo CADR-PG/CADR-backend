@@ -1,4 +1,4 @@
-﻿namespace Payments.Contracts;
+namespace Payments.Contracts;
 
 public class PaymentsContractsModule
 {
