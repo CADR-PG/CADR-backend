@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Projects.Core.Entities;
-using Projects.Core.Entities.Teams;
 using Shared.ValueObjects;
 using Users.Contracts.Database.References;
 
@@ -11,8 +10,6 @@ internal sealed class ProjectsDbContext(DbContextOptions<ProjectsDbContext> dbCo
 	public DbSet<Project> Projects { get; init; } = null!;
 	public DbSet<AssetsDirectory> AssetsDirectories { get; init; } = null!;
 	public DbSet<AssetsFile> AssetsFiles { get; init; } = null!;
-	public DbSet<Team> Teams { get; init; } = null!;
-	public DbSet<TeamMember> TeamMembers { get; init; } = null!;
 
 	protected override void OnModelCreating(ModelBuilder builder)
 	{

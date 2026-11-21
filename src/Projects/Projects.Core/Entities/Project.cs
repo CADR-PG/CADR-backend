@@ -1,5 +1,3 @@
-using Projects.Core.Entities.Teams;
-using Projects.Core.ValueObjects;
 using Shared.ValueObjects;
 using Users.Contracts.Database.References;
 
@@ -15,7 +13,4 @@ public class Project
 	public string? JsonDocument { get; set; }
 
 	public UserId UserId { get; init; }
-
-	public TeamId? TeamId { get; set; }
-	public Team? Team { get; set; }
 }
