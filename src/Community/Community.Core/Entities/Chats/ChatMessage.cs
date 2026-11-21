@@ -1,4 +1,4 @@
-﻿using Community.Core.ValueObjects;
+using Community.Core.ValueObjects;
 using Shared.Services;
 using Shared.ValueObjects;
 

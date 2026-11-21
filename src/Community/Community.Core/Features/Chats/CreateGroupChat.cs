@@ -24,7 +24,7 @@ internal record struct CreateGroupChat(
 ) : IHttpRequest
 {
 	internal sealed record Body(
-		[property: Required] [property: MaxLength(ChatConfiguration.MaxNameLength)] string Name,
+		[property: Required][property: MaxLength(ChatConfiguration.MaxNameLength)] string Name,
 		[property: MaxLength(CreateGroupChatHandler.MaxMembers)] List<UserId>? MemberIds
 	);
 }

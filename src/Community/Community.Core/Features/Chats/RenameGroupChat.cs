@@ -22,7 +22,7 @@ internal record struct RenameGroupChat(
 	RenameGroupChat.Body Payload
 ) : IHttpRequest
 {
-	internal sealed record Body([property: Required] [property: MaxLength(ChatConfiguration.MaxNameLength)] string Name);
+	internal sealed record Body([property: Required][property: MaxLength(ChatConfiguration.MaxNameLength)] string Name);
 }
 
 internal sealed class RenameGroupChatEndpoint : IEndpoint

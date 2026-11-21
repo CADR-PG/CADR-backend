@@ -1,10 +1,10 @@
-﻿using Community.Core.Database;
-using Community.Core.Services;
+using Community.Core.Database;
 using Community.Core.Database.Extensions;
 using Community.Core.Entities.Chats;
 using Community.Core.Entities.UserProfiles;
 using Community.Core.Models.Chats;
 using Community.Core.Models.Profiles;
+using Community.Core.Services;
 using Community.Core.ValueObjects;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;

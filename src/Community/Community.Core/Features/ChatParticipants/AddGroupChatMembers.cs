@@ -26,7 +26,7 @@ internal record struct AddGroupChatMembers(
 ) : IHttpRequest
 {
 	internal sealed record Body(
-		[property: Required] [property: MinLength(1)] [property: MaxLength(AddGroupChatMembersHandler.MaxMembers)] List<UserId> MemberIds
+		[property: Required][property: MinLength(1)][property: MaxLength(AddGroupChatMembersHandler.MaxMembers)] List<UserId> MemberIds
 	);
 }
 
@@ -96,8 +96,8 @@ internal sealed class AddGroupChatMembersHandler(
 
 		var deactivatedMembers = await dbContext.ChatParticipants
 			.Where(participant => participant.ChatId == chatId
-			                      && participant.DeactivatedAt != null
-			                      && finalMemberIds.Contains(participant.UserId))
+								  && participant.DeactivatedAt != null
+								  && finalMemberIds.Contains(participant.UserId))
 			.ToListAsync(cancellationToken);
 
 		foreach (var deactivatedMember in deactivatedMembers)

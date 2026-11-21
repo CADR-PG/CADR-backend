@@ -1,4 +1,4 @@
-﻿using Community.Core.Entities.UserProfiles;
+using Community.Core.Entities.UserProfiles;
 using System.Linq.Expressions;
 
 namespace Community.Core.Models.Profiles;

@@ -71,7 +71,7 @@ internal record struct UpdateMyUserProfile(
 ) : IHttpRequest
 {
 	internal sealed record Body(
-		[property: Required] [property: MaxLength(UserProfileConfiguration.MaxNameLength)] string Name,
+		[property: Required][property: MaxLength(UserProfileConfiguration.MaxNameLength)] string Name,
 		[property: MaxLength(UserProfileConfiguration.MaxNoteLength)] string? Note
 	);
 }

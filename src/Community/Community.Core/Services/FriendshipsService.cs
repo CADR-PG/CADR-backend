@@ -56,21 +56,21 @@ internal sealed class FriendshipsService(CommunityDbContext dbContext, TimeProvi
 	public Task<int> DeleteFriendRequestsBetween(UserId firstUserId, UserId secondUserId, CancellationToken cancellationToken)
 		=> dbContext.FriendRequests
 			.Where(friendRequest => (friendRequest.SenderId == firstUserId && friendRequest.ReceiverId == secondUserId)
-			                        || (friendRequest.SenderId == secondUserId && friendRequest.ReceiverId == firstUserId))
+									|| (friendRequest.SenderId == secondUserId && friendRequest.ReceiverId == firstUserId))
 			.ExecuteDeleteAsync(cancellationToken);
 
 	public async Task ClosePendingFriendRequestsOnBlock(UserId blockerId, UserId blockedId, CancellationToken cancellationToken)
 	{
 		await dbContext.FriendRequests
 			.Where(friendRequest => friendRequest.SenderId == blockerId
-			                        && friendRequest.ReceiverId == blockedId
-			                        && friendRequest.Status == FriendRequestStatus.Pending)
+									&& friendRequest.ReceiverId == blockedId
+									&& friendRequest.Status == FriendRequestStatus.Pending)
 			.ExecuteUpdateAsync(setters => setters.SetProperty(friendRequest => friendRequest.Status, FriendRequestStatus.Cancelled), cancellationToken);
 
 		await dbContext.FriendRequests
 			.Where(friendRequest => friendRequest.SenderId == blockedId
-			                        && friendRequest.ReceiverId == blockerId
-			                        && friendRequest.Status == FriendRequestStatus.Pending)
+									&& friendRequest.ReceiverId == blockerId
+									&& friendRequest.Status == FriendRequestStatus.Pending)
 			.ExecuteUpdateAsync(setters => setters.SetProperty(friendRequest => friendRequest.Status, FriendRequestStatus.Declined), cancellationToken);
 	}
 }

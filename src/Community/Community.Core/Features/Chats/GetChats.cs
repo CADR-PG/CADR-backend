@@ -1,4 +1,4 @@
-﻿using Community.Core.Database;
+using Community.Core.Database;
 using Community.Core.Database.Extensions;
 using Community.Core.Models.Chats;
 using Microsoft.AspNetCore.Builder;
@@ -47,9 +47,9 @@ internal sealed class GetPaginatedChatsHandler(
 			baseDbQuery = baseDbQuery.Where(chat =>
 				(chat.Name != null && EF.Functions.ILike(chat.Name, pattern, LikePattern.EscapeCharacter))
 				|| chat.Participants.Any(participant => participant.UserId != currentUser.Id
-				                                        && participant.DeactivatedAt == null
-				                                        && ((participant.Name != null && EF.Functions.ILike(participant.Name, pattern, LikePattern.EscapeCharacter))
-				                                            || EF.Functions.ILike(participant.UserProfile!.Name, pattern, LikePattern.EscapeCharacter))));
+														&& participant.DeactivatedAt == null
+														&& ((participant.Name != null && EF.Functions.ILike(participant.Name, pattern, LikePattern.EscapeCharacter))
+															|| EF.Functions.ILike(participant.UserProfile!.Name, pattern, LikePattern.EscapeCharacter))));
 		}
 
 		var finalDbQuery = baseDbQuery

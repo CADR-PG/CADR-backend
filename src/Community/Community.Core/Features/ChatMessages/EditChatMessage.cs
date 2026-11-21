@@ -24,7 +24,7 @@ internal record struct EditChatMessage(
 	EditChatMessage.Body Payload
 ) : IHttpRequest
 {
-	internal sealed record Body([property: Required] [property: MaxLength(ChatMessageConfiguration.MaxContentLength)] string Content);
+	internal sealed record Body([property: Required][property: MaxLength(ChatMessageConfiguration.MaxContentLength)] string Content);
 }
 
 internal sealed class EditChatMessageEndpoint : IEndpoint
@@ -67,9 +67,9 @@ internal sealed class EditChatMessageHandler(
 
 		var message = await dbContext.ChatMessages
 			.Where(chatMessage => chatMessage.ChatId == chatId
-			                      && chatMessage.SenderId == currentUser.Id
-			                      && chatMessage.Id == messageId
-			                      && chatMessage.DeletedAt == null)
+								  && chatMessage.SenderId == currentUser.Id
+								  && chatMessage.Id == messageId
+								  && chatMessage.DeletedAt == null)
 			.FirstOrDefaultAsync(cancellationToken);
 
 		if (message is null)

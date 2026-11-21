@@ -1,9 +1,9 @@
-using System.ComponentModel.DataAnnotations;
-using System.Linq.Expressions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Shared.Endpoints.Results;
 using Shared.Exceptions;
+using System.ComponentModel.DataAnnotations;
+using System.Linq.Expressions;
 
 namespace Shared.Endpoints.Validation;
 

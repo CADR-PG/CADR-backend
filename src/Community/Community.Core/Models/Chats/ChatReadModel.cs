@@ -39,22 +39,22 @@ internal sealed record ChatReadModel
 				.FirstOrDefault()
 			: null,
 		IsReadOnly = chat.Type == ChatType.Direct
-		             && (!dbContext.Friendships.Any(friendship =>
-			                 friendship.LowerUserId == chat.DirectChatLowerUserId!.Value
-			                 && friendship.HigherUserId == chat.DirectChatHigherUserId!.Value)
-		                 || dbContext.UserBlocks.Any(userBlock =>
-			                 (userBlock.BlockerId == chat.DirectChatLowerUserId!.Value && userBlock.BlockedId == chat.DirectChatHigherUserId!.Value)
-			                 || (userBlock.BlockerId == chat.DirectChatHigherUserId!.Value && userBlock.BlockedId == chat.DirectChatLowerUserId!.Value))),
+					 && (!dbContext.Friendships.Any(friendship =>
+							 friendship.LowerUserId == chat.DirectChatLowerUserId!.Value
+							 && friendship.HigherUserId == chat.DirectChatHigherUserId!.Value)
+						 || dbContext.UserBlocks.Any(userBlock =>
+							 (userBlock.BlockerId == chat.DirectChatLowerUserId!.Value && userBlock.BlockedId == chat.DirectChatHigherUserId!.Value)
+							 || (userBlock.BlockerId == chat.DirectChatHigherUserId!.Value && userBlock.BlockedId == chat.DirectChatLowerUserId!.Value))),
 		LastReadMessageId = chat.Participants
 			.Where(participant => participant.UserId == userId)
 			.Select(participant => participant.LastReadMessageId)
 			.FirstOrDefault(),
 		UnreadMessagesCount = chat.Messages
 			.Count(message => message.SenderId != userId
-			                  && message.DeletedAt == null
-			                  && chat.Participants
-				                  .Where(participant => participant.UserId == userId)
-				                  .All(participant => participant.LastReadMessageId == null || message.Id > participant.LastReadMessageId.Value)),
+							  && message.DeletedAt == null
+							  && chat.Participants
+								  .Where(participant => participant.UserId == userId)
+								  .All(participant => participant.LastReadMessageId == null || message.Id > participant.LastReadMessageId.Value)),
 		LastMessage = chat.Messages
 			.OrderByDescending(x => x.Id)
 			.Select(lastMessage => new LastMessageReadModel

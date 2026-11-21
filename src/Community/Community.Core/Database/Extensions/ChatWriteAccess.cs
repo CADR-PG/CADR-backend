@@ -16,12 +16,12 @@ internal static class ChatWriteAccess
 	public static Expression<Func<Chat, bool>> IsReadOnly(CommunityDbContext dbContext)
 	{
 		return chat => chat.Type == ChatType.Direct
-		               && (!dbContext.Friendships.Any(friendship =>
-			                   friendship.LowerUserId == chat.DirectChatLowerUserId!.Value
-			                   && friendship.HigherUserId == chat.DirectChatHigherUserId!.Value)
-		                   || dbContext.UserBlocks.Any(userBlock =>
-			                   (userBlock.BlockerId == chat.DirectChatLowerUserId!.Value && userBlock.BlockedId == chat.DirectChatHigherUserId!.Value)
-			                   || (userBlock.BlockerId == chat.DirectChatHigherUserId!.Value && userBlock.BlockedId == chat.DirectChatLowerUserId!.Value)));
+					   && (!dbContext.Friendships.Any(friendship =>
+							   friendship.LowerUserId == chat.DirectChatLowerUserId!.Value
+							   && friendship.HigherUserId == chat.DirectChatHigherUserId!.Value)
+						   || dbContext.UserBlocks.Any(userBlock =>
+							   (userBlock.BlockerId == chat.DirectChatLowerUserId!.Value && userBlock.BlockedId == chat.DirectChatHigherUserId!.Value)
+							   || (userBlock.BlockerId == chat.DirectChatHigherUserId!.Value && userBlock.BlockedId == chat.DirectChatLowerUserId!.Value)));
 	}
 
 	public static Task<bool> IsChatReadOnly(this CommunityDbContext dbContext, ChatId chatId, CancellationToken cancellationToken)

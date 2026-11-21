@@ -1,4 +1,4 @@
-﻿using Community.Core.Entities.Chats;
+using Community.Core.Entities.Chats;
 using Community.Core.Entities.Friendships;
 using Community.Core.Entities.UserBlocks;
 using Community.Core.Entities.UserProfiles;

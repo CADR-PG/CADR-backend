@@ -1,4 +1,4 @@
-﻿using Community.Core.Database;
+using Community.Core.Database;
 using Community.Core.Database.Extensions;
 using Community.Core.Models.Chats;
 using Community.Core.ValueObjects;

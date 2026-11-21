@@ -1,8 +1,8 @@
-﻿using Community.Core.Database;
-using Community.Core.Services;
+using Community.Core.Database;
 using Community.Core.Database.Extensions;
 using Community.Core.Models.Chats;
 using Community.Core.Models.Profiles;
+using Community.Core.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

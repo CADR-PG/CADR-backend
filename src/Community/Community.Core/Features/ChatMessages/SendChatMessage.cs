@@ -27,7 +27,7 @@ internal record struct SendChatMessage(
 {
 	internal sealed record Body(
 		Guid ClientMessageId,
-		[property: Required] [property: MaxLength(ChatMessageConfiguration.MaxContentLength)] string Content,
+		[property: Required][property: MaxLength(ChatMessageConfiguration.MaxContentLength)] string Content,
 		ChatMessageId? RepliedMessageId
 	);
 }
@@ -81,9 +81,9 @@ internal sealed class SendChatMessageHandler(
 		{
 			var messageToReplyExists = await dbContext.ChatMessages.AnyAsync(
 				chatMessage => chatMessage.Id == replyId
-				               && chatMessage.ChatId == chatId
-				               && chatMessage.DeletedAt == null
-				               && chatMessage.Type != ChatMessageType.Event,
+							   && chatMessage.ChatId == chatId
+							   && chatMessage.DeletedAt == null
+							   && chatMessage.Type != ChatMessageType.Event,
 				cancellationToken);
 
 			if (!messageToReplyExists)
@@ -119,8 +119,8 @@ internal sealed class SendChatMessageHandler(
 		=> dbContext.ChatMessages
 			.AsNoTracking()
 			.Where(chatMessage => chatMessage.ChatId == chatId
-			                      && chatMessage.SenderId == senderId
-			                      && chatMessage.ClientMessageId == clientMessageId)
+								  && chatMessage.SenderId == senderId
+								  && chatMessage.ClientMessageId == clientMessageId)
 			.Select(ChatMessageReadModel.MappingExpression)
 			.FirstOrDefaultAsync(cancellationToken);
 }

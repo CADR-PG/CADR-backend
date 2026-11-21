@@ -1,4 +1,4 @@
-﻿using Community.Core.Database;
+using Community.Core.Database;
 using Community.Core.Database.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;

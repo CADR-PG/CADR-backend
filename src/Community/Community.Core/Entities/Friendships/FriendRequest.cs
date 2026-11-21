@@ -1,4 +1,4 @@
-﻿using Community.Core.Entities.UserProfiles;
+using Community.Core.Entities.UserProfiles;
 using Shared.ValueObjects;
 
 namespace Community.Core.Entities.Friendships;

@@ -1,4 +1,4 @@
-﻿using Community.Core.Entities.Friendships;
+using Community.Core.Entities.Friendships;
 using Microsoft.EntityFrameworkCore;
 using Shared.ValueObjects;
 
@@ -11,12 +11,12 @@ internal static class FriendshipQueries
 		UserId senderId, CancellationToken cancellationToken = default)
 		=> query.FirstOrDefaultAsync(
 			friendRequest => friendRequest.Id == friendRequestId && friendRequest.SenderId == senderId &&
-			                 friendRequest.Status == FriendRequestStatus.Pending, cancellationToken);
+							 friendRequest.Status == FriendRequestStatus.Pending, cancellationToken);
 
 	public static Task<FriendRequest?> GetIncomingPendingFriendRequest(this IQueryable<FriendRequest> dbSet,
 		Guid friendRequestId,
 		UserId receiverId, CancellationToken cancellationToken = default)
 		=> dbSet.FirstOrDefaultAsync(
 			friendRequest => friendRequest.Id == friendRequestId && friendRequest.ReceiverId == receiverId &&
-			                 friendRequest.Status == FriendRequestStatus.Pending, cancellationToken);
+							 friendRequest.Status == FriendRequestStatus.Pending, cancellationToken);
 }

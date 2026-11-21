@@ -1,4 +1,4 @@
-﻿using Community.Core.Entities.Friendships;
+using Community.Core.Entities.Friendships;
 using Community.Core.Models.Profiles;
 using System.Linq.Expressions;
 
@@ -18,7 +18,8 @@ internal sealed record IncomingFriendRequestReadModel
 				SentAt = friendRequest.SentAt,
 				Profile = new UserProfileSummaryReadModel
 				{
-					UserId = friendRequest.SenderId, Name = friendRequest.SenderProfile!.Name
+					UserId = friendRequest.SenderId,
+					Name = friendRequest.SenderProfile!.Name
 				}
 			};
 }

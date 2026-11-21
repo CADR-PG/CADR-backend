@@ -25,7 +25,7 @@ internal sealed class GameSnapshotService(
 		var sourceContainer = filesContainerClient.Container;
 		var destinationContainer = blobServiceClient.GetBlobContainerClient(GameVersion.BlobContainerName);
 
-		await foreach (var blobItem in sourceContainer.GetBlobsAsync(new GetBlobsOptions { Prefix = $"{projectId}/"}, cancellationToken: cancellationToken))
+		await foreach (var blobItem in sourceContainer.GetBlobsAsync(new GetBlobsOptions { Prefix = $"{projectId}/" }, cancellationToken: cancellationToken))
 		{
 			var source = sourceContainer.GetBlobClient(blobItem.Name);
 			var destination = destinationContainer.GetBlobClient($"{gameVersion.BlobResourceName}/{blobItem.Name}");

@@ -1,4 +1,4 @@
-﻿using Community.Core.Entities.Chats;
+using Community.Core.Entities.Chats;
 using Community.Core.Models.Profiles;
 using System.Linq.Expressions;
 

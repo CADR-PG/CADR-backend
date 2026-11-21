@@ -1,4 +1,4 @@
-﻿using Community.Core.ValueObjects;
+using Community.Core.ValueObjects;
 using Shared.ValueObjects;
 
 namespace Community.Core.Entities.Chats;

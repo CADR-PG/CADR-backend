@@ -1,4 +1,4 @@
-﻿using Community.Core.Entities.UserBlocks;
+using Community.Core.Entities.UserBlocks;
 using Community.Core.Models.Profiles;
 using System.Linq.Expressions;
 
@@ -15,7 +15,8 @@ internal sealed record BlockedUserReadModel
 			{
 				Profile = new UserProfileSummaryReadModel
 				{
-					UserId = friendRequest.BlockedId, Name = friendRequest.BlockedProfile!.Name
+					UserId = friendRequest.BlockedId,
+					Name = friendRequest.BlockedProfile!.Name
 				},
 				BlockedAt = friendRequest.BlockedAt
 			};

@@ -75,8 +75,8 @@ internal sealed class SendFriendRequestHandler(
 
 		var receiverPendingRequestExists = await dbContext.FriendRequests
 			.AnyAsync(friendRequest => friendRequest.SenderId == receiverId
-			                           && friendRequest.ReceiverId == senderId
-			                           && friendRequest.Status == FriendRequestStatus.Pending,
+									   && friendRequest.ReceiverId == senderId
+									   && friendRequest.Status == FriendRequestStatus.Pending,
 				cancellationToken);
 
 		if (receiverPendingRequestExists)

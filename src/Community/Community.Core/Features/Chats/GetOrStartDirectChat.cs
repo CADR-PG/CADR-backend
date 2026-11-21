@@ -61,8 +61,8 @@ internal sealed class GetOrStartDirectChatHandler(
 		var chatReadModel = await dbContext.Chats
 			.AsNoTracking()
 			.Where(chat => chat.Type == ChatType.Direct
-			               && chat.DirectChatLowerUserId == lowerUserId
-			               && chat.DirectChatHigherUserId == higherUserId)
+						   && chat.DirectChatLowerUserId == lowerUserId
+						   && chat.DirectChatHigherUserId == higherUserId)
 			.Select(ChatReadModel.GetMappingExpression(currentUser.Id, dbContext))
 			.FirstOrDefaultAsync(cancellationToken);
 
@@ -93,8 +93,8 @@ internal sealed class GetOrStartDirectChatHandler(
 			chatReadModel = await dbContext.Chats
 				.AsNoTracking()
 				.Where(x => x.Type == ChatType.Direct
-				            && x.DirectChatLowerUserId == lowerUserId
-				            && x.DirectChatHigherUserId == higherUserId)
+							&& x.DirectChatLowerUserId == lowerUserId
+							&& x.DirectChatHigherUserId == higherUserId)
 				.Select(ChatReadModel.GetMappingExpression(currentUser.Id, dbContext))
 				.FirstAsync(cancellationToken);
 

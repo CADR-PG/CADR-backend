@@ -1,4 +1,4 @@
-﻿using Shared.ValueObjects;
+using Shared.ValueObjects;
 
 namespace Community.Core.Entities.UserSettings;
 

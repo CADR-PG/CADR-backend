@@ -54,8 +54,8 @@ public static class Extensions
 
 		var types = typeof(TModule).Assembly.GetTypes()
 			.Where(t => t is { IsAbstract: false, IsInterface: false }
-			            && t.IsAssignableTo(typeof(IEndpoint))
-			            && predicate(t));
+						&& t.IsAssignableTo(typeof(IEndpoint))
+						&& predicate(t));
 
 		foreach (var type in types)
 			invoker.MakeGenericMethod(type).Invoke(null, [endpoints]);

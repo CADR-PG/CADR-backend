@@ -10,7 +10,7 @@ public static class Extensions
 	{
 		var openInterface = typeof(ISnowflakeId<>);
 
-		var registerMethod = typeof(Extensions).GetMethod(nameof(RegisterConverter),BindingFlags.NonPublic | BindingFlags.Static)!;
+		var registerMethod = typeof(Extensions).GetMethod(nameof(RegisterConverter), BindingFlags.NonPublic | BindingFlags.Static)!;
 
 		var types = typeof(TModule).Assembly.GetTypes() // module types
 			.Concat(openInterface.Assembly.GetTypes()) // shared value objects

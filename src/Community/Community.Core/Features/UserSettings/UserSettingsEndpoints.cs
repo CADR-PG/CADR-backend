@@ -32,7 +32,7 @@ internal record struct UpdateUserSettings(
 	UpdateUserSettings.Body Payload
 ) : IHttpRequest
 {
-	internal sealed record Body([property: Required] [property: EnumDataType(typeof(GroupInvitePolicy))] GroupInvitePolicy? GroupInvitePolicy);
+	internal sealed record Body([property: Required][property: EnumDataType(typeof(GroupInvitePolicy))] GroupInvitePolicy? GroupInvitePolicy);
 }
 
 internal sealed class GetUserSettingsEndpoint : IEndpoint

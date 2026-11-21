@@ -1,4 +1,4 @@
-﻿using Community.Core.Entities.UserProfiles;
+using Community.Core.Entities.UserProfiles;
 using Community.Core.ValueObjects;
 using Shared.ValueObjects;
 
@@ -29,12 +29,20 @@ internal sealed class ChatParticipant
 
 	public static ChatParticipant CreateParticipant(ChatId chatId, UserId participantId, DateTimeOffset joinedAt) => new()
 	{
-		UserId = participantId, Name = null, JoinedAt = joinedAt, ChatId = chatId, Role = ChatParticipantRole.Member,
+		UserId = participantId,
+		Name = null,
+		JoinedAt = joinedAt,
+		ChatId = chatId,
+		Role = ChatParticipantRole.Member,
 	};
 
 	public static ChatParticipant CreateAdmin(ChatId chatId, UserId ownerId, DateTimeOffset joinedAt) => new()
 	{
-		UserId = ownerId, Name = null, ChatId = chatId, JoinedAt = joinedAt, Role = ChatParticipantRole.Admin
+		UserId = ownerId,
+		Name = null,
+		ChatId = chatId,
+		JoinedAt = joinedAt,
+		Role = ChatParticipantRole.Admin
 	};
 
 	public void Deactivate(TimeProvider timeProvider)

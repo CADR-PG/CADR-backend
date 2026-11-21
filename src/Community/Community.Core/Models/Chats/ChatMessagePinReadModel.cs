@@ -7,7 +7,7 @@ namespace Community.Core.Models.Chats;
 internal sealed class ChatMessagePinReadModel
 {
 	public required UserId PinnedBy { get; set; }
-	public required DateTimeOffset PinnedAt  { get; set; }
+	public required DateTimeOffset PinnedAt { get; set; }
 	public required ChatMessageReadModel Message { get; set; }
 
 	public static Expression<Func<ChatMessagePin, ChatMessagePinReadModel>> MappingExpression { get; } = chatMessagePin => new ChatMessagePinReadModel

@@ -12,9 +12,9 @@ internal static class ChatParticipantsQueries
 	public static Expression<Func<ChatParticipant, bool>> IsActive(ChatId chatId, UserId userId)
 	{
 		return chatParticipant => chatParticipant.ChatId == chatId
-		                          && chatParticipant.UserId == userId
-		                          && chatParticipant.DeactivatedAt == null
-		                          && chatParticipant.Chat!.DeletedAt == null;
+								  && chatParticipant.UserId == userId
+								  && chatParticipant.DeactivatedAt == null
+								  && chatParticipant.Chat!.DeletedAt == null;
 	}
 
 	public static IQueryable<ChatParticipant> Active(this IQueryable<ChatParticipant> query, ChatId chatId)
@@ -25,7 +25,7 @@ internal static class ChatParticipantsQueries
 	public static IQueryable<Chat> AccessibleBy(this IQueryable<Chat> query, UserId userId)
 	{
 		return query.Where(chat => chat.DeletedAt == null
-		                           && chat.Participants.Any(participant => participant.UserId == userId && participant.DeactivatedAt == null));
+								   && chat.Participants.Any(participant => participant.UserId == userId && participant.DeactivatedAt == null));
 	}
 
 	public static IQueryable<UserProfile> GetGroupChatMembersCandidates(this IQueryable<UserProfile> query,

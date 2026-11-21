@@ -1,4 +1,4 @@
-﻿using Community.Core.Entities.Chats;
+using Community.Core.Entities.Chats;
 using Community.Core.ValueObjects;
 using Shared.ValueObjects;
 using System.Linq.Expressions;
