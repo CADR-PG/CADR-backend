@@ -27,7 +27,6 @@ internal sealed class AddGameToStoreEndpoint : IEndpoint
 		.RequireAuthorization()
 		.Produces<GameReadModel>(201)
 		.ProducesError(401, "`UnauthorizedError`");
-
 }
 
 internal sealed class AddGameToStoreHandler(

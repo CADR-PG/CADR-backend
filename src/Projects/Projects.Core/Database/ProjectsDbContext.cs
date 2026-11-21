@@ -16,6 +16,7 @@ internal sealed class ProjectsDbContext(DbContextOptions<ProjectsDbContext> dbCo
 		builder.HasDefaultSchema(ProjectsModule.Name);
 		builder.ApplyConfigurationsFromAssembly(typeof(ProjectsDbContext).Assembly);
 		builder.ApplyConfigurationsFromAssembly(typeof(UserReference).Assembly);
+
 		base.OnModelCreating(builder);
 	}
 

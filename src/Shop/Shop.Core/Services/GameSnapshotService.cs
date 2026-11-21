@@ -1,4 +1,5 @@
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Shop.Core.Database;
 using Shop.Core.Entities.Catalog;
 
@@ -25,7 +26,7 @@ internal sealed class GameSnapshotService(
 		var sourceContainer = filesContainerClient.Container;
 		var destinationContainer = blobServiceClient.GetBlobContainerClient(GameVersion.BlobContainerName);
 
-		await foreach (var blobItem in sourceContainer.GetBlobsAsync(prefix: $"{projectId}/", cancellationToken: cancellationToken))
+		await foreach (var blobItem in sourceContainer.GetBlobsAsync(new GetBlobsOptions { Prefix = $"{projectId}/" }, cancellationToken: cancellationToken))
 		{
 			var source = sourceContainer.GetBlobClient(blobItem.Name);
 			var destination = destinationContainer.GetBlobClient($"{gameVersion.BlobResourceName}/{blobItem.Name}");

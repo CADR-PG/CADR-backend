@@ -18,7 +18,7 @@ internal sealed class GetMostPopularGamesEndpoint : IEndpoint
 	public static void Register(IEndpointRouteBuilder endpoints) =>
 		endpoints.MapGet<GetMostPopularGames, GetMostPopularGamesHandler>("get-most-popular-games")
 			.RequireAuthorization()
-			.Produces<Paginated<GameShopCardReadModel>>(200)
+			.Produces<OffsetPaginated<GameShopCardReadModel>>(200)
 			.ProducesError(401, "`UnauthorizedError`");
 }
 
@@ -35,7 +35,7 @@ internal sealed class GetMostPopularGamesHandler(ShopDbContext dbContext) : IHtt
 			.OrderByDescending(x => x.PlaysCount)
 			.ThenBy(x => x.GameId);
 
-		var topPlaysPage = await Paginated.Create(topPlaysQuery, pageSize: 10);
+		var topPlaysPage = await OffsetPaginated.Create(topPlaysQuery, pageSize: 10, cancellationToken: cancellationToken);
 
 		var gameIds = topPlaysPage.Items.Select(x => x.GameId).ToList();
 		if (gameIds.Count == 0)
@@ -51,7 +51,7 @@ internal sealed class GetMostPopularGamesHandler(ShopDbContext dbContext) : IHtt
 				.Select(g => GameShopCardReadModel.From(g, 0))
 				.ToList();
 
-			return Results.Ok(new Paginated<GameShopCardReadModel>(randomCards, randomCards.Count, 1, 10));
+			return Results.Ok(new OffsetPaginated<GameShopCardReadModel>(randomCards, randomCards.Count, 1, 10));
 		}
 		var games = await dbContext.Games
 			.Include(g => g.Price)
@@ -63,7 +63,7 @@ internal sealed class GetMostPopularGamesHandler(ShopDbContext dbContext) : IHtt
 			.Select(x => GameShopCardReadModel.From(games[x.GameId], x.PlaysCount))
 			.ToList();
 
-		var paginatedPopularGames = new Paginated<GameShopCardReadModel>(
+		var paginatedPopularGames = new OffsetPaginated<GameShopCardReadModel>(
 			mostPopularGames,
 			topPlaysPage.TotalCount,
 			topPlaysPage.PageNumber,

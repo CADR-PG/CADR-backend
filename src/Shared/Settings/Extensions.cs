@@ -11,5 +11,8 @@ public static class Extensions
 		   ?? throw new CadrException($"Invalid configuration section `{T.SectionName}`");
 
 	public static void AddSettingsWithOptions<T>(this IServiceCollection services, IConfiguration configuration) where T : class, ISettings
-		=> services.AddOptions<T>().Bind(configuration.GetSection(T.SectionName)).ValidateOnStart();
+		=> services.AddOptions<T>()
+			.Bind(configuration.GetSection(T.SectionName))
+			.ValidateDataAnnotations()
+			.ValidateOnStart();
 }

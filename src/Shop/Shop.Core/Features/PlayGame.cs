@@ -1,4 +1,5 @@
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Azure.Storage.Sas;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -65,7 +66,7 @@ internal sealed class PlayGameHandler(
 		var mainScenePath = version.MainSceneFileId?.ToString();
 
 		var assets = new List<GameAssetsReadModel>();
-		await foreach (var blob in container.GetBlobsAsync(prefix: prefix, cancellationToken: cancellationToken))
+		await foreach (var blob in container.GetBlobsAsync(new GetBlobsOptions { Prefix = prefix }, cancellationToken: cancellationToken))
 		{
 			var blobClient = container.GetBlobClient(blob.Name);
 			var url = blobClient.GenerateSasUri(BlobSasPermissions.Read, expiresOn);

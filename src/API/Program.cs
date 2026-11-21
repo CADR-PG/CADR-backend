@@ -2,6 +2,7 @@ using API.Documentation;
 using API.Exceptions;
 using Azure.Identity;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
+using Community.Core;
 using Microsoft.AspNetCore.HttpOverrides;
 using Projects.Core;
 using Shared;
@@ -15,7 +16,8 @@ var builder = WebApplication.CreateBuilder(args);
 var applicationContext = new ApplicationContext([
 	new UsersModule(),
 	new ProjectsModule(),
-	new ShopModule()
+	new ShopModule(),
+	new CommunityModule()
 ]);
 
 if (builder.Environment.IsProduction())

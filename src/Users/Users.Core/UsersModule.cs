@@ -41,6 +41,7 @@ public class UsersModule : IModule
 			x => x.MigrationsHistoryTable("__EFMigrationsHistory", Name)));
 		services.AddSettingsWithOptions<JwtSettings>(configuration);
 		services.AddMailingService(configuration);
+		services.AddSnowflakeIdProvider(configuration);
 		services.AddScoped<LoginHandler>();
 		services.AddScoped<RegisterHandler>();
 		services.AddScoped<LogoutHandler>();
