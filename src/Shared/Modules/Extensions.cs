@@ -45,13 +45,17 @@ public static class Extensions
 	}
 
 	public static void MapEndpoints<TModule>(this IEndpointRouteBuilder endpoints) where TModule : IModule
+		=> endpoints.MapEndpoints<TModule>(_ => true);
+
+	public static void MapEndpoints<TModule>(this IEndpointRouteBuilder endpoints, Func<Type, bool> predicate) where TModule : IModule
 	{
 		var invoker = typeof(Endpoints.Extensions)
 			.GetMethod(nameof(Endpoints.Extensions.Map), BindingFlags.Public | BindingFlags.Static)!;
 
 		var types = typeof(TModule).Assembly.GetTypes()
 			.Where(t => t is { IsAbstract: false, IsInterface: false }
-			            && t.IsAssignableTo(typeof(IEndpoint)));
+			            && t.IsAssignableTo(typeof(IEndpoint))
+			            && predicate(t));
 
 		foreach (var type in types)
 			invoker.MakeGenericMethod(type).Invoke(null, [endpoints]);

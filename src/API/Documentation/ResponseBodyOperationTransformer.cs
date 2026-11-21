@@ -18,7 +18,7 @@ internal sealed class ResponseBodyOperationTransformer : IOpenApiOperationTransf
 		operation.Responses?.ToList().ForEach(response =>
 		{
 			var content = response.Value.Content;
-			if (content is not {Count: 0}) return;
+			if (content is null or { Count: 0 }) return;
 			var schemaName = content.First().Value.Schema?.Id;
 			response.Value.Description = schemaName;
 		});

@@ -13,7 +13,6 @@ internal class RequestBodySchemaTransformer : IOpenApiSchemaTransformer
 		if (!type.IsNested || !type.DeclaringType!.IsAssignableTo(typeof(IHttpRequest))) return Task.CompletedTask;
 
 		schema.Title = $"{type.DeclaringType.Name}.{type.Name}";
-		schema.Schema = new Uri($"{type.DeclaringType.Name}.{type.Name}");
 
 		return Task.CompletedTask;
 	}

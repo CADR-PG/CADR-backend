@@ -21,6 +21,18 @@ public class CommunityModule : IModule
 {
 	public static string Name => "Community";
 
+	private static readonly (string Feature, string Tag)[] EndpointSections =
+	[
+		("UserProfiles", $"{Name} - User profiles"),
+		("UserSettings", $"{Name} - User settings"),
+		("Friends", $"{Name} - Friends"),
+		("FriendRequests", $"{Name} - Friend requests"),
+		("UserBlocks", $"{Name} - Blocked users"),
+		("Chats", $"{Name} - Chats"),
+		("ChatParticipants", $"{Name} - Chat participants"),
+		("ChatMessages", $"{Name} - Chat messages"),
+	];
+
 	public void Register(IHostApplicationBuilder builder)
 	{
 		var services = builder.Services;
@@ -57,7 +69,22 @@ public class CommunityModule : IModule
 			return await next(context);
 		});
 
-		group.MapEndpoints<CommunityModule>();
+		var featuresNamespace = $"{typeof(CommunityModule).Namespace}.Features";
+		var sectionNamespaces = EndpointSections
+			.Select(section => $"{featuresNamespace}.{section.Feature}")
+			.ToHashSet(StringComparer.Ordinal);
+
+		foreach (var (feature, tag) in EndpointSections)
+		{
+			var sectionNamespace = $"{featuresNamespace}.{feature}";
+			group.MapGroup(string.Empty)
+				.WithTags(tag)
+				.MapEndpoints<CommunityModule>(type => type.Namespace == sectionNamespace);
+		}
+
+		group.MapGroup(string.Empty)
+			.WithTags(Name)
+			.MapEndpoints<CommunityModule>(type => type.Namespace is null || !sectionNamespaces.Contains(type.Namespace));
 	}
 
 	public async ValueTask RunInDevelopmentMode(IServiceProvider services)
