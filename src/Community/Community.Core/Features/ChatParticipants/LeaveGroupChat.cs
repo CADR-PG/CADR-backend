@@ -1,4 +1,5 @@
-﻿using Community.Core.Database;
+using Community.Core.Database;
+using Community.Core.Database.Extensions;
 using Community.Core.Entities.Chats;
 using Community.Core.ValueObjects;
 using Microsoft.AspNetCore.Builder;
@@ -9,7 +10,6 @@ using Microsoft.EntityFrameworkCore;
 using Shared.Endpoints;
 using Shared.Endpoints.Requests;
 using Shared.Endpoints.Results;
-using Shared.ValueObjects;
 
 namespace Community.Core.Features.ChatParticipants;
 
@@ -21,14 +21,16 @@ internal record struct LeaveGroupChat(
 internal sealed class LeaveGroupChatEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
-		.MapPost<LeaveGroupChat, LeaveGroupChatHandler>("group-chats/{chatId}/leave")
+		.MapPost<LeaveGroupChat, LeaveGroupChatHandler>("group-chats/{chatId:long}/leave")
+		.Produces(StatusCodes.Status204NoContent)
 		.RequireAuthorization()
-		.ProducesError(400, "`GroupChat.NotFound`")
-		.ProducesError(401, "`UnauthorizedError`");
+		.ProducesError(401, "`UnauthorizedError`")
+		.ProducesError(404, "`GroupChat.NotFound`");
 }
 
 internal sealed class LeaveGroupChatHandler(
-	CommunityDbContext dbContext
+	CommunityDbContext dbContext,
+	TimeProvider timeProvider
 ) : IHttpRequestHandler<LeaveGroupChat>
 {
 	public async Task<IResult> Handle(
@@ -37,63 +39,46 @@ internal sealed class LeaveGroupChatHandler(
 	{
 		var (currentUser, chatId) = request;
 
-		var role = await dbContext.ChatParticipants
-			.Where(m => m.ChatId == chatId
-			            && m.UserId == currentUser.Id
-			            && m.Chat!.Type == ChatType.Group)
-			.Select(m => (ChatParticipantRole?)m.Role)
+		await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+		await dbContext.LockChatForUpdate(chatId, cancellationToken);
+
+		var currentMember = await dbContext.ChatParticipants
+			.Where(ChatParticipantsQueries.IsActive(chatId, currentUser.Id))
+			.Where(participant => participant.Chat!.Type == ChatType.Group)
+			.Include(participant => participant.Chat)
 			.FirstOrDefaultAsync(cancellationToken);
 
-		if (role is null)
+		if (currentMember is null)
 			return new ErrorResult("GroupChat.NotFound", "Group chat does not exist.", 404);
 
-		if (role == ChatParticipantRole.Member)
+		if (currentMember.Role == ChatParticipantRole.Admin)
 		{
-			await dbContext.ChatParticipants
-				.Where(m => m.ChatId == chatId && m.UserId == currentUser.Id)
-				.ExecuteDeleteAsync(cancellationToken);
+			var otherActiveMembers = dbContext.ChatParticipants
+				.Active(chatId)
+				.Where(participant => participant.UserId != currentUser.Id);
 
-			return Results.NoContent();
-		}
+			var hasOtherAdmin = await otherActiveMembers
+				.AnyAsync(participant => participant.Role == ChatParticipantRole.Admin, cancellationToken);
 
-		await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
-
-		var otherMembers = dbContext.ChatParticipants
-			.Where(m => m.ChatId == chatId && m.UserId != currentUser.Id);
-
-		var hasOtherAdmin = await otherMembers
-			.AnyAsync(m => m.Role == ChatParticipantRole.Admin, cancellationToken);
-
-		if (!hasOtherAdmin)
-		{
-			var successorId = await otherMembers
-				.OrderBy(m => m.JoinedAt)
-				.ThenBy(m => m.UserId)
-				.Select(m => (UserId?)m.UserId)
-				.FirstOrDefaultAsync(cancellationToken);
-
-			if (successorId is null)
+			if (!hasOtherAdmin)
 			{
-				await dbContext.Chats
-					.Where(c => c.Id == chatId)
-					.ExecuteDeleteAsync(cancellationToken);
+				var successor = await otherActiveMembers
+					.OrderBy(participant => participant.JoinedAt)
+					.ThenBy(participant => participant.UserId)
+					.FirstOrDefaultAsync(cancellationToken);
 
-				await transaction.CommitAsync(cancellationToken);
-				return Results.NoContent();
+				if (successor is null)
+					currentMember.Chat!.MarkAsDeleted(currentUser.Id, timeProvider);
+				else
+					successor.PromoteToAdmin();
 			}
-
-			await dbContext.ChatParticipants
-				.Where(m => m.ChatId == chatId && m.UserId == successorId)
-				.ExecuteUpdateAsync(
-					setters => setters.SetProperty(m => m.Role, ChatParticipantRole.Admin),
-					cancellationToken);
 		}
 
-		await dbContext.ChatParticipants
-			.Where(m => m.ChatId == chatId && m.UserId == currentUser.Id)
-			.ExecuteDeleteAsync(cancellationToken);
+		currentMember.Deactivate(timeProvider);
 
+		await dbContext.SaveChangesAsync(cancellationToken);
 		await transaction.CommitAsync(cancellationToken);
+
 		return Results.NoContent();
 	}
 }

@@ -25,12 +25,12 @@ internal record struct UnpinChatMessage(
 internal sealed class UnpinChatMessageEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
-		.MapPost<UnpinChatMessage, UnpinChatMessageHandler>("chats/{chatId}/pinned-messages/{messageId}/unpin")
+		.MapPost<UnpinChatMessage, UnpinChatMessageHandler>("chats/{chatId:long}/pinned-messages/{messageId:long}/unpin")
 		.Produces(StatusCodes.Status204NoContent)
 		.RequireAuthorization()
 		.ProducesError(401, "`UnauthorizedError`")
-		.ProducesError(403, "`Pin.Forbidden`, `Pin.LimitReached`")
-		.ProducesError(404, "`Chat.NotFound`, `ChatMessage.NotFound`");
+		.ProducesError(403, "`UnpinChatMessage.Forbidden`, `Chat.ReadOnly`")
+		.ProducesError(404, "`Chat.NotFound`");
 }
 
 internal sealed class UnpinChatMessageHandler(
@@ -44,23 +44,21 @@ internal sealed class UnpinChatMessageHandler(
 		var participant = await dbContext.ChatParticipants
 			.AsNoTracking()
 			.Where(ChatParticipantsQueries.IsActive(chatId, currentUser.Id))
-			.Select(m => new { m.Role })
+			.Select(m => new { m.Role, m.Chat!.Type })
 			.FirstOrDefaultAsync(cancellationToken);
 
 		if (participant is null)
 			return new ErrorResult("Chat.NotFound", "Chat not found.", 404);
 
-		if (participant.Role != ChatParticipantRole.Admin)
+		if (await dbContext.IsChatReadOnly(chatId, cancellationToken))
+			return ChatWriteAccess.ReadOnlyError();
+
+		if (participant.Type != ChatType.Direct && participant.Role != ChatParticipantRole.Admin)
 			return new ErrorResult("UnpinChatMessage.Forbidden", "You cannot unpin messages.", 403);
 
-		var deleted = await dbContext.ChatMessagePins
+		await dbContext.ChatMessagePins
 			.Where(p => p.ChatId == chatId && p.MessageId == messageId)
 			.ExecuteDeleteAsync(cancellationToken);
-
-		if (deleted > 0)
-		{
-			// tu: outbox -> SignalR `message_unpinned { chatId, messageId }`
-		}
 
 		return Results.NoContent();
 	}

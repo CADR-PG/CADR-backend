@@ -1,6 +1,7 @@
-﻿using Community.Core.Database;
-using Community.Core.Entities.Friendships;
-using Community.Core.Models.Friendships;
+using Community.Core.Database;
+using Community.Core.Services;
+using Community.Core.Database.Extensions;
+using Community.Core.Models.Profiles;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -10,52 +11,55 @@ using Shared.Endpoints;
 using Shared.Endpoints.Requests;
 using Shared.Endpoints.Results;
 using Shared.Services;
-using Shared.ValueObjects;
 
 namespace Community.Core.Features.UserProfiles;
 
 internal record struct GetPaginatedUserProfiles(
 	CurrentUser CurrentUser,
-	[FromQuery] UserId? SenderId,
 	[FromQuery] string? SearchPhrase,
-	[FromQuery] int? PageNumber = 0,
+	[FromQuery] int? PageNumber = 1,
 	[FromQuery] int? PageSize = 50
 ) : IHttpRequest;
 
 internal sealed class GetPaginatedUserProfilesEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
-		.MapGet<GetPaginatedUserProfiles, GetPaginatedUserProfilesHandler>("friend-requests/incoming")
-		.Produces<OffsetPaginated<OutgoingFriendRequestReadModel>>()
+		.MapGet<GetPaginatedUserProfiles, GetPaginatedUserProfilesHandler>("user-profiles")
+		.Produces<OffsetPaginated<UserProfileSummaryReadModel>>()
 		.RequireAuthorization()
 		.ProducesError(401, "`UnauthorizedError`");
 }
 
 internal sealed class GetPaginatedUserProfilesHandler(
-	CommunityDbContext dbContext
+	CommunityDbContext dbContext,
+	UserProfilesSynchronizer userProfilesSynchronizer
 ) : IHttpRequestHandler<GetPaginatedUserProfiles>
 {
 	public async Task<IResult> Handle(GetPaginatedUserProfiles request, CancellationToken cancellationToken)
 	{
-		var (currentUser, senderId, searchPhrase, pageNumber, pageSize) = request;
+		var (currentUser, searchPhrase, pageNumber, pageSize) = request;
 
-		var baseDbQuery = dbContext.FriendRequests
+		await userProfilesSynchronizer.EnsureAllSynchronized(cancellationToken);
+
+		var baseDbQuery = dbContext.UserProfiles
 			.AsNoTracking()
-			.Where(x => x.ReceiverId == currentUser.Id && x.Status == FriendRequestStatus.Pending);
-
-		if (senderId is not null)
-		{
-			baseDbQuery = baseDbQuery.Where(x => x.SenderId == senderId);
-		}
+			.Where(userProfile => userProfile.UserId != currentUser.Id)
+			.Where(userProfile => !dbContext.UserBlocks.Any(userBlock =>
+				(userBlock.BlockerId == currentUser.Id && userBlock.BlockedId == userProfile.UserId) ||
+				(userBlock.BlockerId == userProfile.UserId && userBlock.BlockedId == currentUser.Id)));
 
 		if (!string.IsNullOrWhiteSpace(searchPhrase))
 		{
-			baseDbQuery = baseDbQuery.Where(friendRequest => EF.Functions.Like(friendRequest.SenderProfile!.Name, $"%{searchPhrase}%"));
+			var pattern = LikePattern.Contains(searchPhrase);
+			baseDbQuery = baseDbQuery.Where(userProfile => EF.Functions.ILike(userProfile.Name, pattern, LikePattern.EscapeCharacter));
 		}
 
-		var finalDbQuery = baseDbQuery.Select(IncomingFriendRequestReadModel.MappingExpression);
+		var finalDbQuery = baseDbQuery
+			.OrderBy(userProfile => userProfile.Name)
+			.ThenBy(userProfile => userProfile.UserId)
+			.Select(UserProfileSummaryReadModel.MappingExpression);
 
-		var readModels = await OffsetPaginated.Create(finalDbQuery, pageNumber!.Value, pageSize!.Value);
+		var readModels = await OffsetPaginated.Create(finalDbQuery, pageNumber, pageSize, cancellationToken);
 		return Results.Ok(readModels);
 	}
 }

@@ -29,7 +29,7 @@ internal sealed class GetListOfGamesHandler(
 		var gamesList = dbContext.Games
 			.Where(x => x.State == GameStates.Published)
 			.Select(GameReadModel.Projection);
-		var paginatedListOfGames = await OffsetPaginated.Create(gamesList);
+		var paginatedListOfGames = await OffsetPaginated.Create(gamesList, cancellationToken: cancellationToken);
 		return Results.Ok(paginatedListOfGames);
 	}
 }

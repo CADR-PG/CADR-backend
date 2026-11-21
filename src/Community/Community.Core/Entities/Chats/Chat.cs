@@ -60,8 +60,8 @@ internal sealed class Chat
 			Name = name.Trim(),
 			DirectChatLowerUserId = null,
 			DirectChatHigherUserId = null,
-			Type = ChatType.Direct,
-			CreatedAt = default,
+			Type = ChatType.Group,
+			CreatedAt = createdAt,
 			Participants =
 			[
 				ChatParticipant.CreateAdmin(chatId, ownerId, createdAt), .. participantIds
@@ -75,12 +75,12 @@ internal sealed class Chat
 	public void ChangeName(string name)
 	{
 		if (Type == ChatType.Group)
-			Name = name;
+			Name = name.Trim();
 	}
 
 	public void MarkAsDeleted(UserId deletedBy, TimeProvider timeProvider)
 	{
-		if (Type != ChatType.Group) return;
+		if (Type != ChatType.Group || DeletedAt is not null) return;
 
 		DeletedBy = deletedBy;
 		DeletedAt = timeProvider.GetUtcNow();

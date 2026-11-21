@@ -21,11 +21,12 @@ internal record struct DeleteGroupChat(
 internal sealed class DeleteGroupChatEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
-		.MapPost<DeleteGroupChat, DeleteGroupChatHandler>("group-chats/{chatId}/delete")
+		.MapPost<DeleteGroupChat, DeleteGroupChatHandler>("group-chats/{chatId:long}/delete")
 		.Produces(204)
 		.RequireAuthorization()
-		.ProducesError(404, "GroupChat.NotFound")
-		.ProducesError(401, "`UnauthorizedError`");
+		.ProducesError(401, "`UnauthorizedError`")
+		.ProducesError(403, "`GroupChat.Forbidden`")
+		.ProducesError(404, "`GroupChat.NotFound`");
 }
 
 internal sealed class DeleteGroupChatHandler(
@@ -40,7 +41,8 @@ internal sealed class DeleteGroupChatHandler(
 		var (currentUser, chatId) = request;
 
 		var chatParticipant = await dbContext.ChatParticipants
-			.Where(ChatParticipantsQueries.IsActive(chatId,  currentUser.Id))
+			.Where(ChatParticipantsQueries.IsActive(chatId, currentUser.Id))
+			.Where(chatParticipant => chatParticipant.Chat!.Type == ChatType.Group)
 			.Include(chatParticipant => chatParticipant.Chat)
 			.FirstOrDefaultAsync(cancellationToken);
 
@@ -51,10 +53,6 @@ internal sealed class DeleteGroupChatHandler(
 			return new ErrorResult("GroupChat.Forbidden", "Only group admins can perform this operation.", 403);
 
 		var chat = chatParticipant.Chat!;
-
-		if (chat.DeletedAt is not null)
-			return Results.NoContent();
-
 		chat.MarkAsDeleted(currentUser.Id, timeProvider);
 		await dbContext.SaveChangesAsync(cancellationToken);
 

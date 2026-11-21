@@ -1,4 +1,5 @@
 ﻿using Community.Core.Database;
+using Community.Core.Database.Extensions;
 using Community.Core.Models.Chats;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -15,7 +16,7 @@ namespace Community.Core.Features.Chats;
 internal record struct GetPaginatedChats(
 	CurrentUser CurrentUser,
 	[FromQuery] string? SearchPhrase,
-	[FromQuery] int? PageNumber = 0,
+	[FromQuery] int? PageNumber = 1,
 	[FromQuery] int? PageSize = 50
 ) : IHttpRequest;
 
@@ -37,19 +38,26 @@ internal sealed class GetPaginatedChatsHandler(
 		var (currentUser, searchPhrase, pageNumber, pageSize) = request;
 
 		var baseDbQuery = dbContext.Chats
-			.Where(chat => chat.Participants.Any(participant => participant.UserId == currentUser.Id))
-			.AsNoTracking();
+			.AsNoTracking()
+			.AccessibleBy(currentUser.Id);
 
 		if (!string.IsNullOrWhiteSpace(searchPhrase))
 		{
-			baseDbQuery = baseDbQuery.Where(chat => EF.Functions.Like(chat.Name, $"%{searchPhrase}%")
-			                                        || chat.Participants.Where(x => x.UserId != currentUser.Id).Any(participant =>
-				                                        EF.Functions.Like(participant.Name, $"%{searchPhrase}%")));
+			var pattern = LikePattern.Contains(searchPhrase);
+			baseDbQuery = baseDbQuery.Where(chat =>
+				(chat.Name != null && EF.Functions.ILike(chat.Name, pattern, LikePattern.EscapeCharacter))
+				|| chat.Participants.Any(participant => participant.UserId != currentUser.Id
+				                                        && participant.DeactivatedAt == null
+				                                        && ((participant.Name != null && EF.Functions.ILike(participant.Name, pattern, LikePattern.EscapeCharacter))
+				                                            || EF.Functions.ILike(participant.UserProfile!.Name, pattern, LikePattern.EscapeCharacter))));
 		}
 
-		var finalDbQuery = baseDbQuery.Select(ChatReadModel.GetMappingExpression(currentUser.Id));
+		var finalDbQuery = baseDbQuery
+			.OrderByDescending(chat => chat.Messages.Max(message => (DateTimeOffset?)message.SentAt) ?? chat.CreatedAt)
+			.ThenByDescending(chat => chat.Id)
+			.Select(ChatReadModel.GetMappingExpression(currentUser.Id, dbContext));
 
-		var readModels = await OffsetPaginated.Create(finalDbQuery, pageNumber!.Value, pageSize!.Value);
+		var readModels = await OffsetPaginated.Create(finalDbQuery, pageNumber, pageSize, cancellationToken);
 		return Results.Ok(readModels);
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using Community.Core.Database;
+using Community.Core.Database.Extensions;
 using Community.Core.Models.Chats;
 using Community.Core.ValueObjects;
 using Microsoft.AspNetCore.Builder;
@@ -21,10 +22,11 @@ internal record struct GetChatParticipants(
 internal sealed class GetChatParticipantsEndpoint() : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
-		.MapGet<GetChatParticipants, GetChatParticipantsHandler>("chats/{chatId}/members")
+		.MapGet<GetChatParticipants, GetChatParticipantsHandler>("chats/{chatId:long}/members")
 		.Produces<Listed<ChatParticipantReadModel>>()
 		.RequireAuthorization()
-		.ProducesError(401, "`UnauthorizedError`");
+		.ProducesError(401, "`UnauthorizedError`")
+		.ProducesError(404, "`Chat.NotFound`");
 }
 
 internal sealed class GetChatParticipantsHandler(
@@ -35,16 +37,20 @@ internal sealed class GetChatParticipantsHandler(
 	{
 		var (currentUser, chatId) = request;
 
-		var isParticipant = await dbContext.ChatParticipants.AnyAsync(chatParticipant => chatParticipant.UserId == currentUser.Id && chatParticipant.ChatId == chatId, cancellationToken);
+		var isParticipant = await dbContext.ChatParticipants
+			.Where(ChatParticipantsQueries.IsActive(chatId, currentUser.Id))
+			.AnyAsync(cancellationToken);
+
 		if (!isParticipant)
-			return new ErrorResult("GroupChat.NotFound", "Group chat with given ID does not exists!", 404);
+			return new ErrorResult("Chat.NotFound", "Chat with given ID does not exist.", 404);
 
-		var baseDbQuery = dbContext.ChatParticipants
-			.Where(x => x.ChatId == chatId)
-			.AsNoTracking();
+		var finalDbQuery = dbContext.ChatParticipants
+			.AsNoTracking()
+			.Active(chatId)
+			.OrderBy(participant => participant.JoinedAt)
+			.Select(ChatParticipantReadModel.MappingExpression);
 
-		var finalDbQuery = baseDbQuery.Select(ChatParticipantReadModel.MappingExpression);
-		var response = await Listed.Create(finalDbQuery);
+		var response = await Listed.Create(finalDbQuery, cancellationToken);
 		return Results.Ok(response);
 	}
 }

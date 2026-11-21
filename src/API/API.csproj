@@ -41,6 +41,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Community\Community.Core\Community.Core.csproj" />
     <ProjectReference Include="..\Projects\Projects.Contracts\Projects.Contracts.csproj" />
     <ProjectReference Include="..\Projects\Projects.Core\Projects.Core.csproj" />
     <ProjectReference Include="..\Shared\Shared.csproj" />

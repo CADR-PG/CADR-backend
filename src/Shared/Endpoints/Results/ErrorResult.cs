@@ -10,9 +10,7 @@ public record ErrorResult(string Type, string Message, [property: JsonIgnore] in
 	public Task ExecuteAsync(HttpContext httpContext)
 	{
 		httpContext.Response.StatusCode = StatusCode;
-		httpContext.Response.WriteAsJsonAsync(this);
-
-		return Task.CompletedTask;
+		return httpContext.Response.WriteAsJsonAsync(this);
 	}
 }
 

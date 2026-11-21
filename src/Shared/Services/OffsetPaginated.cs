@@ -13,13 +13,20 @@ public record OffsetPaginated<T>(IReadOnlyList<T> Items, int TotalCount, int Pag
 
 public static class OffsetPaginated
 {
-	public static async Task<OffsetPaginated<T>> Create<T>(IQueryable<T> source, int pageNumber = 1, int pageSize = 50) where T : class
-	{
-		var count = await source.CountAsync();
-		var items = await source.Skip((pageNumber - 1) * pageSize)
-			.Take(pageSize)
-			.ToListAsync();
+	public const int DefaultPageSize = 50;
+	public const int MaxPageSize = 100;
 
-		return new OffsetPaginated<T>(items, count, pageNumber, pageSize);
+	public static async Task<OffsetPaginated<T>> Create<T>(IQueryable<T> source, int? pageNumber = 1, int? pageSize = DefaultPageSize, CancellationToken cancellationToken = default) where T : class
+	{
+		var safePageSize = Math.Clamp(pageSize ?? DefaultPageSize, 1, MaxPageSize);
+		// upper bound prevents int overflow of the offset (negative OFFSET -> database error)
+		var safePageNumber = Math.Clamp(pageNumber ?? 1, 1, int.MaxValue / safePageSize);
+
+		var count = await source.CountAsync(cancellationToken);
+		var items = await source.Skip((safePageNumber - 1) * safePageSize)
+			.Take(safePageSize)
+			.ToListAsync(cancellationToken);
+
+		return new OffsetPaginated<T>(items, count, safePageNumber, safePageSize);
 	}
 }

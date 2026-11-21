@@ -35,7 +35,7 @@ internal sealed class GetMostPopularGamesHandler(ShopDbContext dbContext) : IHtt
 			.OrderByDescending(x => x.PlaysCount)
 			.ThenBy(x => x.GameId);
 
-		var topPlaysPage = await OffsetPaginated.Create(topPlaysQuery, pageSize: 10);
+		var topPlaysPage = await OffsetPaginated.Create(topPlaysQuery, pageSize: 10, cancellationToken: cancellationToken);
 
 		var gameIds = topPlaysPage.Items.Select(x => x.GameId).ToList();
 		if (gameIds.Count == 0)

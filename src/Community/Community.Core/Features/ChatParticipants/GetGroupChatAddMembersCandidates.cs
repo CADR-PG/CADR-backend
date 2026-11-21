@@ -1,4 +1,5 @@
 ﻿using Community.Core.Database;
+using Community.Core.Services;
 using Community.Core.Database.Extensions;
 using Community.Core.Entities.Chats;
 using Community.Core.Entities.UserProfiles;
@@ -21,31 +22,43 @@ internal record struct GetGroupChatAddMembersCandidates(
 	CurrentUser CurrentUser,
 	[FromRoute] ChatId ChatId,
 	[FromQuery] string? SearchPhrase,
-	[FromQuery] int? PageNumber = 0,
+	[FromQuery] int? PageNumber = 1,
 	[FromQuery] int? PageSize = 50
 ) : IHttpRequest;
 
 internal sealed class GetGroupChatAddMembersCandidatesEndpoint() : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
-		.MapGet<GetGroupChatAddMembersCandidates, GetGroupChatAddMembersCandidatesHandler>("group-chats/{chatId}/member-candidates")
+		.MapGet<GetGroupChatAddMembersCandidates, GetGroupChatAddMembersCandidatesHandler>("group-chats/{chatId:long}/member-candidates")
 		.Produces<OffsetPaginated<UserProfileSummaryReadModel>>()
 		.RequireAuthorization()
 		.ProducesError(401, "`UnauthorizedError`")
+		.ProducesError(403, "`GroupChat.Forbidden`")
 		.ProducesError(404, "`GroupChat.NotFound`");
 }
 
 internal sealed class GetGroupChatAddMembersCandidatesHandler(
-	CommunityDbContext dbContext
+	CommunityDbContext dbContext,
+	UserProfilesSynchronizer userProfilesSynchronizer
 ) : IHttpRequestHandler<GetGroupChatAddMembersCandidates>
 {
 	public async Task<IResult> Handle(GetGroupChatAddMembersCandidates request, CancellationToken cancellationToken)
 	{
 		var (currentUser, chatId, searchPhrase, pageNumber, pageSize) = request;
 
-		var isGroupChatMember = await dbContext.ChatParticipants.AnyAsync(chatParticipant => chatParticipant.UserId == currentUser.Id && chatParticipant.ChatId == chatId && chatParticipant.Chat!.Type == ChatType.Group, cancellationToken);
-		if (!isGroupChatMember)
-			return new ErrorResult("GroupChat.NotFound", "Group chat with given ID does not exists!", 404);
+		var currentMemberRole = await dbContext.ChatParticipants
+			.Where(ChatParticipantsQueries.IsActive(chatId, currentUser.Id))
+			.Where(chatParticipant => chatParticipant.Chat!.Type == ChatType.Group)
+			.Select(chatParticipant => (ChatParticipantRole?)chatParticipant.Role)
+			.FirstOrDefaultAsync(cancellationToken);
+
+		if (currentMemberRole is null)
+			return new ErrorResult("GroupChat.NotFound", "Group chat with given ID does not exist.", 404);
+
+		if (currentMemberRole != ChatParticipantRole.Admin)
+			return new ErrorResult("GroupChat.Forbidden", "Only group admins can perform this operation.", 403);
+
+		await userProfilesSynchronizer.EnsureAllSynchronized(cancellationToken);
 
 		var baseDbQuery = dbContext.UserProfiles
 			.AsNoTracking()
@@ -53,12 +66,16 @@ internal sealed class GetGroupChatAddMembersCandidatesHandler(
 
 		if (!string.IsNullOrWhiteSpace(searchPhrase))
 		{
-			baseDbQuery = baseDbQuery.Where(userProfile => EF.Functions.Like(userProfile.Name, $"%{searchPhrase}%"));
+			var pattern = LikePattern.Contains(searchPhrase);
+			baseDbQuery = baseDbQuery.Where(userProfile => EF.Functions.ILike(userProfile.Name, pattern, LikePattern.EscapeCharacter));
 		}
 
-		var finalDbQuery = baseDbQuery.Select(UserProfileSummaryReadModel.MappingExpression);
+		var finalDbQuery = baseDbQuery
+			.OrderBy(userProfile => userProfile.Name)
+			.ThenBy(userProfile => userProfile.UserId)
+			.Select(UserProfileSummaryReadModel.MappingExpression);
 
-		var readModels = await OffsetPaginated.Create(finalDbQuery, pageNumber!.Value, pageSize!.Value);
+		var readModels = await OffsetPaginated.Create(finalDbQuery, pageNumber, pageSize, cancellationToken);
 		return Results.Ok(readModels);
 	}
 }

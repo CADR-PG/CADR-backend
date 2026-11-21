@@ -1,4 +1,5 @@
 ﻿using Community.Core.Database;
+using Community.Core.Database.Extensions;
 using Community.Core.Entities.Friendships;
 using Community.Core.Models.Friendships;
 using Microsoft.AspNetCore.Builder;
@@ -18,7 +19,7 @@ internal record struct GetOutgoingFriendRequests(
 	CurrentUser CurrentUser,
 	[FromQuery] UserId? ReceiverId,
 	[FromQuery] string? SearchPhrase,
-	[FromQuery] int? PageNumber = 0,
+	[FromQuery] int? PageNumber = 1,
 	[FromQuery] int? PageSize = 50
 ) : IHttpRequest;
 
@@ -50,12 +51,15 @@ internal sealed class GetOutgoingFriendRequestsHandler(
 
 		if (!string.IsNullOrWhiteSpace(searchPhrase))
 		{
-			baseDbQuery = baseDbQuery.Where(friendRequest => EF.Functions.Like(friendRequest.ReceiverProfile!.Name, $"%{searchPhrase}%"));
+			var pattern = LikePattern.Contains(searchPhrase);
+			baseDbQuery = baseDbQuery.Where(friendRequest => EF.Functions.ILike(friendRequest.ReceiverProfile!.Name, pattern, LikePattern.EscapeCharacter));
 		}
 
-		var finalDbQuery = baseDbQuery.Select(OutgoingFriendRequestReadModel.MappingExpression);
+		var finalDbQuery = baseDbQuery
+			.OrderByDescending(friendRequest => friendRequest.SentAt)
+			.Select(OutgoingFriendRequestReadModel.MappingExpression);
 
-		var readModels = await OffsetPaginated.Create(finalDbQuery, pageNumber!.Value, pageSize!.Value);
+		var readModels = await OffsetPaginated.Create(finalDbQuery, pageNumber, pageSize, cancellationToken);
 		return Results.Ok(readModels);
 	}
 }

@@ -10,7 +10,6 @@ using Microsoft.EntityFrameworkCore;
 using Shared.Endpoints;
 using Shared.Endpoints.Requests;
 using Shared.Endpoints.Results;
-using Shared.Extensions;
 using Shared.Services;
 
 namespace Community.Core.Features.ChatMessages;
@@ -27,10 +26,12 @@ internal record struct GetPinnedMessages(
 internal sealed class GetPinnedMessagesEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
-		.MapGet<GetPinnedMessages, GetPinnedMessagesHandler>("chats/{chatId}/pinned-messages")
-		.Produces<Listed<ChatReadModel>>()
+		.MapGet<GetPinnedMessages, GetPinnedMessagesHandler>("chats/{chatId:long}/pinned-messages")
+		.Produces<CursorPaginated<ChatMessagePinReadModel>>()
 		.RequireAuthorization()
-		.ProducesError(401, "`UnauthorizedError`");
+		.ProducesError(400, "`Messages.InvalidCursor`")
+		.ProducesError(401, "`UnauthorizedError`")
+		.ProducesError(404, "`Chat.NotFound`");
 }
 
 internal sealed class GetPinnedMessagesHandler(
@@ -55,32 +56,53 @@ internal sealed class GetPinnedMessagesHandler(
 		if (!isActiveParticipant)
 			return new ErrorResult("Chat.NotFound", "Chat not found.", 404);
 
-		var baseDbQuery = dbContext.ChatMessages
+		var cursorMessageId = afterMessageId ?? beforeMessageId;
+		DateTimeOffset? cursorPinnedAt = null;
+
+		if (cursorMessageId is { } cursorId)
+		{
+			cursorPinnedAt = await dbContext.ChatMessagePins
+				.Where(pin => pin.ChatId == chatId && pin.MessageId == cursorId)
+				.Select(pin => (DateTimeOffset?)pin.PinnedAt)
+				.FirstOrDefaultAsync(cancellationToken);
+
+			if (cursorPinnedAt is null)
+				return new ErrorResult("Messages.InvalidCursor", "Cursor message is not pinned in this chat.");
+		}
+
+		var baseDbQuery = dbContext.ChatMessagePins
 			.AsNoTracking()
-			.Where(m => m.ChatId == chatId);
+			.Where(pin => pin.ChatId == chatId && pin.Message!.DeletedAt == null);
 
 		if (!string.IsNullOrWhiteSpace(searchPhrase))
 		{
-			baseDbQuery = baseDbQuery.Where(m => EF.Functions.ILike(m.Content!, searchPhrase, "\\"));
+			var pattern = LikePattern.Contains(searchPhrase);
+			baseDbQuery = baseDbQuery.Where(pin => EF.Functions.ILike(pin.Message!.Content!, pattern, LikePattern.EscapeCharacter));
 		}
 
 		var isAscending = afterMessageId is not null;
 
-		if (afterMessageId is { } afterId)
-			baseDbQuery = baseDbQuery.Where(chatMessage => chatMessage.Id > afterId).OrderBy(m => m.Id);
+		if (isAscending)
+		{
+			var (pinnedAt, messageId) = (cursorPinnedAt!.Value, cursorMessageId!.Value);
+			baseDbQuery = baseDbQuery
+				.Where(pin => pin.PinnedAt > pinnedAt || (pin.PinnedAt == pinnedAt && pin.MessageId > messageId))
+				.OrderBy(pin => pin.PinnedAt)
+				.ThenBy(pin => pin.MessageId);
+		}
 		else
 		{
-			if (beforeMessageId is { } beforeId)
-				baseDbQuery = baseDbQuery.Where(chatMessage => chatMessage.Id < beforeId);
+			if (cursorPinnedAt is { } pinnedAt && cursorMessageId is { } messageId)
+				baseDbQuery = baseDbQuery.Where(pin => pin.PinnedAt < pinnedAt || (pin.PinnedAt == pinnedAt && pin.MessageId < messageId));
 
-			baseDbQuery = baseDbQuery.OrderByDescending(m => m.Id);
+			baseDbQuery = baseDbQuery
+				.OrderByDescending(pin => pin.PinnedAt)
+				.ThenByDescending(pin => pin.MessageId);
 		}
 
-		var finalQuery = baseDbQuery
-			.Select(ChatMessageReadModel.MappingExpression);
+		var finalQuery = baseDbQuery.Select(ChatMessagePinReadModel.MappingExpression);
 
-		var response = CursorPaginated.Create(finalQuery, pageSize, reverse: isAscending);
-
+		var response = await CursorPaginated.Create(finalQuery, pageSize, reverse: isAscending, cancellationToken);
 		return Results.Ok(response);
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using Community.Core.Database;
+using Community.Core.Database.Extensions;
 using Community.Core.Entities.Friendships;
 using Community.Core.Models.Friendships;
 using Microsoft.AspNetCore.Builder;
@@ -18,7 +19,7 @@ internal record struct GetIncomingFriendRequests(
 	CurrentUser CurrentUser,
 	[FromQuery] UserId? SenderId,
 	[FromQuery] string? SearchPhrase,
-	[FromQuery] int? PageNumber = 0,
+	[FromQuery] int? PageNumber = 1,
 	[FromQuery] int? PageSize = 50
 ) : IHttpRequest;
 
@@ -26,7 +27,7 @@ internal sealed class GetIncomingFriendRequestsEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
 		.MapGet<GetIncomingFriendRequests, GetIncomingFriendRequestsHandler>("friend-requests/incoming")
-		.Produces<OffsetPaginated<OutgoingFriendRequestReadModel>>()
+		.Produces<OffsetPaginated<IncomingFriendRequestReadModel>>()
 		.RequireAuthorization()
 		.ProducesError(401, "`UnauthorizedError`");
 }
@@ -50,12 +51,15 @@ internal sealed class GetIncomingFriendRequestsHandler(
 
 		if (!string.IsNullOrWhiteSpace(searchPhrase))
 		{
-			baseDbQuery = baseDbQuery.Where(friendRequest => EF.Functions.Like(friendRequest.SenderProfile!.Name, $"%{searchPhrase}%"));
+			var pattern = LikePattern.Contains(searchPhrase);
+			baseDbQuery = baseDbQuery.Where(friendRequest => EF.Functions.ILike(friendRequest.SenderProfile!.Name, pattern, LikePattern.EscapeCharacter));
 		}
 
-		var finalDbQuery = baseDbQuery.Select(IncomingFriendRequestReadModel.MappingExpression);
+		var finalDbQuery = baseDbQuery
+			.OrderByDescending(friendRequest => friendRequest.SentAt)
+			.Select(IncomingFriendRequestReadModel.MappingExpression);
 
-		var readModels = await OffsetPaginated.Create(finalDbQuery, pageNumber!.Value, pageSize!.Value);
+		var readModels = await OffsetPaginated.Create(finalDbQuery, pageNumber, pageSize, cancellationToken);
 		return Results.Ok(readModels);
 	}
 }

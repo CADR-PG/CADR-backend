@@ -22,10 +22,11 @@ internal record struct GetChatReadStates(
 internal sealed class GetChatReadStatesEndpoint() : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
-		.MapGet<GetChatReadStates, GetChatReadStatesHandler>("chats/{chatId}/read-states")
+		.MapGet<GetChatReadStates, GetChatReadStatesHandler>("chats/{chatId:long}/read-states")
 		.Produces<Listed<ChatParticipantReadStateReadModel>>()
 		.RequireAuthorization()
-		.ProducesError(401, "`UnauthorizedError`");
+		.ProducesError(401, "`UnauthorizedError`")
+		.ProducesError(404, "`Chat.NotFound`");
 }
 
 internal sealed class GetChatReadStatesHandler(
@@ -43,12 +44,12 @@ internal sealed class GetChatReadStatesHandler(
 		if (!isParticipant)
 			return new ErrorResult("Chat.NotFound", "Chat with given ID does not exists!", 404);
 
-		var baseDbQuery = dbContext.ChatParticipants
-			.Where(x => x.ChatId == chatId)
-			.AsNoTracking();
+		var finalDbQuery = dbContext.ChatParticipants
+			.AsNoTracking()
+			.Active(chatId)
+			.Select(ChatParticipantReadStateReadModel.MappingExpression);
 
-		var finalDbQuery = baseDbQuery.Select(ChatParticipantReadStateReadModel.MappingExpression);
-		var response = await Listed.Create(finalDbQuery);
+		var response = await Listed.Create(finalDbQuery, cancellationToken);
 		return Results.Ok(response);
 	}
 }

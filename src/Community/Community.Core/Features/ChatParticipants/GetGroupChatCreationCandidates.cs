@@ -1,4 +1,5 @@
 ﻿using Community.Core.Database;
+using Community.Core.Services;
 using Community.Core.Database.Extensions;
 using Community.Core.Models.Chats;
 using Community.Core.Models.Profiles;
@@ -17,7 +18,7 @@ namespace Community.Core.Features.ChatParticipants;
 internal record struct GetGroupChatCreationCandidates(
 	CurrentUser CurrentUser,
 	[FromQuery] string? SearchPhrase,
-	[FromQuery] int? PageNumber = 0,
+	[FromQuery] int? PageNumber = 1,
 	[FromQuery] int? PageSize = 50
 ) : IHttpRequest;
 
@@ -31,12 +32,15 @@ internal sealed class GetGroupChatCreationCandidatesEndpoint() : IEndpoint
 }
 
 internal sealed class GetGroupChatCreationCandidatesHandler(
-	CommunityDbContext dbContext
+	CommunityDbContext dbContext,
+	UserProfilesSynchronizer userProfilesSynchronizer
 ) : IHttpRequestHandler<GetGroupChatCreationCandidates>
 {
 	public async Task<IResult> Handle(GetGroupChatCreationCandidates request, CancellationToken cancellationToken)
 	{
 		var (currentUser, searchPhrase, pageNumber, pageSize) = request;
+
+		await userProfilesSynchronizer.EnsureAllSynchronized(cancellationToken);
 
 		var baseDbQuery = dbContext.UserProfiles
 			.AsNoTracking()
@@ -44,12 +48,16 @@ internal sealed class GetGroupChatCreationCandidatesHandler(
 
 		if (!string.IsNullOrWhiteSpace(searchPhrase))
 		{
-			baseDbQuery = baseDbQuery.Where(userProfile => EF.Functions.Like(userProfile.Name, $"%{searchPhrase}%"));
+			var pattern = LikePattern.Contains(searchPhrase);
+			baseDbQuery = baseDbQuery.Where(userProfile => EF.Functions.ILike(userProfile.Name, pattern, LikePattern.EscapeCharacter));
 		}
 
-		var finalDbQuery = baseDbQuery.Select(UserProfileSummaryReadModel.MappingExpression);
+		var finalDbQuery = baseDbQuery
+			.OrderBy(userProfile => userProfile.Name)
+			.ThenBy(userProfile => userProfile.UserId)
+			.Select(UserProfileSummaryReadModel.MappingExpression);
 
-		var readModels = await OffsetPaginated.Create(finalDbQuery, pageNumber!.Value, pageSize!.Value);
+		var readModels = await OffsetPaginated.Create(finalDbQuery, pageNumber, pageSize, cancellationToken);
 		return Results.Ok(readModels);
 	}
 }

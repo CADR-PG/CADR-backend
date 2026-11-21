@@ -11,7 +11,6 @@ using Microsoft.EntityFrameworkCore;
 using Shared.Endpoints;
 using Shared.Endpoints.Requests;
 using Shared.Endpoints.Results;
-using Shared.Extensions;
 
 namespace Community.Core.Features.ChatMessages;
 
@@ -33,10 +32,12 @@ internal sealed record GetChatMessagesResponse(
 internal sealed class GetChatMessagesEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
-		.MapGet<GetChatMessages, GetChatMessagesHandler>("chats/{chatId}/messages")
+		.MapGet<GetChatMessages, GetChatMessagesHandler>("chats/{chatId:long}/messages")
 		.Produces<GetChatMessagesResponse>()
 		.RequireAuthorization()
-		.ProducesError(401, "`UnauthorizedError`");
+		.ProducesError(400, "`Messages.InvalidCursor`")
+		.ProducesError(401, "`UnauthorizedError`")
+		.ProducesError(404, "`Chat.NotFound`");
 }
 
 internal sealed class GetChatMessagesHandler(
@@ -71,8 +72,8 @@ internal sealed class GetChatMessagesHandler(
 
 		if (!string.IsNullOrWhiteSpace(searchPhrase))
 		{
-			var pattern = $"%{EscapeLike(searchPhrase.Trim())}%";
-			baseDbQuery = baseDbQuery.Where(m => EF.Functions.ILike(m.Content!, pattern, "\\"));
+			var pattern = LikePattern.Contains(searchPhrase);
+			baseDbQuery = baseDbQuery.Where(m => m.DeletedAt == null && EF.Functions.ILike(m.Content!, pattern, LikePattern.EscapeCharacter));
 		}
 
 		List<ChatMessageReadModel> messages;
@@ -83,7 +84,7 @@ internal sealed class GetChatMessagesHandler(
 			var olderCount = limit - newerCount;
 
 			var older = await baseDbQuery
-				.Where(m => m.Id < aroundId)
+				.Where(m => m.Id <= aroundId)
 				.OrderByDescending(m => m.Id)
 				.Take(olderCount)
 				.Select(ChatMessageReadModel.MappingExpression)
@@ -128,17 +129,17 @@ internal sealed class GetChatMessagesHandler(
 			.ToList();
 
 		var senders = senderIds.Count > 0
-			? await dbContext.UserProfiles
-				.Where(u => senderIds.Contains(u.UserId))
-				.Select(UserProfileSummaryReadModel.MappingExpression)
+			? await dbContext.ChatParticipants
+				.AsNoTracking()
+				.Where(participant => participant.ChatId == chatId && senderIds.Contains(participant.UserId))
+				.Select(participant => new UserProfileSummaryReadModel
+				{
+					UserId = participant.UserId,
+					Name = participant.Name ?? participant.UserProfile!.Name
+				})
 				.ToListAsync(cancellationToken)
 			: [];
 
 		return Results.Ok(new GetChatMessagesResponse(messages, senders));
 	}
-
-	private static string EscapeLike(string value) => value
-		.Replace("\\", "\\\\")
-		.Replace("%", "\\%")
-		.Replace("_", "\\_");
 }

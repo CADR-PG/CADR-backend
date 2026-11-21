@@ -29,35 +29,36 @@ internal sealed class FriendRequest
 
 	private FriendRequest() { }
 
-	public void Send()
+	public bool Send(TimeProvider timeProvider)
 	{
-		if (Status is FriendRequestStatus.Pending) return;
-		if (Attempts >= MaxAttempts) return;
+		if (Status is FriendRequestStatus.Pending) return true;
+		if (Attempts >= MaxAttempts) return false;
 
-		if (Status is FriendRequestStatus.Declined or FriendRequestStatus.Cancelled)
-			Attempts++;
-
+		Attempts++;
 		Status = FriendRequestStatus.Pending;
-		SentAt = DateTimeOffset.UtcNow;
+		SentAt = timeProvider.GetUtcNow();
+		return true;
 	}
 
 	public void Cancel()
 	{
-		Status = FriendRequestStatus.Cancelled;
+		if (Status is FriendRequestStatus.Pending)
+			Status = FriendRequestStatus.Cancelled;
 	}
 
 	public void Decline()
 	{
-		Status = FriendRequestStatus.Cancelled;
+		if (Status is FriendRequestStatus.Pending)
+			Status = FriendRequestStatus.Declined;
 	}
 
-	public static FriendRequest CreateSent(UserId senderId, UserId receiverId) => new()
+	public static FriendRequest CreateSent(UserId senderId, UserId receiverId, TimeProvider timeProvider) => new()
 	{
 		Id = Guid.NewGuid(),
 		SenderId = senderId,
 		ReceiverId = receiverId,
 		Status = FriendRequestStatus.Pending,
 		Attempts = 1,
-		SentAt = DateTimeOffset.UtcNow
+		SentAt = timeProvider.GetUtcNow()
 	};
 }

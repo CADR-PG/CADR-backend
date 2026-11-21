@@ -23,8 +23,7 @@ internal sealed class ChatParticipant
 	public ChatId ChatId { get; private init; }
 	public Chat? Chat { get; private init; }
 
-	public bool IsActive { get; private set; }
-	public DateTimeOffset? DeactivatedAt { get; set; }
+	public DateTimeOffset? DeactivatedAt { get; private set; }
 
 	private ChatParticipant() { }
 
@@ -38,4 +37,39 @@ internal sealed class ChatParticipant
 		UserId = ownerId, Name = null, ChatId = chatId, JoinedAt = joinedAt, Role = ChatParticipantRole.Admin
 	};
 
+	public void Deactivate(TimeProvider timeProvider)
+	{
+		if (DeactivatedAt is not null) return;
+
+		DeactivatedAt = timeProvider.GetUtcNow();
+		Role = ChatParticipantRole.Member;
+	}
+
+	public void Reactivate(DateTimeOffset joinedAt)
+	{
+		if (DeactivatedAt is null) return;
+
+		DeactivatedAt = null;
+		JoinedAt = joinedAt;
+		Role = ChatParticipantRole.Member;
+	}
+
+	public void PromoteToAdmin()
+	{
+		Role = ChatParticipantRole.Admin;
+	}
+
+	public void DemoteToMember()
+	{
+		Role = ChatParticipantRole.Member;
+	}
+
+	public bool MarkAsRead(ChatMessageId messageId, TimeProvider timeProvider)
+	{
+		if (LastReadMessageId is { } lastReadMessageId && messageId <= lastReadMessageId) return false;
+
+		LastReadMessageId = messageId;
+		LastMessageReadAt = timeProvider.GetUtcNow();
+		return true;
+	}
 }

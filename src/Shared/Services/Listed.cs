@@ -6,9 +6,9 @@ public sealed record Listed<T>(IReadOnlyList<T> Items) where T : class;
 
 public static class Listed
 {
-	public static async Task<Listed<T>> Create<T>(IQueryable<T> source) where T : class
+	public static async Task<Listed<T>> Create<T>(IQueryable<T> source, CancellationToken cancellationToken = default) where T : class
 	{
-		var items = await source.ToListAsync();
+		var items = await source.ToListAsync(cancellationToken);
 		return new Listed<T>(items);
 	}
 

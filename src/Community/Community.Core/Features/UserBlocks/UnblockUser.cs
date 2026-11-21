@@ -1,4 +1,4 @@
-﻿using Community.Core.Database;
+using Community.Core.Database;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -7,7 +7,9 @@ using Microsoft.EntityFrameworkCore;
 using Shared.Endpoints;
 using Shared.Endpoints.Requests;
 using Shared.Endpoints.Results;
+using Shared.Endpoints.Validation;
 using Shared.ValueObjects;
+using System.ComponentModel.DataAnnotations;
 
 namespace Community.Core.Features.UserBlocks;
 
@@ -16,15 +18,17 @@ internal record struct UnblockUser(
 	[FromBody] UnblockUser.Body Payload
 ) : IHttpRequest
 {
-	internal sealed record Body(Guid UserId);
+	internal sealed record Body([property: Required] UserId? UserId);
 }
 
 internal sealed class UnblockUserEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
 		.MapPost<UnblockUser, UnblockUserHandler>("blocked-users/unblock")
-		.Produces(204)
+		.AddDataAnnotationsValidation<UnblockUser.Body>()
+		.Produces(StatusCodes.Status204NoContent)
 		.RequireAuthorization()
+		.ProducesError(400, "`ValidationError`")
 		.ProducesError(401, "`UnauthorizedError`");
 }
 
@@ -37,9 +41,7 @@ internal sealed class UnblockUserHandler(
 		CancellationToken cancellationToken)
 	{
 		var (currentUser, payload) = request;
-		var blockedUserId = new UserId(payload.UserId);
-
-		await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+		var blockedUserId = payload.UserId!.Value;
 
 		await dbContext.UserBlocks
 			.Where(userBlock => userBlock.BlockerId == currentUser.Id && userBlock.BlockedId == blockedUserId)

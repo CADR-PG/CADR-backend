@@ -25,8 +25,9 @@ internal sealed class DeleteChatMessageEndpoint : IEndpoint
 		.MapDelete<DeleteChatMessage, DeleteChatMessageHandler>("chats/{chatId:long}/messages/{messageId:long}")
 		.Produces(StatusCodes.Status204NoContent)
 		.RequireAuthorization()
+		.ProducesError(400, "`ChatMessage.Invalid`")
 		.ProducesError(401, "`UnauthorizedError`")
-		.ProducesError(403, "`ChatMessage.Forbidden`")
+		.ProducesError(403, "`ChatMessage.Forbidden`, `Chat.ReadOnly`")
 		.ProducesError(404, "`ChatMessage.NotFound`");
 }
 
@@ -46,6 +47,9 @@ internal sealed class DeleteChatMessageHandler(
 
 		if (participant is null)
 			return new ErrorResult("ChatMessage.NotFound", "Chat message not found.", 404);
+
+		if (await dbContext.IsChatReadOnly(chatId, cancellationToken))
+			return ChatWriteAccess.ReadOnlyError();
 
 		var message = await dbContext.ChatMessages
 			.FirstOrDefaultAsync(m => m.ChatId == chatId && m.Id == messageId, cancellationToken);

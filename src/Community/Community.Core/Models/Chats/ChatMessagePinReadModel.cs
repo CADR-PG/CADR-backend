@@ -19,16 +19,17 @@ internal sealed class ChatMessagePinReadModel
 			Id = chatMessagePin.Message!.Id,
 			Type = chatMessagePin.Message.Type,
 			EventType = chatMessagePin.Message.EventType,
-			Content = chatMessagePin.Message.Content,
+			Content = chatMessagePin.Message.DeletedAt == null ? chatMessagePin.Message.Content : null,
 			SenderId = chatMessagePin.Message.SenderId,
 			SentAt = chatMessagePin.Message.SentAt,
 			EditedAt = chatMessagePin.Message.EditedAt,
+			DeletedAt = chatMessagePin.Message.DeletedAt,
 			ReferencedMessage = chatMessagePin.Message.ReferencedMessageId == null ? null : new ChatMessageReadModel.ReferencedMessageReadModel
 			{
 				Id = chatMessagePin.Message.ReferencedMessage!.Id,
 				Type = chatMessagePin.Message.ReferencedMessage.Type,
 				SenderId = chatMessagePin.Message.ReferencedMessage.SenderId,
-				Content = chatMessagePin.Message.ReferencedMessage.Content
+				Content = chatMessagePin.Message.ReferencedMessage.DeletedAt == null ? chatMessagePin.Message.ReferencedMessage.Content : null
 			}
 		}
 	};

@@ -1,4 +1,5 @@
-﻿using Community.Core.Database;
+using Community.Core.Database;
+using Community.Core.Database.Extensions;
 using Community.Core.Entities.Chats;
 using Community.Core.ValueObjects;
 using Microsoft.AspNetCore.Builder;
@@ -16,62 +17,64 @@ namespace Community.Core.Features.ChatParticipants;
 internal record struct RemoveGroupChatMember(
 	CurrentUser CurrentUser,
 	[FromRoute] ChatId ChatId,
-	[FromRoute] Guid MemberId
+	[FromRoute] UserId MemberId
 ) : IHttpRequest;
 
 internal sealed class RemoveGroupChatMemberEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
 		.MapPost<RemoveGroupChatMember, RemoveGroupChatMemberHandler>(
-			"group-chats/{chatId}/members/{memberId}")
+			"group-chats/{chatId:long}/members/{memberId:guid}")
+		.Produces(StatusCodes.Status204NoContent)
 		.RequireAuthorization()
-		.ProducesError(400, "`GroupChat.CannotRemoveSelf`, `GroupChat.CannotRemoveAdmin`")
+		.ProducesError(400, "`GroupChat.CannotRemoveSelf`")
 		.ProducesError(401, "`UnauthorizedError`")
-		.ProducesError(403, "`GroupChat.Forbidden`")
+		.ProducesError(403, "`GroupChat.Forbidden`, `GroupChat.CannotRemoveAdmin`")
 		.ProducesError(404, "`GroupChat.NotFound`");
 }
 
 internal sealed class RemoveGroupChatMemberHandler(
-	CommunityDbContext dbContext
+	CommunityDbContext dbContext,
+	TimeProvider timeProvider
 ) : IHttpRequestHandler<RemoveGroupChatMember>
 {
 	public async Task<IResult> Handle(
 		RemoveGroupChatMember request,
 		CancellationToken cancellationToken)
 	{
-		var (currentUser, chatId, rawMemberId) = request;
-		var memberId = new UserId(rawMemberId);
+		var (currentUser, chatId, memberId) = request;
 
 		if (memberId == currentUser.Id)
 			return new ErrorResult("GroupChat.CannotRemoveSelf", "Use the leave endpoint to leave a group chat.");
 
-		var members = await dbContext.ChatParticipants
-			.Where(m => m.ChatId == chatId
-			            && (m.UserId == currentUser.Id || m.UserId == memberId)
-			            && m.Chat!.Type == ChatType.Group)
-			.Select(m => new { m.UserId, m.Role })
-			.ToListAsync(cancellationToken);
+		await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+		await dbContext.LockChatForUpdate(chatId, cancellationToken);
 
-		var currentMember = members.FirstOrDefault(m => m.UserId == currentUser.Id);
-		var targetMember = members.FirstOrDefault(m => m.UserId == memberId);
+		var currentMemberRole = await dbContext.ChatParticipants
+			.Where(ChatParticipantsQueries.IsActive(chatId, currentUser.Id))
+			.Where(participant => participant.Chat!.Type == ChatType.Group)
+			.Select(participant => (ChatParticipantRole?)participant.Role)
+			.FirstOrDefaultAsync(cancellationToken);
 
-		if (currentMember is null)
+		if (currentMemberRole is null)
 			return new ErrorResult("GroupChat.NotFound", "Group chat does not exist.", 404);
 
-		if (currentMember.Role == ChatParticipantRole.Member)
+		if (currentMemberRole != ChatParticipantRole.Admin)
 			return new ErrorResult("GroupChat.Forbidden", "Only group admins can perform this operation.", 403);
+
+		var targetMember = await dbContext.ChatParticipants
+			.Active(chatId)
+			.FirstOrDefaultAsync(participant => participant.UserId == memberId, cancellationToken);
 
 		if (targetMember is null)
 			return Results.NoContent();
 
 		if (targetMember.Role != ChatParticipantRole.Member)
-			return new ErrorResult("GroupChat.CannotRemoveAdmin", "Admins cannot be removed. Demote them first.", 403);
+			return new ErrorResult("GroupChat.CannotRemoveAdmin", "Admins cannot be removed. Demote them to a member first.", 403);
 
-		await dbContext.ChatParticipants
-			.Where(m => m.ChatId == chatId
-			            && m.UserId == memberId
-			            && m.Role == ChatParticipantRole.Member)
-			.ExecuteDeleteAsync(cancellationToken);
+		targetMember.Deactivate(timeProvider);
+		await dbContext.SaveChangesAsync(cancellationToken);
+		await transaction.CommitAsync(cancellationToken);
 
 		return Results.NoContent();
 	}

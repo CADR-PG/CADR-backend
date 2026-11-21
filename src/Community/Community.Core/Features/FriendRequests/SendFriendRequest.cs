@@ -1,17 +1,18 @@
-﻿using Community.Core.Database;
+using Community.Core.Database;
+using Community.Core.Database.Extensions;
 using Community.Core.Entities.Friendships;
 using Community.Core.Models.Friendships;
-using Community.Core.Models.Profiles;
 using Community.Core.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Shared.Endpoints;
 using Shared.Endpoints.Requests;
 using Shared.Endpoints.Results;
+using Shared.Endpoints.Validation;
 using Shared.ValueObjects;
+using System.ComponentModel.DataAnnotations;
 
 namespace Community.Core.Features.FriendRequests;
 
@@ -20,22 +21,25 @@ internal record struct SendFriendRequest(
 	SendFriendRequest.Body Payload
 ) : IHttpRequest
 {
-	internal sealed record Body(Guid ReceiverId);
+	internal sealed record Body([property: Required] UserId? ReceiverId);
 }
 
 internal sealed class SendFriendRequestEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
 		.MapPost<SendFriendRequest, SendFriendRequestHandler>("friend-requests/send")
+		.AddDataAnnotationsValidation<SendFriendRequest.Body>()
 		.Produces<OutgoingFriendRequestReadModel>()
 		.RequireAuthorization()
-		.ProducesError(400, "`InvalidFriendRequest`, `ProfileNotFound`")
+		.ProducesError(400, "`ValidationError`, `InvalidFriendRequest`, `ProfileNotFound`, `FriendRequest.AttemptsExceeded`")
 		.ProducesError(401, "`UnauthorizedError`");
 }
 
 internal sealed class SendFriendRequestHandler(
 	FriendshipsService friendshipsService,
-	CommunityDbContext dbContext
+	UserProfilesSynchronizer userProfilesSynchronizer,
+	CommunityDbContext dbContext,
+	TimeProvider timeProvider
 ) : IHttpRequestHandler<SendFriendRequest>
 {
 	public async Task<IResult> Handle(
@@ -45,63 +49,68 @@ internal sealed class SendFriendRequestHandler(
 		var (currentUser, payload) = request;
 
 		var senderId = currentUser.Id;
-		var receiverId = new UserId(payload.ReceiverId);
+		var receiverId = payload.ReceiverId!.Value;
 
 		if (senderId == receiverId)
-			return new ErrorResult("InvalidFriendRequest",
-				"Invalid friend request.");
+			return new ErrorResult("InvalidFriendRequest", "Invalid friend request.");
+
+		await userProfilesSynchronizer.EnsureSynchronized(receiverId, cancellationToken);
 
 		var receiverProfile = await dbContext.UserProfiles
 			.AsNoTracking()
 			.FirstOrDefaultAsync(profile => profile.UserId == receiverId, cancellationToken);
 
-		if (receiverProfile is null)
-			return new ErrorResult(
-				"ProfileNotFound",
-				"No public profile was found for the specified user ID.");
+		var isBlocked = await dbContext.UserBlocks.Between(senderId, receiverId).AnyAsync(cancellationToken);
+
+		if (receiverProfile is null || isBlocked)
+			return new ErrorResult("ProfileNotFound", "No public profile was found for the specified user ID.");
 
 		var (lowerUserId, higherUserId) = UserId.GetLowerAndHigherUserId(senderId, receiverId);
 
-		var friendship = await dbContext.Friendships
-			.Include(x => x.HigherUserId)
-			.SingleOrDefaultAsync(
-				friendship =>
-					friendship.LowerUserId == lowerUserId &&
-					friendship.HigherUserId == higherUserId,
-				cancellationToken);
+		var friendshipExists = await dbContext.Friendships
+			.AnyAsync(friendship => friendship.LowerUserId == lowerUserId && friendship.HigherUserId == higherUserId, cancellationToken);
 
-		if (friendship is not null)
+		if (friendshipExists)
 			return Results.Ok(OutgoingFriendRequestReadModel.Accepted(receiverProfile));
 
-		// TODO: ADD DISTRIBUTED LOCKING, TRANSACTIONS...
-
-		var receiverFriendshipRequestExists = await dbContext.FriendRequests
-			.AnyAsync(
-				friendshipRequest => friendshipRequest.SenderId == receiverId && friendshipRequest.ReceiverId == senderId,
+		var receiverPendingRequestExists = await dbContext.FriendRequests
+			.AnyAsync(friendRequest => friendRequest.SenderId == receiverId
+			                           && friendRequest.ReceiverId == senderId
+			                           && friendRequest.Status == FriendRequestStatus.Pending,
 				cancellationToken);
 
-		if (receiverFriendshipRequestExists)
+		if (receiverPendingRequestExists)
 		{
-			await friendshipsService.StartFriendship(senderId, receiverId);
+			await friendshipsService.StartFriendship(senderId, receiverId, cancellationToken);
 			return Results.Ok(OutgoingFriendRequestReadModel.Accepted(receiverProfile));
 		}
 
-		var senderFriendshipRequest = await dbContext.FriendRequests
-			.SingleOrDefaultAsync(
-				friendshipRequest => friendshipRequest.SenderId == senderId && friendshipRequest.ReceiverId == receiverId,
-				cancellationToken);
+		var senderFriendRequest = await dbContext.FriendRequests
+			.SingleOrDefaultAsync(friendRequest => friendRequest.SenderId == senderId && friendRequest.ReceiverId == receiverId, cancellationToken);
 
-		if (senderFriendshipRequest is null)
+		if (senderFriendRequest is null)
 		{
-			senderFriendshipRequest = FriendRequest.CreateSent(senderId, receiverId);
-			await dbContext.AddAsync(senderFriendshipRequest, cancellationToken);
+			senderFriendRequest = FriendRequest.CreateSent(senderId, receiverId, timeProvider);
+			await dbContext.AddAsync(senderFriendRequest, cancellationToken);
 		}
-		else
+		else if (!senderFriendRequest.Send(timeProvider))
 		{
-			senderFriendshipRequest.Send();
+			return new ErrorResult("FriendRequest.AttemptsExceeded",
+				$"Friend request can be sent at most {FriendRequest.MaxAttempts} times.");
 		}
 
-		await dbContext.SaveChangesAsync(cancellationToken);
-		return Results.Ok(OutgoingFriendRequestReadModel.Sent(senderFriendshipRequest.SentAt, receiverProfile));
+		try
+		{
+			await dbContext.SaveChangesAsync(cancellationToken);
+		}
+		catch (DbUpdateException exception) when (exception.IsUniqueViolation())
+		{
+			dbContext.ChangeTracker.Clear();
+			senderFriendRequest = await dbContext.FriendRequests
+				.AsNoTracking()
+				.SingleAsync(friendRequest => friendRequest.SenderId == senderId && friendRequest.ReceiverId == receiverId, cancellationToken);
+		}
+
+		return Results.Ok(OutgoingFriendRequestReadModel.Sent(senderFriendRequest, receiverProfile));
 	}
 }

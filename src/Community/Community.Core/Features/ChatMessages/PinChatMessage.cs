@@ -23,11 +23,12 @@ internal record struct PinChatMessage(
 internal sealed class PinChatMessageEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
-		.MapPut<PinChatMessage, PinChatMessageHandler>("chats/{chatId}/pins/{messageId}")
+		.MapPut<PinChatMessage, PinChatMessageHandler>("chats/{chatId:long}/pins/{messageId:long}")
 		.Produces(StatusCodes.Status204NoContent)
 		.RequireAuthorization()
+		.ProducesError(400, "`PinChatMessage.InvalidMessage`")
 		.ProducesError(401, "`UnauthorizedError`")
-		.ProducesError(403, "`Pin.Forbidden`, `Pin.LimitReached`")
+		.ProducesError(403, "`PinChatMessage.Forbidden`, `PinChatMessage.LimitReached`, `Chat.ReadOnly`")
 		.ProducesError(404, "`Chat.NotFound`, `ChatMessage.NotFound`");
 }
 
@@ -45,13 +46,16 @@ internal sealed class PinChatMessageHandler(
 
 		var participant = await dbContext.ChatParticipants
 			.Where(ChatParticipantsQueries.IsActive(chatId, currentUser.Id))
-			.Select(chatParticipant => new { chatParticipant.Role })
+			.Select(chatParticipant => new { chatParticipant.Role, chatParticipant.Chat!.Type })
 			.FirstOrDefaultAsync(cancellationToken);
 
 		if (participant is null)
 			return new ErrorResult("Chat.NotFound", "Chat not found.", 404);
 
-		if (participant.Role != ChatParticipantRole.Admin)
+		if (await dbContext.IsChatReadOnly(chatId, cancellationToken))
+			return ChatWriteAccess.ReadOnlyError();
+
+		if (participant.Type != ChatType.Direct && participant.Role != ChatParticipantRole.Admin)
 			return new ErrorResult("PinChatMessage.Forbidden", "You cannot pin messages.", 403);
 
 		var message = await dbContext.ChatMessages
@@ -63,7 +67,7 @@ internal sealed class PinChatMessageHandler(
 			return new ErrorResult("ChatMessage.NotFound", "Chat message not found.", 404);
 
 		if (message.Type == ChatMessageType.Event)
-			return new ErrorResult("PinChatMessage.Forbidden", "Event message cannot be pinned!", 400);
+			return new ErrorResult("PinChatMessage.InvalidMessage", "Event message cannot be pinned.");
 
 		var alreadyPinned = await dbContext.ChatMessagePins
 			.AnyAsync(p => p.ChatId == chatId && p.MessageId == messageId, cancellationToken);
@@ -81,9 +85,14 @@ internal sealed class PinChatMessageHandler(
 		await dbContext.ChatMessagePins.AddAsync(pin, cancellationToken);
 		await dbContext.ChatMessages.AddAsync(eventMessage, cancellationToken);
 
-		// signalR send
-
-		await dbContext.SaveChangesAsync(cancellationToken);
+		try
+		{
+			await dbContext.SaveChangesAsync(cancellationToken);
+		}
+		catch (DbUpdateException exception) when (exception.IsUniqueViolation())
+		{
+			dbContext.ChangeTracker.Clear();
+		}
 
 		return Results.NoContent();
 	}

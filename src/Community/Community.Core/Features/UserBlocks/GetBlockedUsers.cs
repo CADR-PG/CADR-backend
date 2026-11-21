@@ -1,4 +1,5 @@
 ﻿using Community.Core.Database;
+using Community.Core.Database.Extensions;
 using Community.Core.Entities.Friendships;
 using Community.Core.Models.Friendships;
 using Microsoft.AspNetCore.Builder;
@@ -18,14 +19,14 @@ internal record struct GetBlockedUsers(
 	CurrentUser CurrentUser,
 	[FromQuery] UserId? BlockedId,
 	[FromQuery] string? SearchPhrase,
-	[FromQuery] int? PageNumber = 0,
+	[FromQuery] int? PageNumber = 1,
 	[FromQuery] int? PageSize = 50
 ) : IHttpRequest;
 
 internal sealed class GetBlockedUsersEndpoint : IEndpoint
 {
 	public static void Register(IEndpointRouteBuilder endpoints) => endpoints
-		.MapGet<GetBlockedUsers, GetBlockedUsersHandler>("blocked-user")
+		.MapGet<GetBlockedUsers, GetBlockedUsersHandler>("blocked-users")
 		.Produces<OffsetPaginated<BlockedUserReadModel>>()
 		.RequireAuthorization()
 		.ProducesError(401, "`UnauthorizedError`");
@@ -45,17 +46,20 @@ internal sealed class GetBlockedUsersHandler(
 
 		if (blockedId is not null)
 		{
-			baseDbQuery = baseDbQuery.Where(userBlock => userBlock.BlockerId == blockedId);
+			baseDbQuery = baseDbQuery.Where(userBlock => userBlock.BlockedId == blockedId);
 		}
 
 		if (!string.IsNullOrWhiteSpace(searchPhrase))
 		{
-			baseDbQuery = baseDbQuery.Where(userBlock => EF.Functions.Like(userBlock.BlockedProfile!.Name, $"%{searchPhrase}%"));
+			var pattern = LikePattern.Contains(searchPhrase);
+			baseDbQuery = baseDbQuery.Where(userBlock => EF.Functions.ILike(userBlock.BlockedProfile!.Name, pattern, LikePattern.EscapeCharacter));
 		}
 
-		var finalDbQuery = baseDbQuery.Select(BlockedUserReadModel.MappingExpression);
+		var finalDbQuery = baseDbQuery
+			.OrderByDescending(userBlock => userBlock.BlockedAt)
+			.Select(BlockedUserReadModel.MappingExpression);
 
-		var readModels = await OffsetPaginated.Create(finalDbQuery, pageNumber!.Value, pageSize!.Value);
+		var readModels = await OffsetPaginated.Create(finalDbQuery, pageNumber, pageSize, cancellationToken);
 		return Results.Ok(readModels);
 	}
 }

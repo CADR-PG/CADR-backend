@@ -1,4 +1,5 @@
 ﻿using Community.Core.Database;
+using Community.Core.Database.Extensions;
 using Community.Core.Models.Friendships;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -17,7 +18,7 @@ internal record struct GetFriends(
 	CurrentUser CurrentUser,
 	[FromQuery] UserId? FriendId,
 	[FromQuery] string? SearchPhrase,
-	[FromQuery] int? PageNumber = 0,
+	[FromQuery] int? PageNumber = 1,
 	[FromQuery] int? PageSize = 50
 ) : IHttpRequest;
 
@@ -50,15 +51,18 @@ internal sealed class GetFriendsHandler(
 
 		if (!string.IsNullOrWhiteSpace(searchPhrase))
 		{
+			var pattern = LikePattern.Contains(searchPhrase);
 			baseDbQuery = baseDbQuery.Where(friendship => friendship.LowerUserId == currentUser.Id
-				? EF.Functions.Like(friendship.HigherUser!.Name, $"%{searchPhrase}%")
-				: EF.Functions.Like(friendship.LowerUser!.Name, $"%{searchPhrase}%")
+				? EF.Functions.ILike(friendship.HigherUser!.Name, pattern, LikePattern.EscapeCharacter)
+				: EF.Functions.ILike(friendship.LowerUser!.Name, pattern, LikePattern.EscapeCharacter)
 			);
 		}
 
-		var finalDbQuery = baseDbQuery.Select(FriendReadModel.GetMappingExpression(currentUser.Id));
+		var finalDbQuery = baseDbQuery
+			.OrderByDescending(friendship => friendship.StartedAt)
+			.Select(FriendReadModel.GetMappingExpression(currentUser.Id));
 
-		var readModels = await OffsetPaginated.Create(finalDbQuery, pageNumber!.Value, pageSize!.Value);
+		var readModels = await OffsetPaginated.Create(finalDbQuery, pageNumber, pageSize, cancellationToken);
 		return Results.Ok(readModels);
 	}
 }

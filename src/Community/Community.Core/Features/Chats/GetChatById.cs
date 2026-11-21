@@ -1,4 +1,5 @@
 ﻿using Community.Core.Database;
+using Community.Core.Database.Extensions;
 using Community.Core.Models.Chats;
 using Community.Core.ValueObjects;
 using Microsoft.AspNetCore.Builder;
@@ -24,7 +25,7 @@ internal sealed class GetChatByIdEndpoint : IEndpoint
 		.Produces<ChatReadModel>()
 		.RequireAuthorization()
 		.ProducesError(401, "`UnauthorizedError`")
-		.ProducesError(404, "`ChatNotFound`");
+		.ProducesError(404, "`Chat.NotFound`");
 }
 
 internal sealed class GetChatByIdHandler(
@@ -38,12 +39,12 @@ internal sealed class GetChatByIdHandler(
 		var dbQuery = dbContext.Chats
 			.AsNoTracking()
 			.Where(chat => chat.Id == chatId)
-			.Where(chat => chat.Participants.Any(participant => participant.UserId == currentUser.Id))
-			.Select(ChatReadModel.GetMappingExpression(currentUser.Id));
+			.AccessibleBy(currentUser.Id)
+			.Select(ChatReadModel.GetMappingExpression(currentUser.Id, dbContext));
 
 		var readModel = await dbQuery.FirstOrDefaultAsync(cancellationToken);
 		return readModel is null
-			? new ErrorResult("ChatNotFound", "Chat with given ID does not exists")
+			? new ErrorResult("Chat.NotFound", "Chat with given ID does not exist.", 404)
 			: Results.Ok(readModel);
 	}
 }

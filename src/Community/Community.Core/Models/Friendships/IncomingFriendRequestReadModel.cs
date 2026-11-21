@@ -6,6 +6,7 @@ namespace Community.Core.Models.Friendships;
 
 internal sealed record IncomingFriendRequestReadModel
 {
+	public required Guid Id { get; init; }
 	public required DateTimeOffset SentAt { get; init; }
 	public required UserProfileSummaryReadModel Profile { get; init; }
 
@@ -13,6 +14,7 @@ internal sealed record IncomingFriendRequestReadModel
 		friendRequest =>
 			new IncomingFriendRequestReadModel
 			{
+				Id = friendRequest.Id,
 				SentAt = friendRequest.SentAt,
 				Profile = new UserProfileSummaryReadModel
 				{

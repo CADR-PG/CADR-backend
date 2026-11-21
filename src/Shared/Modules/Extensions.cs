@@ -27,13 +27,21 @@ public static class Extensions
 	{
 		var openHandlerInterfaceType = typeof(IHttpRequestHandler<>);
 
-		var serviceDescriptors = typeof(TModule).Assembly.GetTypes()
+		var handlerTypes = typeof(TModule).Assembly.GetTypes()
 			.Where(t => t is { IsClass: true, IsAbstract: false, IsGenericTypeDefinition: false })
-			.SelectMany(t => t.GetInterfaces()
+			.Select(t => (Type: t, Interfaces: t.GetInterfaces()
 				.Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == openHandlerInterfaceType)
-				.Select(i => new ServiceDescriptor(i, t, lifetime)));
+				.ToList()))
+			.Where(x => x.Interfaces.Count > 0);
 
-		foreach (var descriptor in serviceDescriptors) services.TryAddEnumerable(descriptor);
+		foreach (var (handlerType, interfaces) in handlerTypes)
+		{
+			// endpoints (Map*<TRequest, THandler>) resolve the concrete handler type
+			services.TryAdd(new ServiceDescriptor(handlerType, handlerType, lifetime));
+
+			foreach (var handlerInterface in interfaces)
+				services.TryAddEnumerable(new ServiceDescriptor(handlerInterface, handlerType, lifetime));
+		}
 	}
 
 	public static void MapEndpoints<TModule>(this IEndpointRouteBuilder endpoints) where TModule : IModule

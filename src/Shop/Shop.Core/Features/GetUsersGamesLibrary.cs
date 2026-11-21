@@ -32,7 +32,7 @@ internal sealed class GetUsersGamesLibraryHandler(
 			.Where(entry => entry.UserId == userId)
 			.Select(entry => entry.Game);
 
-		var paginatedListOfGames = await OffsetPaginated.Create(usersLibraryQuery);
+		var paginatedListOfGames = await OffsetPaginated.Create(usersLibraryQuery, cancellationToken: cancellationToken);
 		return Results.Ok(paginatedListOfGames);
 	}
 }

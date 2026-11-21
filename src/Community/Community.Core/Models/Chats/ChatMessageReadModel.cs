@@ -11,9 +11,10 @@ internal sealed class ChatMessageReadModel
 	public required ChatMessageType Type { get; set; }
 	public required ChatMessageEventType? EventType { get; set; }
 	public required string? Content { get; set; }
-	public required Guid SenderId { get; set; }
+	public required UserId SenderId { get; set; }
 	public required DateTimeOffset SentAt { get; set; }
 	public required DateTimeOffset? EditedAt { get; set; }
+	public required DateTimeOffset? DeletedAt { get; set; }
 
 	public required ReferencedMessageReadModel? ReferencedMessage { get; set; }
 
@@ -30,16 +31,17 @@ internal sealed class ChatMessageReadModel
 		Id = chatMessage.Id,
 		Type = chatMessage.Type,
 		EventType = chatMessage.EventType,
-		Content = chatMessage.Content,
+		Content = chatMessage.DeletedAt == null ? chatMessage.Content : null,
 		SenderId = chatMessage.SenderId,
 		SentAt = chatMessage.SentAt,
 		EditedAt = chatMessage.EditedAt,
+		DeletedAt = chatMessage.DeletedAt,
 		ReferencedMessage = chatMessage.ReferencedMessageId == null ? null : new ReferencedMessageReadModel
 		{
 			Id = chatMessage.ReferencedMessage!.Id,
 			Type = chatMessage.ReferencedMessage.Type,
 			SenderId = chatMessage.ReferencedMessage.SenderId,
-			Content = chatMessage.ReferencedMessage.Content
+			Content = chatMessage.ReferencedMessage.DeletedAt == null ? chatMessage.ReferencedMessage.Content : null
 		}
 	};
 

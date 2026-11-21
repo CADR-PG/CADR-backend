@@ -49,7 +49,7 @@ internal sealed class AcceptFriendRequestHandler(
 		if (friendRequest is null)
 			return new ErrorResult("FriendRequestNotFound", "Friend request does not exist or was cancelled", 404);
 
-		var friendship = await friendshipsService.StartFriendship(friendRequest);
+		var friendship = await friendshipsService.StartFriendship(friendRequest, cancellationToken);
 
 		return Results.Ok(FriendReadModel.Map(friendRequest.SenderProfile!, friendship.StartedAt));
 	}
