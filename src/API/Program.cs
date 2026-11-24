@@ -3,6 +3,7 @@ using API.Exceptions;
 using Azure.Identity;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
 using Microsoft.AspNetCore.HttpOverrides;
+using Payments.Stripe;
 using Projects.Core;
 using Shared;
 using Shared.Modules;
@@ -15,7 +16,8 @@ var builder = WebApplication.CreateBuilder(args);
 var applicationContext = new ApplicationContext([
 	new UsersModule(),
 	new ProjectsModule(),
-	new ShopModule()
+	new ShopModule(),
+	new PaymentsStripeModule()
 ]);
 
 if (builder.Environment.IsProduction())

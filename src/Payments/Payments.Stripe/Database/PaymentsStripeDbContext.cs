@@ -1,5 +1,6 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
+using Payments.Stripe.Entities;
 using Shared.ValueObjects;
 using Users.Contracts.Database.References;
 
@@ -7,6 +8,9 @@ namespace Payments.Stripe.Database;
 
 internal sealed class PaymentsStripeDbContext(DbContextOptions<PaymentsStripeDbContext> dbContextOptions) : DbContext(dbContextOptions)
 {
+	public DbSet<UserReference> Users { get; init; } = null!;
+	public DbSet<StripeCutomer> StripeCustomers { get; init; } = null!;
+
 	protected override void OnModelCreating(ModelBuilder builder)
 	{
 		builder.HasDefaultSchema(PaymentsStripeModule.Name);
