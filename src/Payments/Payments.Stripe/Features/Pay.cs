@@ -8,10 +8,14 @@ using Shared.Endpoints;
 using Shared.Endpoints.Requests;
 using Shared.Endpoints.Results;
 using Stripe;
+using Stripe.Checkout;
 
 namespace Payments.Stripe.Features;
 
-internal sealed record Pay(CurrentUser CurrentUser) : IHttpRequest;
+internal sealed record Pay([FromBody] Pay.Data Body, CurrentUser CurrentUser) : IHttpRequest
+{
+	internal record Data(long Amount, string Currency);
+}
 
 internal sealed class PayEndpoint : IEndpoint
 {
@@ -22,13 +26,39 @@ internal sealed class PayEndpoint : IEndpoint
 		.ProducesError(404, "`NotFoundError`");
 }
 
-internal sealed class PayHandler(PaymentsStripeDbContext dbContext) : IHttpRequestHandler<Pay>
+internal sealed class PayHandler(PaymentsStripeDbContext dbContext, IStripeClient stripeClient) : IHttpRequestHandler<Pay>
 {
 	public async Task<IResult> Handle(Pay request, CancellationToken cancellationToken)
 	{
 		var stripeCustomer = await dbContext.StripeCustomers.FirstOrDefaultAsync(u => u.UserId == request.CurrentUser.Id, cancellationToken);
 		if (stripeCustomer == null)
 			return Results.NotFound();
-		return Results.Ok(stripeCustomer);
+
+		var options = new SessionCreateOptions
+		{
+			SuccessUrl = "http://localhost:8080/payments-stripe/success?session_id={CHECKOUT_SESSION_ID}",
+			CancelUrl = "http://localhost:8080/payments-stripe/cancel",
+			LineItems = new List<SessionLineItemOptions>
+			{
+				new SessionLineItemOptions
+				{
+					PriceData = new SessionLineItemPriceDataOptions
+					{
+						Currency = request.Body.Currency,
+						UnitAmount = request.Body.Amount,
+						ProductData = new SessionLineItemPriceDataProductDataOptions
+						{
+							Name = "Test product", // docelowo tytuł gry
+						},
+					},
+					Quantity = 1,
+				},
+			},
+			Mode = "payment",
+		};
+		var service = new SessionService(stripeClient);
+		Session session = await service.CreateAsync(options, cancellationToken: cancellationToken);
+
+		return Results.Ok(session);
 	}
 }

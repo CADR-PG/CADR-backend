@@ -6,7 +6,7 @@ internal sealed class GameShopCardReadModel
 {
 	public required Guid GameId { get; init; }
 	public required string Title { get; init; }
-	public required decimal Amount { get; init; }
+	public required long Amount { get; init; }
 	public required string Currency { get; init; }
 	public required int PlaysCount { get; init; }
 

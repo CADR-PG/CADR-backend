@@ -54,12 +54,12 @@ internal sealed class BuyGameHandler(
 		if (wallet is null)
 			return Results.Problem("Wallet is not initialized");
 
-		var price = game.Price.ToStripeUnitAmount();
+		var price = game.Price.Amount;
 
 		if (wallet.Ballance < price)
 			return Results.Problem("You don't have enough funds to buy this game");
 
-		wallet.Ballance -= game.Price.ToStripeUnitAmount();
+		wallet.Ballance -= price;
 
 		await dbContext.Orders.AddAsync(order, cancellationToken);
 		await libraryService.GrantAccessToGame(userId, gameId, order.Id, cancellationToken);

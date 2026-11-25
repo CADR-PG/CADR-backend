@@ -8,7 +8,7 @@ internal sealed class GameReadModel
 	public required Guid Id { get; init; }
 	public required string Title { get; init; }
 	public required string Description { get; init; }
-	public required decimal Amount { get; init; }
+	public required long Amount { get; init; }
 	public required string Currency { get; init; }
 	public required int AgeRestriction { get; init; }
 	public required GameStates State { get; init; }

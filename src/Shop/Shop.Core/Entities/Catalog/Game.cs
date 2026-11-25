@@ -22,7 +22,7 @@ public class Game
 	public ICollection<Review> Reviews { get; } = [];
 	public ICollection<GameVersion> Versions { get; } = []; // opisy tego co sie zmienilo i odniesienia do poszczegolnych wersji gry
 
-	public static Game Create(string title, string description, decimal amount, string currnecy, int ageRestriction, GameStates state, UserId authorId)
+	public static Game Create(string title, string description, long amount, string currnecy, int ageRestriction, GameStates state, UserId authorId)
 	{
 		var id = Guid.NewGuid();
 		var game = new Game

@@ -17,7 +17,7 @@ internal sealed record AddGameToStore(
 	CurrentUser CurrentUser,
 	[FromRoute] Guid ProjectId) : IHttpRequest
 {
-	internal record Data(string Title, string Description, string Version, decimal Amount, int AgeRestriction, GameStates State);
+	internal record Data(string Title, string Description, string Version, long Amount, int AgeRestriction, GameStates State);
 };
 
 internal sealed class AddGameToStoreEndpoint : IEndpoint

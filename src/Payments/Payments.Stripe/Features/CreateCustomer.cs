@@ -4,11 +4,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Payments.Stripe.Database;
+using Payments.Stripe.Entities;
 using Shared.Endpoints;
 using Shared.Endpoints.Requests;
 using Shared.Endpoints.Results;
 using Stripe;
-using Payments.Stripe.Entities;
 
 namespace Payments.Stripe.Features;
 
