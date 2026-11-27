@@ -14,6 +14,7 @@ using Shared.Endpoints.Results;
 using Shared.Endpoints.Validation;
 using Shared.Settings;
 using System.Text.Json;
+using Users.Contracts.ReadModels;
 using Users.Core.Clients.IpApi;
 using Users.Core.Database;
 using Users.Core.Entities;
@@ -43,7 +44,8 @@ internal sealed class GoogleLoginHandler(
 	ITokenProvider tokenProvider,
 	IIpApiClient ipApiClient,
 	GoogleAuthorizationCodeFlow.Initializer flowInitializer,
-	CookieTokenStorage cookieTokenStorage
+	CookieTokenStorage cookieTokenStorage,
+	UserRegistrationService userRegistrationService
 	) : IHttpRequestHandler<GoogleLogin>
 {
 	public async Task<IResult> Handle(GoogleLogin request, CancellationToken cancellationToken)
@@ -63,14 +65,11 @@ internal sealed class GoogleLoginHandler(
 			user = new User()
 			{
 				Id = Guid.NewGuid(),
-				FirstName = payload.GivenName,
-				LastName = payload.FamilyName,
 				Email = payload.Email,
 				HashedPassword = HashingService.Hash(Guid.NewGuid().ToString()),
 				LastLoggedInAt = DateTime.UtcNow,
 			};
-			await dbContext.Users.AddAsync(user, cancellationToken);
-			await dbContext.SaveChangesAsync(cancellationToken);
+			await userRegistrationService.Register(user, cancellationToken);
 		}
 		var ipAddress = request.HttpContext.GetClientIpAddress();
 		var ipAddressLocation = await ipApiClient.GetIpAddressGeolocationData(ipAddress);
@@ -85,7 +84,7 @@ internal sealed class GoogleLoginHandler(
 		await dbContext.SaveChangesAsync(cancellationToken);
 		cookieTokenStorage.SetTokenCookies(request.HttpContext, tokens);
 
-		var readModel = UserReadModel.From(user);
+		var readModel = user.ToReadModel();
 		return Results.Ok(readModel);
 	}
 }

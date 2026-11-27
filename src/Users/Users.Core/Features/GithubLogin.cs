@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Shared.Endpoints;
 using Shared.Endpoints.Results;
 using Shared.Endpoints.Validation;
+using Users.Contracts.ReadModels;
 using Users.Core.Clients.Github;
 using Users.Core.Clients.IpApi;
 using Users.Core.Database;
@@ -36,7 +37,8 @@ internal sealed class GithubLoginHandler(
 	IIpApiClient ipApiClient,
 	IGithubOAuthClient githubOAuthClient,
 	IGithubClient githubClient,
-	CookieTokenStorage cookieTokenStorage
+	CookieTokenStorage cookieTokenStorage,
+	UserRegistrationService userRegistrationService
 	) : IHttpRequestHandler<GithubLogin>
 {
 	public async Task<IResult> Handle(GithubLogin request, CancellationToken cancellationToken)
@@ -50,14 +52,11 @@ internal sealed class GithubLoginHandler(
 			user = new User
 			{
 				Id = Guid.NewGuid(),
-				FirstName = githubUser.Name ?? githubUser.Login,
-				LastName = string.Empty,
 				Email = githubUser.Email,
 				HashedPassword = HashingService.Hash(Guid.NewGuid().ToString()),
 				LastLoggedInAt = DateTime.UtcNow,
 			};
-			await dbContext.Users.AddAsync(user, cancellationToken);
-			await dbContext.SaveChangesAsync(cancellationToken);
+			await userRegistrationService.Register(user, cancellationToken);
 		}
 		var ipAddress = request.HttpContext.GetClientIpAddress();
 		var ipAddressLocation = await ipApiClient.GetIpAddressGeolocationData(ipAddress);
@@ -72,7 +71,7 @@ internal sealed class GithubLoginHandler(
 		await dbContext.SaveChangesAsync(cancellationToken);
 		cookieTokenStorage.SetTokenCookies(request.HttpContext, tokens);
 
-		var readModel = UserReadModel.From(user);
+		var readModel = user.ToReadModel();
 		return Results.Ok(readModel);
 	}
 }

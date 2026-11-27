@@ -15,6 +15,18 @@ public static class Extensions
 			module.Register(builder);
 	}
 
+	public static void RegisterMessageBrokerModules(this IHostApplicationBuilder builder, ApplicationContext applicationContext)
+	{
+		foreach (var module in applicationContext.Modules)
+			module.RegisterMessageBroker(builder);
+	}
+
+	public static void RegisterFunctionsModules(this IHostApplicationBuilder builder, ApplicationContext applicationContext)
+	{
+		foreach (var module in applicationContext.Modules)
+			module.RegisterFunctions(builder);
+	}
+
 	public static void MapEndpoints(this IEndpointRouteBuilder endpoints, ApplicationContext applicationContext)
 	{
 		foreach (var module in applicationContext.Modules)

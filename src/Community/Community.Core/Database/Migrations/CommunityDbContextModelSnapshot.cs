@@ -239,7 +239,6 @@ namespace Community.Core.Database.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("FirstName")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
@@ -247,7 +246,6 @@ namespace Community.Core.Database.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("LastName")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
@@ -303,31 +301,6 @@ namespace Community.Core.Database.Migrations
                     b.HasKey("UserId");
 
                     b.ToTable("UserSettings", "Community");
-                });
-
-            modelBuilder.Entity("Users.Contracts.Database.References.UserReference", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Users", "Users", t =>
-                        {
-                            t.ExcludeFromMigrations();
-                        });
                 });
 
             modelBuilder.Entity("Community.Core.Entities.Chats.ChatMessage", b =>

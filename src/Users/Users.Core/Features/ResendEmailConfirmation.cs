@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Shared.Endpoints;
 using Shared.Endpoints.Requests;
 using Shared.Endpoints.Results;
+using Users.Contracts.ReadModels;
 using Users.Core.Database;
 using Users.Core.ReadModels;
 using Users.Core.Services;

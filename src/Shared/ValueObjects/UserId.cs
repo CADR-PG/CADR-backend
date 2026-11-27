@@ -14,6 +14,12 @@ public readonly record struct UserId(Guid Value) : IParsable<UserId>
 
 	public override string ToString() => Value.ToString();
 
+	// Same order as PostgreSQL `uuid` (RFC 4122 byte order) - translated to SQL by EF Core (keyset pagination).
+	public static bool operator <(UserId left, UserId right) => left.Value < right.Value;
+	public static bool operator >(UserId left, UserId right) => left.Value > right.Value;
+	public static bool operator <=(UserId left, UserId right) => left.Value <= right.Value;
+	public static bool operator >=(UserId left, UserId right) => left.Value >= right.Value;
+
 	public static OrderedUserIdPair GetLowerAndHigherUserId(UserId firstUserId, UserId secondUserId)
 	{
 		return firstUserId.Value.CompareTo(secondUserId) < 0

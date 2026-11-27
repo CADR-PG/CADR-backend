@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Shared.Endpoints;
 using Shared.Endpoints.Requests;
 using Shared.Endpoints.Results;
+using Users.Contracts.ReadModels;
 using Users.Core.Database;
 using Users.Core.ReadModels;
 
@@ -31,7 +32,7 @@ internal sealed class GetCurrentUserHandler(
 		var user = await dbContext.Users
 			.FirstAsync(x => x.Id == request.CurrentUser.Id, cancellationToken);
 
-		var readModel = UserReadModel.From(user);
+		var readModel = user.ToReadModel();
 		return Results.Ok(readModel);
 	}
 }

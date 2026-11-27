@@ -6,6 +6,7 @@ using Community.Core;
 using Microsoft.AspNetCore.HttpOverrides;
 using Projects.Core;
 using Shared;
+using Shared.Messaging;
 using Shared.Modules;
 using Shop.Core;
 using Users.Core;
@@ -30,6 +31,7 @@ if (builder.Environment.IsProduction())
 }
 
 
+builder.AddMessaging("api", handlesMessages: false);
 builder.RegisterModules(applicationContext);
 builder.Services.AddDocumentation();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();

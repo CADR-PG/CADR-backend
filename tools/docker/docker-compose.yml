@@ -65,6 +65,37 @@ services:
     networks:
       - cadr.network
 
+  # SQL Server is required by the Azure Service Bus emulator
+  cadr.mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: cadr-mssql
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=Cadr_ServiceBus_123!
+    healthcheck:
+      test: [ "CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q 'SELECT 1' || exit 1" ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - cadr.network
+
+  cadr.servicebus:
+    image: mcr.microsoft.com/azure-messaging/servicebus-emulator:latest
+    container_name: cadr-servicebus
+    environment:
+      - SQL_SERVER=cadr.mssql
+      - MSSQL_SA_PASSWORD=Cadr_ServiceBus_123!
+      - ACCEPT_EULA=Y
+    ports:
+      - "5672:5672" # AMQP
+      - "5300:5300" # management (HTTP) - used by Wolverine to auto-provision topics & subscriptions
+    depends_on:
+      cadr.mssql:
+        condition: service_healthy
+    networks:
+      - cadr.network
+
   cadr.api:
     container_name: cadr-api
     image: cadr.api
@@ -77,10 +108,53 @@ services:
       - "8080:8080"
     networks:
       - cadr.network
+    # the Service Bus emulator image has no healthcheck - restart until it accepts connections
+    restart: on-failure
     depends_on:
+      cadr.servicebus:
+        condition: service_started
       cadr.postgres:
         condition: service_healthy
       cadr.mailpit:
+        condition: service_healthy
+      cadr.azurite:
+        condition: service_healthy
+
+  cadr.message-broker:
+    container_name: cadr-message-broker
+    image: cadr.message-broker
+    build:
+      context: ../..
+      dockerfile: tools/docker/message-broker.Dockerfile
+    environment:
+      DOTNET_ENVIRONMENT: Docker
+    networks:
+      - cadr.network
+    # the Service Bus emulator image has no healthcheck - restart until it accepts connections
+    restart: on-failure
+    depends_on:
+      cadr.postgres:
+        condition: service_healthy
+      cadr.servicebus:
+        condition: service_started
+
+  cadr.functions-worker:
+    container_name: cadr-functions-worker
+    image: cadr.functions-worker
+    build:
+      context: ../..
+      dockerfile: tools/docker/functions-worker.Dockerfile
+    environment:
+      AZURE_FUNCTIONS_ENVIRONMENT: Docker
+      DOTNET_ENVIRONMENT: Docker
+      # timer triggers keep their schedule state and singleton locks in the storage account
+      # host keys (needed by the admin API to trigger a function manually) kept in the container file system
+      AzureWebJobsSecretStorageType: files
+      AzureWebJobsStorage: "AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;DefaultEndpointsProtocol=http;BlobEndpoint=http://cadr.azurite:10000/devstoreaccount1;QueueEndpoint=http://cadr.azurite:10001/devstoreaccount1;TableEndpoint=http://cadr.azurite:10002/devstoreaccount1;"
+    networks:
+      - cadr.network
+    depends_on:
+      cadr.postgres:
         condition: service_healthy
       cadr.azurite:
         condition: service_healthy

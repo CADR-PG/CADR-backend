@@ -6,28 +6,30 @@ using Community.Core.Entities.UserSettings;
 using Microsoft.EntityFrameworkCore;
 using Shared.ValueObjects;
 using Shared.ValueObjects.SnowflakeIds;
-using Users.Contracts.Database.References;
 
 namespace Community.Core.Database;
 
-internal sealed class CommunityDbContext(DbContextOptions<CommunityDbContext> dbContextOptions) : DbContext(dbContextOptions)
+/// <remarks>
+/// Public only because Wolverine generates handler code in a separate assembly and has to reference it.
+/// Entity sets stay internal to the module.
+/// </remarks>
+public sealed class CommunityDbContext(DbContextOptions<CommunityDbContext> dbContextOptions) : DbContext(dbContextOptions)
 {
-	public DbSet<Chat> Chats { get; init; } = null!;
-	public DbSet<ChatParticipant> ChatParticipants { get; init; } = null!;
-	public DbSet<ChatMessage> ChatMessages { get; init; } = null!;
-	public DbSet<ChatMessagePin> ChatMessagePins { get; init; } = null!;
-	public DbSet<UserProfile> UserProfiles { get; init; } = null!;
-	public DbSet<UserProfileEdit> UserProfileEdits { get; init; } = null!;
-	public DbSet<Friendship> Friendships { get; init; } = null!;
-	public DbSet<FriendRequest> FriendRequests { get; init; } = null!;
-	public DbSet<UserBlock> UserBlocks { get; init; } = null!;
-	public DbSet<UserSettings> UserSettings { get; init; } = null!;
+	internal DbSet<Chat> Chats => Set<Chat>();
+	internal DbSet<ChatParticipant> ChatParticipants => Set<ChatParticipant>();
+	internal DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
+	internal DbSet<ChatMessagePin> ChatMessagePins => Set<ChatMessagePin>();
+	internal DbSet<UserProfile> UserProfiles => Set<UserProfile>();
+	internal DbSet<UserProfileEdit> UserProfileEdits => Set<UserProfileEdit>();
+	internal DbSet<Friendship> Friendships => Set<Friendship>();
+	internal DbSet<FriendRequest> FriendRequests => Set<FriendRequest>();
+	internal DbSet<UserBlock> UserBlocks => Set<UserBlock>();
+	internal DbSet<UserSettings> UserSettings => Set<UserSettings>();
 
 	protected override void OnModelCreating(ModelBuilder builder)
 	{
 		builder.HasDefaultSchema(CommunityModule.Name);
 		builder.ApplyConfigurationsFromAssembly(typeof(CommunityDbContext).Assembly);
-		builder.ApplyConfigurationsFromAssembly(typeof(UserReference).Assembly);
 		base.OnModelCreating(builder);
 	}
 

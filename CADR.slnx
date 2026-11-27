@@ -6,6 +6,8 @@
   </Configurations>
   <Folder Name="/src/">
     <Project Path="src/API/API.csproj" />
+    <Project Path="src/FunctionsWorker/FunctionsWorker.csproj" />
+    <Project Path="src/MessageBroker/MessageBroker.csproj" />
     <Project Path="src/Shared/Shared.csproj" />
   </Folder>
   <Folder Name="/src/Community/">
@@ -35,6 +37,8 @@
   </Folder>
   <Folder Name="/_tools/">
     <File Path="tools\docker\api.Dockerfile" />
+    <File Path="tools\docker\functions-worker.Dockerfile" />
+    <File Path="tools\docker\message-broker.Dockerfile" />
     <File Path="tools\docker\docker-compose.yml" />
   </Folder>
 </Solution>

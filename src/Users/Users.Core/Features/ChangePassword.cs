@@ -8,6 +8,7 @@ using Shared.Endpoints;
 using Shared.Endpoints.Requests;
 using Shared.Endpoints.Results;
 using Shared.Endpoints.Validation;
+using Users.Contracts.ReadModels;
 using Users.Core.Database;
 using Users.Core.ReadModels;
 using Users.Core.Services;
@@ -50,7 +51,7 @@ internal sealed class ChangePasswordHandler(
 
 		await dbContext.SaveChangesAsync(cancellationToken);
 
-		var readModel = UserReadModel.From(user);
+		var readModel = user.ToReadModel();
 		return Results.Ok(readModel);
 	}
 }

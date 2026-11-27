@@ -1,109 +1,115 @@
 using Community.Core.Database;
-using Community.Core.Database.Configurations;
+using Community.Core.Database.Extensions;
 using Community.Core.Entities.UserProfiles;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.Extensions.Caching.Memory;
-using Npgsql;
+using Microsoft.Extensions.Logging;
 using Shared.ValueObjects;
-using Users.Contracts.Database.References;
+using Users.Contracts;
+using UserSettingsEntity = Community.Core.Entities.UserSettings.UserSettings;
 
 namespace Community.Core.Services;
 
-internal sealed class UserProfilesSynchronizer(CommunityDbContext dbContext, IMemoryCache cache)
+/// <summary>
+/// Reconciliation of Community data with the Users module: creates the missing profile and default settings
+/// of every user that does not have them (e.g. when the <c>UserRegistered</c> event was lost or dead-lettered).
+/// </summary>
+/// <remarks>
+/// Works in batches through the public API of the Users module (<see cref="IUsersProvider" />):
+/// <list type="number">
+///   <item>a page of user <b>ids</b> is read from the Users module,</item>
+///   <item>a single Community query finds which of them miss a profile or settings,</item>
+///   <item>user details are fetched <b>only</b> for users missing a profile (settings need just the id).</item>
+/// </list>
+/// Idempotent - safe to run concurrently with <see cref="Handlers.UserRegisteredHandler" /> and to re-run.
+/// </remarks>
+internal sealed partial class UserProfilesSynchronizer(
+	CommunityDbContext dbContext,
+	IUsersProvider usersProvider,
+	ILogger<UserProfilesSynchronizer> logger)
 {
-	private static readonly TimeSpan SynchronizedUserLifetime = TimeSpan.FromMinutes(30);
-	private static readonly TimeSpan FullSynchronizationInterval = TimeSpan.FromMinutes(1);
-	private const string FullSynchronizationCacheKey = "Community:UserProfiles:FullSynchronization";
+	internal const int BatchSize = 1000;
+	private const int MaxAttemptsPerBatch = 3;
 
-	public async Task EnsureSynchronized(IEnumerable<UserId> userIds, CancellationToken cancellationToken)
+	/// <returns>Number of users whose profile and/or settings were created.</returns>
+	public async Task<int> SynchronizeAll(CancellationToken cancellationToken)
 	{
-		var notSynchronizedIds = userIds
-			.Distinct()
-			.Where(userId => !cache.TryGetValue(GetCacheKey(userId), out _))
-			.ToList();
+		var synchronizedUsers = 0;
+		UserId? after = null;
 
-		if (notSynchronizedIds.Count == 0) return;
+		while (true)
+		{
+			var userIds = await usersProvider.GetUserIds(after, BatchSize, cancellationToken);
+			if (userIds.Count == 0) break;
 
-		var idsParameter = new NpgsqlParameter("ids", notSynchronizedIds.Select(userId => userId.Value).ToArray());
-		await dbContext.Database.ExecuteSqlRawAsync(BuildUpsertSql(onlySelectedUsers: true), [idsParameter], cancellationToken);
+			synchronizedUsers += await SynchronizeBatch(userIds, cancellationToken);
 
-		var synchronizedIds = await dbContext.UserProfiles
+			if (userIds.Count < BatchSize) break;
+			after = userIds[^1];
+		}
+
+		LogSynchronized(synchronizedUsers);
+		return synchronizedUsers;
+	}
+
+	private async Task<int> SynchronizeBatch(IReadOnlyList<UserId> userIds, CancellationToken cancellationToken)
+	{
+		for (var attempt = 1; ; attempt++)
+		{
+			var (missingProfileIds, missingSettingsIds) = await FindMissing(userIds, cancellationToken);
+			if (missingProfileIds.Count == 0 && missingSettingsIds.Count == 0) return 0;
+
+			// Users deleted in the meantime are not returned - nothing is created for them.
+			var users = await usersProvider.GetUsers(missingProfileIds, cancellationToken);
+
+			foreach (var user in users)
+			{
+				dbContext.UserProfiles.Add(UserProfile.Create(user.Id, user.Email));
+				dbContext.UserSettings.Add(UserSettingsEntity.CreateDefault(user.Id));
+			}
+
+			foreach (var userId in missingSettingsIds)
+				dbContext.UserSettings.Add(UserSettingsEntity.CreateDefault(userId));
+
+			try
+			{
+				await dbContext.SaveChangesAsync(cancellationToken);
+				return users.Count + missingSettingsIds.Count;
+			}
+			catch (DbUpdateException exception) when (exception.IsUniqueViolation() && attempt < MaxAttemptsPerBatch)
+			{
+				// Rows created concurrently (e.g. by the UserRegistered handler) - re-check the batch.
+				LogBatchConflict(attempt);
+			}
+			finally
+			{
+				dbContext.ChangeTracker.Clear();
+			}
+		}
+	}
+
+	/// <returns>Users without a profile (and so without settings - FK) and users with a profile but without settings.</returns>
+	private async Task<(List<UserId> MissingProfileIds, List<UserId> MissingSettingsIds)> FindMissing(
+		IReadOnlyList<UserId> userIds, CancellationToken cancellationToken)
+	{
+		var existingProfiles = await dbContext.UserProfiles
 			.AsNoTracking()
-			.Where(userProfile => notSynchronizedIds.Contains(userProfile.UserId))
-			.Select(userProfile => userProfile.UserId)
-			.ToListAsync(cancellationToken);
+			.Where(profile => userIds.Contains(profile.UserId))
+			.Select(profile => new
+			{
+				profile.UserId,
+				HasSettings = dbContext.UserSettings.Any(settings => settings.UserId == profile.UserId)
+			})
+			.ToDictionaryAsync(profile => profile.UserId, profile => profile.HasSettings, cancellationToken);
 
-		foreach (var userId in synchronizedIds)
-			cache.Set(GetCacheKey(userId), true, SynchronizedUserLifetime);
+		var missingProfileIds = userIds.Where(userId => !existingProfiles.ContainsKey(userId)).ToList();
+		var missingSettingsIds = existingProfiles.Where(profile => !profile.Value).Select(profile => profile.Key).ToList();
+
+		return (missingProfileIds, missingSettingsIds);
 	}
 
-	public Task EnsureSynchronized(UserId userId, CancellationToken cancellationToken)
-		=> EnsureSynchronized([userId], cancellationToken);
+	[LoggerMessage(LogLevel.Information, "User profiles synchronized: created missing data of {Count} users.")]
+	private partial void LogSynchronized(int count);
 
-	public async Task EnsureAllSynchronized(CancellationToken cancellationToken)
-	{
-		if (cache.TryGetValue(FullSynchronizationCacheKey, out _)) return;
-
-		cache.Set(FullSynchronizationCacheKey, true, FullSynchronizationInterval);
-
-		try
-		{
-			await dbContext.Database.ExecuteSqlRawAsync(BuildUpsertSql(onlySelectedUsers: false), cancellationToken);
-		}
-		catch
-		{
-			cache.Remove(FullSynchronizationCacheKey);
-			throw;
-		}
-	}
-
-	private static string GetCacheKey(UserId userId) => $"Community:UserProfiles:{userId}";
-
-	private string BuildUpsertSql(bool onlySelectedUsers)
-	{
-		var profileEntity = dbContext.Model.FindEntityType(typeof(UserProfile))!;
-		var profileTable = StoreObjectIdentifier.Table(profileEntity.GetTableName()!, profileEntity.GetSchema());
-		string ProfileColumn(string property) => Quote(profileEntity.FindProperty(property)!.GetColumnName(profileTable)!);
-
-		var profileId = ProfileColumn(nameof(UserProfile.UserId));
-		var profileFirstName = ProfileColumn(nameof(UserProfile.FirstName));
-		var profileLastName = ProfileColumn(nameof(UserProfile.LastName));
-		var profileName = ProfileColumn(nameof(UserProfile.Name));
-		var profileIsNameCustomized = ProfileColumn(nameof(UserProfile.IsNameCustomized));
-
-		var userEntity = dbContext.Model.FindEntityType(typeof(UserReference))!;
-		var userTable = StoreObjectIdentifier.Table(userEntity.GetTableName()!, userEntity.GetSchema());
-		string UserColumn(string property) => Quote(userEntity.FindProperty(property)!.GetColumnName(userTable)!);
-
-		var userId = UserColumn(nameof(UserReference.Id));
-		var firstName = UserColumn(nameof(UserReference.FirstName));
-		var lastName = UserColumn(nameof(UserReference.LastName));
-
-		const int maxLength = UserProfileConfiguration.MaxNameLength;
-		var filter = onlySelectedUsers ? $"WHERE u.{userId} = ANY(@ids)" : string.Empty;
-
-		return $"""
-			INSERT INTO {QuoteTable(profileTable)} AS p ({profileId}, {profileFirstName}, {profileLastName}, {profileName}, {profileIsNameCustomized})
-			SELECT u.{userId},
-			       left(btrim(u.{firstName}), {maxLength}),
-			       left(btrim(u.{lastName}), {maxLength}),
-			       left(btrim(concat_ws(' ', btrim(u.{firstName}), btrim(u.{lastName}))), {maxLength}),
-			       FALSE
-			FROM {QuoteTable(userTable)} AS u
-			{filter}
-			ON CONFLICT ({profileId}) DO UPDATE SET
-				{profileFirstName} = EXCLUDED.{profileFirstName},
-				{profileLastName} = EXCLUDED.{profileLastName},
-				{profileName} = CASE WHEN p.{profileIsNameCustomized} THEN p.{profileName} ELSE EXCLUDED.{profileName} END
-			WHERE p.{profileFirstName} IS DISTINCT FROM EXCLUDED.{profileFirstName}
-			   OR p.{profileLastName} IS DISTINCT FROM EXCLUDED.{profileLastName}
-			   OR (NOT p.{profileIsNameCustomized} AND p.{profileName} IS DISTINCT FROM EXCLUDED.{profileName})
-			""";
-	}
-
-	private static string QuoteTable(StoreObjectIdentifier table)
-		=> table.Schema is null ? Quote(table.Name) : $"{Quote(table.Schema)}.{Quote(table.Name)}";
-
-	private static string Quote(string identifier) => $"\"{identifier.Replace("\"", "\"\"", StringComparison.Ordinal)}\"";
+	[LoggerMessage(LogLevel.Warning, "User profiles synchronization batch conflicted with a concurrent insert (attempt {Attempt}), retrying.")]
+	private partial void LogBatchConflict(int attempt);
 }

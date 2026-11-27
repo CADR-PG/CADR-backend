@@ -19,7 +19,7 @@ namespace Users.Core.Database.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("Users")
-                .HasAnnotation("ProductVersion", "9.0.3")
+                .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -55,11 +55,6 @@ namespace Users.Core.Database.Migrations
                         .HasMaxLength(320)
                         .HasColumnType("character varying(320)");
 
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
                     b.Property<string>("HashedPassword")
                         .IsRequired()
                         .HasMaxLength(1024)
@@ -68,18 +63,13 @@ namespace Users.Core.Database.Migrations
                     b.Property<DateTime>("LastLoggedInAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
                     b.Property<DateTime?>("PasswordResetExpiresAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid?>("PasswordResetToken")
                         .HasColumnType("uuid");
 
-                    b.ComplexProperty<Dictionary<string, object>>("EmailConfirmation", "Users.Core.Entities.User.EmailConfirmation#EmailConfirmation", b1 =>
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "EmailConfirmation", "Users.Core.Entities.User.EmailConfirmation#EmailConfirmation", b1 =>
                         {
                             b1.IsRequired();
 

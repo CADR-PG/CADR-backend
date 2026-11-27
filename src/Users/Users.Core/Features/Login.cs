@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Shared.Endpoints;
 using Shared.Endpoints.Results;
 using Shared.Endpoints.Validation;
+using Users.Contracts.ReadModels;
 using Users.Core.Clients.IpApi;
 using Users.Core.Database;
 using Users.Core.Entities;
@@ -81,7 +82,7 @@ internal sealed class LoginHandler(
 			// ignored
 		}
 
-		var readModel = UserReadModel.From(user);
+		var readModel = user.ToReadModel();
 		return Results.Ok(readModel);
 	}
 }

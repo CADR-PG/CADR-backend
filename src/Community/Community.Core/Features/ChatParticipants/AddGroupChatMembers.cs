@@ -2,7 +2,6 @@ using Community.Core.Database;
 using Community.Core.Database.Extensions;
 using Community.Core.Entities.Chats;
 using Community.Core.Models.Chats;
-using Community.Core.Services;
 using Community.Core.ValueObjects;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -45,8 +44,7 @@ internal sealed class AddGroupChatMembersEndpoint : IEndpoint
 
 internal sealed class AddGroupChatMembersHandler(
 	CommunityDbContext dbContext,
-	TimeProvider timeProvider,
-	UserProfilesSynchronizer userProfilesSynchronizer
+	TimeProvider timeProvider
 ) : IHttpRequestHandler<AddGroupChatMembers>
 {
 	public const int MaxMembers = 10;
@@ -61,8 +59,6 @@ internal sealed class AddGroupChatMembersHandler(
 			.Where(memberId => memberId != currentUser.Id)
 			.Distinct()
 			.ToList();
-
-		await userProfilesSynchronizer.EnsureSynchronized(requestedMemberIds, cancellationToken);
 
 		await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 		await dbContext.LockChatForUpdate(chatId, cancellationToken);

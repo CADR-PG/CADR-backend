@@ -14,7 +14,7 @@ namespace Users.Core.Features;
 
 internal sealed record Register([FromBody] Register.Credentials Body) : IHttpRequest
 {
-	internal sealed record Credentials(string FirstName, string LastName, string Email, string Password);
+	internal sealed record Credentials(string Email, string Password);
 }
 
 internal sealed class RegisterEndpoint : IEndpoint
@@ -29,12 +29,13 @@ internal sealed class RegisterEndpoint : IEndpoint
 
 internal sealed class RegisterHandler(
 	UsersDbContext dbContext,
+	UserRegistrationService userRegistrationService,
 	UserMailingService userMailingService
 ) : IHttpRequestHandler<Register>
 {
 	public async Task<IResult> Handle(Register request, CancellationToken cancellationToken)
 	{
-		var (firstName, lastName, email, password) = request.Body;
+		var (email, password) = request.Body;
 
 		var existingUser = await dbContext.Users.FirstOrDefaultAsync(u => email == u.Email, cancellationToken);
 		if (existingUser is not null) return Errors.EmailAlreadyTakenError;
@@ -42,8 +43,6 @@ internal sealed class RegisterHandler(
 		var user = new User
 		{
 			Id = Guid.NewGuid(),
-			FirstName = firstName,
-			LastName = lastName,
 			Email = email,
 			HashedPassword = HashingService.Hash(password),
 			LastLoggedInAt = DateTime.UtcNow,
@@ -51,8 +50,7 @@ internal sealed class RegisterHandler(
 
 		user.SetupEmailConfirmation(email);
 
-		await dbContext.Users.AddAsync(user, cancellationToken);
-		await dbContext.SaveChangesAsync(cancellationToken);
+		await userRegistrationService.Register(user, cancellationToken);
 
 		// TODO: remove fire & forget
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
@@ -68,8 +66,6 @@ internal sealed class RegisterValidator : AbstractValidator<Register.Credentials
 	public RegisterValidator()
 	{
 		RuleFor(x => x.Email).NotEmpty().EmailAddress();
-		RuleFor(x => x.FirstName).NotEmpty();
-		RuleFor(x => x.LastName).NotEmpty();
 		RuleFor(x => x.Password).MinimumLength(8);
 	}
 }

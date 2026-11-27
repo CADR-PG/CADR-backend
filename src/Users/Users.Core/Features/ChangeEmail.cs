@@ -8,6 +8,7 @@ using Shared.Endpoints;
 using Shared.Endpoints.Requests;
 using Shared.Endpoints.Results;
 using Shared.Endpoints.Validation;
+using Users.Contracts.ReadModels;
 using Users.Core.Database;
 using Users.Core.ReadModels;
 using Users.Core.Services;
@@ -56,7 +57,7 @@ internal sealed class ChangeEmailHandler(
 		userMailingService.SendChangeEmailConfirmation(user);
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
-		var readModel = UserReadModel.From(user);
+		var readModel = user.ToReadModel();
 		return Results.Ok(readModel);
 	}
 }
