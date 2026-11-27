@@ -6,7 +6,6 @@ using Community.Core.Entities.UserSettings;
 using Microsoft.EntityFrameworkCore;
 using Shared.ValueObjects;
 using Shared.ValueObjects.SnowflakeIds;
-using Users.Contracts.Database.References;
 
 namespace Community.Core.Database;
 
@@ -31,7 +30,6 @@ public sealed class CommunityDbContext(DbContextOptions<CommunityDbContext> dbCo
 	{
 		builder.HasDefaultSchema(CommunityModule.Name);
 		builder.ApplyConfigurationsFromAssembly(typeof(CommunityDbContext).Assembly);
-		builder.ApplyConfigurationsFromAssembly(typeof(UserReference).Assembly);
 		base.OnModelCreating(builder);
 	}
 

@@ -2,6 +2,7 @@ using Community.Core.Database;
 using Community.Core.Services;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
+using Users.Contracts;
 
 namespace Community.Core.Functions;
 
@@ -11,7 +12,7 @@ namespace Community.Core.Functions;
 /// <remarks>
 /// Public only because the Functions worker generates the function executor in its own assembly.
 /// </remarks>
-public sealed class SynchronizeUserProfilesFunction(CommunityDbContext dbContext, ILoggerFactory loggerFactory)
+public sealed class SynchronizeUserProfilesFunction(CommunityDbContext dbContext, IUsersProvider usersProvider, ILoggerFactory loggerFactory)
 {
 	public const string Name = "Community-SynchronizeUserProfiles";
 
@@ -20,6 +21,6 @@ public sealed class SynchronizeUserProfilesFunction(CommunityDbContext dbContext
 
 	[Function(Name)]
 	public Task Run([TimerTrigger(Schedule)] TimerInfo timer, CancellationToken cancellationToken)
-		=> new UserProfilesSynchronizer(dbContext, loggerFactory.CreateLogger<UserProfilesSynchronizer>())
+		=> new UserProfilesSynchronizer(dbContext, usersProvider, loggerFactory.CreateLogger<UserProfilesSynchronizer>())
 			.SynchronizeAll(cancellationToken);
 }

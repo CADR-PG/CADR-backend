@@ -41,7 +41,7 @@ public class UsersModule : IModule
 		var isProduction = builder.Environment.IsProduction();
 
 		AddDatabase(builder);
-		services.AddScoped<IUsersProvider, UsersProvider>();
+		AddUsersProvider(builder);
 		services.AddSettingsWithOptions<JwtSettings>(configuration);
 		services.AddMailingService(configuration);
 		services.AddSnowflakeIdProvider(configuration);
@@ -117,12 +117,22 @@ public class UsersModule : IModule
 	public void RegisterMessageBroker(IHostApplicationBuilder builder)
 	{
 		AddDatabase(builder);
-		builder.Services.AddScoped<IUsersProvider, UsersProvider>();
+		AddUsersProvider(builder);
 
 		// Message handlers of other modules inject IUsersProvider. Its implementation is internal, so Wolverine's
 		// generated code cannot construct it and has to resolve it from the scoped container.
 		builder.Services.ConfigureWolverine(options => options.CodeGeneration.AlwaysUseServiceLocationFor<IUsersProvider>());
 	}
+
+	/// <summary>Functions of other modules inject <see cref="IUsersProvider" />.</summary>
+	public void RegisterFunctions(IHostApplicationBuilder builder)
+	{
+		AddDatabase(builder);
+		AddUsersProvider(builder);
+	}
+
+	private static void AddUsersProvider(IHostApplicationBuilder builder)
+		=> builder.Services.AddScoped<IUsersProvider, UsersProvider>();
 
 	private static void AddDatabase(IHostApplicationBuilder builder)
 	{

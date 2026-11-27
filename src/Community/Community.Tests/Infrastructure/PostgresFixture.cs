@@ -18,12 +18,6 @@ public sealed class PostgresFixture : IAsyncLifetime
 		await using var dbContext = new CommunityDbContext(options);
 
 		await dbContext.Database.MigrateAsync();
-
-		// Minimal table of the Users module, read by Community through UserReference (excluded from Community migrations).
-		await dbContext.Database.ExecuteSqlRawAsync("""
-			CREATE SCHEMA IF NOT EXISTS "Users";
-			CREATE TABLE IF NOT EXISTS "Users"."Users" ("Id" uuid PRIMARY KEY, "Email" varchar(320) NOT NULL);
-			""");
 	}
 
 	public Task DisposeAsync() => _container.DisposeAsync().AsTask();

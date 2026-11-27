@@ -75,6 +75,12 @@ internal sealed class CommunityTestHost : IAsyncDisposable
 		return await query(scope.ServiceProvider.GetRequiredService<CommunityDbContext>());
 	}
 
+	public async Task<T> Run<T>(Func<IServiceProvider, Task<T>> action)
+	{
+		await using var scope = _services.CreateAsyncScope();
+		return await action(scope.ServiceProvider);
+	}
+
 	public async Task Run(Func<IServiceProvider, Task> action)
 	{
 		await using var scope = _services.CreateAsyncScope();
