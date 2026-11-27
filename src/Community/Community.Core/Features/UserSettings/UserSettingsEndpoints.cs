@@ -1,6 +1,7 @@
 using Community.Core.Database;
 using Community.Core.Database.Extensions;
 using Community.Core.Entities.UserSettings;
+using Community.Core.Features.UserProfiles;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -41,7 +42,8 @@ internal sealed class GetUserSettingsEndpoint : IEndpoint
 		.MapGet<GetUserSettings, GetUserSettingsHandler>("user-settings")
 		.Produces<UserSettingsReadModel>()
 		.RequireAuthorization()
-		.ProducesError(401, "`UnauthorizedError`");
+		.ProducesError(401, "`UnauthorizedError`")
+		.ProducesError(404, "`UserProfile.NotFound`");
 }
 
 internal sealed class UpdateUserSettingsEndpoint : IEndpoint
@@ -52,7 +54,8 @@ internal sealed class UpdateUserSettingsEndpoint : IEndpoint
 		.Produces<UserSettingsReadModel>()
 		.RequireAuthorization()
 		.ProducesError(400, "`ValidationError`")
-		.ProducesError(401, "`UnauthorizedError`");
+		.ProducesError(401, "`UnauthorizedError`")
+		.ProducesError(404, "`UserProfile.NotFound`");
 }
 
 internal sealed class GetUserSettingsHandler(
@@ -61,6 +64,10 @@ internal sealed class GetUserSettingsHandler(
 {
 	public async Task<IResult> Handle(GetUserSettings request, CancellationToken cancellationToken)
 	{
+		// Settings belong to the user profile (FK with cascade delete) - no profile, no settings.
+		if (!await dbContext.UserProfiles.AnyAsync(profile => profile.UserId == request.CurrentUser.Id, cancellationToken))
+			return UserProfileErrors.NotFound();
+
 		var readModel = await dbContext.UserSettings
 			.AsNoTracking()
 			.Where(settings => settings.UserId == request.CurrentUser.Id)
@@ -79,6 +86,10 @@ internal sealed class UpdateUserSettingsHandler(
 	{
 		var (currentUser, payload) = request;
 
+		// Settings belong to the user profile (FK with cascade delete) - no profile, no settings.
+		if (!await dbContext.UserProfiles.AnyAsync(profile => profile.UserId == currentUser.Id, cancellationToken))
+			return UserProfileErrors.NotFound();
+
 		var settings = await dbContext.UserSettings
 			.FirstOrDefaultAsync(x => x.UserId == currentUser.Id, cancellationToken);
 
@@ -93,6 +104,11 @@ internal sealed class UpdateUserSettingsHandler(
 		try
 		{
 			await dbContext.SaveChangesAsync(cancellationToken);
+		}
+		catch (DbUpdateException exception) when (exception.IsForeignKeyViolation())
+		{
+			// The profile was deleted concurrently.
+			return UserProfileErrors.NotFound();
 		}
 		catch (DbUpdateException exception) when (exception.IsUniqueViolation())
 		{

@@ -10,6 +10,9 @@ internal static class DatabaseExtensions
 	public static bool IsUniqueViolation(this DbUpdateException exception)
 		=> exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation };
 
+	public static bool IsForeignKeyViolation(this DbUpdateException exception)
+		=> exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.ForeignKeyViolation };
+
 	public static Task LockChatForUpdate(this CommunityDbContext dbContext, ChatId chatId, CancellationToken cancellationToken)
 	{
 		if (dbContext.Database.CurrentTransaction is null)
