@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Shared.Endpoints.Requests;
 using Shared.ValueObjects;
 using Testcontainers.PostgreSql;
+using Users.Contracts.ReadModels;
 using Users.Core.Database;
 using Users.Core.Entities;
 using Users.Core.Features;
@@ -45,8 +46,6 @@ public sealed class HandlersTest : IAsyncLifetime, IDisposable
 		_dbContext.Add(new User
 		{
 			Id = userId,
-			FirstName = "Jarosław",
-			LastName = "Kaczyński",
 			Email = "smolensk@2010.pl",
 			HashedPassword = HashingService.Hash(currentPassword),
 			LastLoggedInAt = DateTime.UtcNow
