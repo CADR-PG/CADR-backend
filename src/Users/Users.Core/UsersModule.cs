@@ -14,6 +14,8 @@ using Shared.Modules;
 using Shared.Services;
 using Shared.Settings;
 using System.Runtime.CompilerServices;
+using Users.Contracts;
+using Users.Contracts.Events;
 using Users.Core.Clients.Github;
 using Users.Core.Clients.IpApi;
 using Users.Core.Database;
@@ -21,6 +23,8 @@ using Users.Core.Features;
 using Users.Core.Features.LoginLocations;
 using Users.Core.Services;
 using Users.Core.Settings;
+using Wolverine;
+using Wolverine.AzureServiceBus;
 
 [assembly: InternalsVisibleTo("Users.Tests")]
 
@@ -36,9 +40,8 @@ public class UsersModule : IModule
 		var configuration = builder.Configuration;
 		var isProduction = builder.Environment.IsProduction();
 
-		var postgreSqlSettings = configuration.GetSettings<PostgreSqlSettings>();
-		services.AddDbContext<UsersDbContext>(options => options.UseNpgsql(postgreSqlSettings.ConnectionString,
-			x => x.MigrationsHistoryTable("__EFMigrationsHistory", Name)));
+		AddDatabase(builder);
+		services.AddScoped<IUsersProvider, UsersProvider>();
 		services.AddSettingsWithOptions<JwtSettings>(configuration);
 		services.AddMailingService(configuration);
 		services.AddSnowflakeIdProvider(configuration);
@@ -48,7 +51,6 @@ public class UsersModule : IModule
 		services.AddScoped<RefreshHandler>();
 		services.AddScoped<GetCurrentUserHandler>();
 		services.AddScoped<GetCurrentUserLocationLogsHandler>();
-		services.AddScoped<ChangeUserInfoHandler>();
 		services.AddScoped<ChangeEmailHandler>();
 		services.AddScoped<ChangePasswordHandler>();
 		services.AddScoped<ConfirmEmailHandler>();
@@ -58,6 +60,8 @@ public class UsersModule : IModule
 		services.AddScoped<SendPasswordResetHandler>();
 		services.AddSingleton<ITokenProvider, JwtTokenProvider>();
 		services.AddScoped<UserMailingService>();
+		services.AddScoped<UserRegistrationService>();
+		services.ConfigureWolverine(options => options.PublishMessage<UserRegistered>().ToAzureServiceBusTopic(UserRegistered.TopicName));
 		services.AddScoped<GoogleLoginHandler>();
 		services.AddScoped<GithubLoginHandler>();
 
@@ -110,6 +114,23 @@ public class UsersModule : IModule
 		services.AddAuthorization();
 	}
 
+	public void RegisterMessageBroker(IHostApplicationBuilder builder)
+	{
+		AddDatabase(builder);
+		builder.Services.AddScoped<IUsersProvider, UsersProvider>();
+
+		// Message handlers of other modules inject IUsersProvider. Its implementation is internal, so Wolverine's
+		// generated code cannot construct it and has to resolve it from the scoped container.
+		builder.Services.ConfigureWolverine(options => options.CodeGeneration.AlwaysUseServiceLocationFor<IUsersProvider>());
+	}
+
+	private static void AddDatabase(IHostApplicationBuilder builder)
+	{
+		var postgreSqlSettings = builder.Configuration.GetSettings<PostgreSqlSettings>();
+		builder.Services.AddDbContext<UsersDbContext>(options => options.UseNpgsql(postgreSqlSettings.ConnectionString,
+			x => x.MigrationsHistoryTable("__EFMigrationsHistory", Name)));
+	}
+
 	public void MapEndpoints(IEndpointRouteBuilder endpoints)
 	{
 		endpoints.MapGroup(Name.ToLowerInvariant())
@@ -119,7 +140,6 @@ public class UsersModule : IModule
 			.Map<RefreshEndpoint>()
 			.Map<LogoutEndpoint>()
 			.Map<GetCurrentUserEndpoint>()
-			.Map<ChangeUserInfoEndpoint>()
 			.Map<ChangeEmailEndpoint>()
 			.Map<ConfirmEmailEndpoint>()
 			.Map<ChangePasswordEndpoint>()

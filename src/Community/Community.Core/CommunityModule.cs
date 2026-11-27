@@ -13,6 +13,9 @@ using Shared.Modules;
 using Shared.Services;
 using Shared.Settings;
 using System.Runtime.CompilerServices;
+using Users.Contracts.Events;
+using Wolverine;
+using Wolverine.AzureServiceBus;
 
 [assembly: InternalsVisibleTo("Community.Tests")]
 namespace Community.Core;
@@ -38,36 +41,48 @@ public class CommunityModule : IModule
 		var services = builder.Services;
 		var configuration = builder.Configuration;
 
-		var postgreSqlSettings = configuration.GetSettings<PostgreSqlSettings>();
-		services.AddDbContext<CommunityDbContext>(options => options.UseNpgsql(postgreSqlSettings.ConnectionString, x => x.MigrationsHistoryTable(HistoryRepository.DefaultTableName, Name)));
+		AddDatabase(builder);
 
 		services.AddTimeProvider();
 		services.AddSnowflakeIdProvider(configuration);
 		services.AddScoped<FriendshipsService>();
-		services.AddMemoryCache();
-		services.AddScoped<UserProfilesSynchronizer>();
 
 		services.RegisterHttpRequestHandlers<CommunityModule>();
 		services.AddValidatorsFromAssemblyContaining<CommunityModule>(includeInternalTypes: true);
 	}
 
+	public void RegisterMessageBroker(IHostApplicationBuilder builder)
+	{
+		AddDatabase(builder);
+
+		builder.Services.ConfigureWolverine(options =>
+		{
+			ConfigureMessageHandlers(options);
+			options.ListenToAzureServiceBusSubscription(Name.ToLowerInvariant()).FromTopic(UserRegistered.TopicName);
+		});
+	}
+
+	public void RegisterFunctions(IHostApplicationBuilder builder) => AddDatabase(builder);
+
+	internal static void ConfigureMessageHandlers(WolverineOptions options)
+	{
+		options.Discovery.IncludeAssembly(typeof(CommunityModule).Assembly);
+
+		// DbContextOptions are registered by an opaque factory, so generated handler code has to resolve the DbContext
+		// from the scoped container. Wolverine allows it automatically only for DbContexts registered before UseWolverine().
+		options.CodeGeneration.AlwaysUseServiceLocationFor<CommunityDbContext>();
+	}
+
+	private static void AddDatabase(IHostApplicationBuilder builder)
+	{
+		var postgreSqlSettings = builder.Configuration.GetSettings<PostgreSqlSettings>();
+		builder.Services.AddDbContext<CommunityDbContext>(options => options.UseNpgsql(postgreSqlSettings.ConnectionString,
+			x => x.MigrationsHistoryTable(HistoryRepository.DefaultTableName, Name)));
+	}
+
 	public void MapEndpoints(IEndpointRouteBuilder endpoints)
 	{
 		var group = endpoints.MapGroup(string.Empty);
-
-		group.AddEndpointFilter(async (context, next) =>
-		{
-			var httpContext = context.HttpContext;
-			var currentUser = await CurrentUser.BindAsync(httpContext);
-
-			if (currentUser is not null)
-			{
-				var synchronizer = httpContext.RequestServices.GetRequiredService<UserProfilesSynchronizer>();
-				await synchronizer.EnsureSynchronized(currentUser.Id, httpContext.RequestAborted);
-			}
-
-			return await next(context);
-		});
 
 		var featuresNamespace = $"{typeof(CommunityModule).Namespace}.Features";
 		var sectionNamespaces = EndpointSections

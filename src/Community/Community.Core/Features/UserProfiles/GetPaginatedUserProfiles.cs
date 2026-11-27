@@ -1,7 +1,6 @@
 using Community.Core.Database;
 using Community.Core.Database.Extensions;
 using Community.Core.Models.Profiles;
-using Community.Core.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -31,15 +30,12 @@ internal sealed class GetPaginatedUserProfilesEndpoint : IEndpoint
 }
 
 internal sealed class GetPaginatedUserProfilesHandler(
-	CommunityDbContext dbContext,
-	UserProfilesSynchronizer userProfilesSynchronizer
+	CommunityDbContext dbContext
 ) : IHttpRequestHandler<GetPaginatedUserProfiles>
 {
 	public async Task<IResult> Handle(GetPaginatedUserProfiles request, CancellationToken cancellationToken)
 	{
 		var (currentUser, searchPhrase, pageNumber, pageSize) = request;
-
-		await userProfilesSynchronizer.EnsureAllSynchronized(cancellationToken);
 
 		var baseDbQuery = dbContext.UserProfiles
 			.AsNoTracking()

@@ -39,7 +39,6 @@ internal sealed class BlockUserEndpoint : IEndpoint
 internal sealed class BlockUserHandler(
 	CommunityDbContext dbContext,
 	FriendshipsService friendshipsService,
-	UserProfilesSynchronizer userProfilesSynchronizer,
 	TimeProvider timeProvider
 ) : IHttpRequestHandler<BlockUser>
 {
@@ -52,8 +51,6 @@ internal sealed class BlockUserHandler(
 
 		if (blockedUserId == currentUser.Id)
 			return new ErrorResult("UserBlock.InvalidUser", "You cannot block yourself.");
-
-		await userProfilesSynchronizer.EnsureSynchronized(blockedUserId, cancellationToken);
 
 		var profileExists = await dbContext.UserProfiles.AnyAsync(profile => profile.UserId == blockedUserId, cancellationToken);
 		if (!profileExists)

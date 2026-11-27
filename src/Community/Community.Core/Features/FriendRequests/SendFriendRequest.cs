@@ -37,7 +37,6 @@ internal sealed class SendFriendRequestEndpoint : IEndpoint
 
 internal sealed class SendFriendRequestHandler(
 	FriendshipsService friendshipsService,
-	UserProfilesSynchronizer userProfilesSynchronizer,
 	CommunityDbContext dbContext,
 	TimeProvider timeProvider
 ) : IHttpRequestHandler<SendFriendRequest>
@@ -53,8 +52,6 @@ internal sealed class SendFriendRequestHandler(
 
 		if (senderId == receiverId)
 			return new ErrorResult("InvalidFriendRequest", "Invalid friend request.");
-
-		await userProfilesSynchronizer.EnsureSynchronized(receiverId, cancellationToken);
 
 		var receiverProfile = await dbContext.UserProfiles
 			.AsNoTracking()

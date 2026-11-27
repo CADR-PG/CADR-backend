@@ -2,7 +2,6 @@ using Community.Core.Database;
 using Community.Core.Database.Extensions;
 using Community.Core.Models.Chats;
 using Community.Core.Models.Profiles;
-using Community.Core.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -32,15 +31,12 @@ internal sealed class GetGroupChatCreationCandidatesEndpoint() : IEndpoint
 }
 
 internal sealed class GetGroupChatCreationCandidatesHandler(
-	CommunityDbContext dbContext,
-	UserProfilesSynchronizer userProfilesSynchronizer
+	CommunityDbContext dbContext
 ) : IHttpRequestHandler<GetGroupChatCreationCandidates>
 {
 	public async Task<IResult> Handle(GetGroupChatCreationCandidates request, CancellationToken cancellationToken)
 	{
 		var (currentUser, searchPhrase, pageNumber, pageSize) = request;
-
-		await userProfilesSynchronizer.EnsureAllSynchronized(cancellationToken);
 
 		var baseDbQuery = dbContext.UserProfiles
 			.AsNoTracking()

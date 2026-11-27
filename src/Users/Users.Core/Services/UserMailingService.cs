@@ -28,7 +28,7 @@ internal sealed class UserMailingService(IMailingService mailingService)
 		                                                   </tr>
 		                                                   """);
 
-		await mailingService.SendHtmlAsync(user.FullName, user.Email, subject, content);
+		await mailingService.SendHtmlAsync(string.Empty, user.Email, subject, content);
 	}
 
 	public async Task SendChangeEmailConfirmation(User user)
@@ -53,7 +53,7 @@ internal sealed class UserMailingService(IMailingService mailingService)
 		                                                   </tr>
 		                                                   """);
 
-		await mailingService.SendHtmlAsync(user.FullName, user.Email, subject, content);
+		await mailingService.SendHtmlAsync(string.Empty, user.Email, subject, content);
 	}
 
 	public async Task SendResetPassword(User user)
@@ -78,7 +78,7 @@ internal sealed class UserMailingService(IMailingService mailingService)
 		                                                   </tr>
 		                                                   """);
 
-		await mailingService.SendHtmlAsync(user.FullName, user.Email, subject, content);
+		await mailingService.SendHtmlAsync(string.Empty, user.Email, subject, content);
 	}
 
 	public async Task ResendEmailConfirmation(User user)
@@ -103,7 +103,7 @@ internal sealed class UserMailingService(IMailingService mailingService)
 		                                                   </tr>
 		                                                   """);
 
-		await mailingService.SendHtmlAsync(user.FullName, user.Email, subject, content);
+		await mailingService.SendHtmlAsync(string.Empty, user.Email, subject, content);
 	}
 
 	public async Task SendUserLoggedIn(User user)
@@ -153,7 +153,7 @@ internal sealed class UserMailingService(IMailingService mailingService)
 					   </td>
 					 </tr>
 					 """);
-		await mailingService.SendHtmlAsync(user.FullName, user.Email, "Login activity notification", message);
+		await mailingService.SendHtmlAsync(string.Empty, user.Email, "Login activity notification", message);
 	}
 
 	private static string GetMailTemplate(string title, string? tag, string content)

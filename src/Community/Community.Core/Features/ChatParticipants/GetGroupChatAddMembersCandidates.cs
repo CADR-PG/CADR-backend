@@ -4,7 +4,6 @@ using Community.Core.Entities.Chats;
 using Community.Core.Entities.UserProfiles;
 using Community.Core.Models.Chats;
 using Community.Core.Models.Profiles;
-using Community.Core.Services;
 using Community.Core.ValueObjects;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -38,8 +37,7 @@ internal sealed class GetGroupChatAddMembersCandidatesEndpoint() : IEndpoint
 }
 
 internal sealed class GetGroupChatAddMembersCandidatesHandler(
-	CommunityDbContext dbContext,
-	UserProfilesSynchronizer userProfilesSynchronizer
+	CommunityDbContext dbContext
 ) : IHttpRequestHandler<GetGroupChatAddMembersCandidates>
 {
 	public async Task<IResult> Handle(GetGroupChatAddMembersCandidates request, CancellationToken cancellationToken)
@@ -57,8 +55,6 @@ internal sealed class GetGroupChatAddMembersCandidatesHandler(
 
 		if (currentMemberRole != ChatParticipantRole.Admin)
 			return new ErrorResult("GroupChat.Forbidden", "Only group admins can perform this operation.", 403);
-
-		await userProfilesSynchronizer.EnsureAllSynchronized(cancellationToken);
 
 		var baseDbQuery = dbContext.UserProfiles
 			.AsNoTracking()

@@ -7,10 +7,6 @@ namespace Users.Core.Entities;
 internal class User
 {
 	public required UserId Id { get; init; }
-	public required string FirstName { get; set; }
-	public required string LastName { get; set; }
-	public string FullName => $"{FirstName} {LastName}";
-
 	public required string Email { get; set; }
 	public EmailConfirmation EmailConfirmation { get; init; } = new();
 	public required string HashedPassword { get; set; }

@@ -8,6 +8,11 @@ internal sealed class UserSettings
 
 	public GroupInvitePolicy GroupInvitePolicy { get; set; }
 
+	public static UserSettings CreateDefault(UserId userId) => new()
+	{
+		UserId = userId,
+		GroupInvitePolicy = GroupInvitePolicy.Everyone
+	};
 }
 
 public enum GroupInvitePolicy

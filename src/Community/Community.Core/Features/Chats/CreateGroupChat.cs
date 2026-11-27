@@ -3,7 +3,6 @@ using Community.Core.Database.Configurations;
 using Community.Core.Database.Extensions;
 using Community.Core.Entities.Chats;
 using Community.Core.Models.Chats;
-using Community.Core.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -43,8 +42,7 @@ internal sealed class CreateGroupChatEndpoint : IEndpoint
 internal sealed class CreateGroupChatHandler(
 	CommunityDbContext dbContext,
 	ISnowflakeIdProvider idProvider,
-	TimeProvider timeProvider,
-	UserProfilesSynchronizer userProfilesSynchronizer
+	TimeProvider timeProvider
 ) : IHttpRequestHandler<CreateGroupChat>
 {
 	public const int MaxMembers = 10;
@@ -67,8 +65,6 @@ internal sealed class CreateGroupChatHandler(
 
 		if (requestedMemberIds.Count + 1 > MaxMembers)
 			return new ErrorResult("GroupChat.TooManyMembers", $"A group can have at most {MaxMembers} members.");
-
-		await userProfilesSynchronizer.EnsureSynchronized(requestedMemberIds, cancellationToken);
 
 		var finalMemberIds = await dbContext.UserProfiles
 			.GetGroupChatMembersCandidates(dbContext, currentUser.Id, chatId: null)

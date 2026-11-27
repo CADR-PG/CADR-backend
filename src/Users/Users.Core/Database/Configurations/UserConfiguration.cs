@@ -10,9 +10,6 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
 	{
 		user.HasKey(u => u.Id);
 
-		user.Property(u => u.FirstName).IsRequired().HasMaxLength(100);
-		user.Property(u => u.LastName).IsRequired().HasMaxLength(100);
-		user.Ignore(u => u.FullName);
 		user.Property(u => u.HashedPassword).IsRequired().HasMaxLength(1024);
 		user.Property(u => u.Email).IsRequired().HasMaxLength(320);
 

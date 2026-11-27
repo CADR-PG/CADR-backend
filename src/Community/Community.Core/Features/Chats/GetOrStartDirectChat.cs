@@ -2,7 +2,6 @@ using Community.Core.Database;
 using Community.Core.Database.Extensions;
 using Community.Core.Entities.Chats;
 using Community.Core.Models.Chats;
-using Community.Core.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -40,8 +39,7 @@ internal sealed class GetOrStartDirectChatEndpoint : IEndpoint
 internal sealed class GetOrStartDirectChatHandler(
 	CommunityDbContext dbContext,
 	TimeProvider timeProvider,
-	ISnowflakeIdProvider idProvider,
-	UserProfilesSynchronizer userProfilesSynchronizer
+	ISnowflakeIdProvider idProvider
 ) : IHttpRequestHandler<GetOrStartDirectChat>
 {
 	public async Task<IResult> Handle(
@@ -75,8 +73,6 @@ internal sealed class GetOrStartDirectChatHandler(
 
 		if (isBlocked || !friendshipExists)
 			return new ErrorResult("DirectChat.NotFriends", "Direct chat can only be created between users who are friends.");
-
-		await userProfilesSynchronizer.EnsureSynchronized(secondChatterId, cancellationToken);
 
 		var chat = Chat.CreateDirectChat(lowerUserId, higherUserId, idProvider, timeProvider);
 
